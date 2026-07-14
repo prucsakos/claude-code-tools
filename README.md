@@ -1,2 +1,45 @@
 # claude-code-tools
-A collection of Claude Code tools: slash commands, MCP servers, and agent workflows
+
+A collection of reusable [Claude Code](https://claude.com/claude-code) tools: slash commands, MCP server configs, and agent workflows.
+
+## Contents
+
+| Type | Name | Description |
+|------|------|-------------|
+| Command | [`/team`](commands/team.md) | Spin up a team of N parallel Sonnet workers to tackle a task |
+
+## Installation
+
+### Commands
+
+Copy any command file into your commands directory:
+
+```bash
+# Available in every project (user-level)
+cp commands/team.md ~/.claude/commands/
+
+# Or per-project
+cp commands/team.md your-project/.claude/commands/
+```
+
+Then use it inside Claude Code:
+
+```
+/team 4 "Refactor the API layer and add tests"
+/team "Audit the codebase for security issues"   # Claude picks the optimal team size
+```
+
+### MCP servers
+
+MCP server configs live in [`mcps/`](mcps/). See that folder's README for setup.
+
+## Repository layout
+
+```
+commands/   # Slash commands (markdown files, one per command)
+mcps/       # MCP server configurations and docs
+```
+
+## Contributing
+
+PRs welcome. Keep each tool self-contained and documented at the top of its file.
