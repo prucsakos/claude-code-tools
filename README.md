@@ -7,6 +7,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | Type | Name | Description |
 |------|------|-------------|
 | Command | [`/team`](commands/team.md) | Spin up a team of N parallel Sonnet workers to tackle a task |
+| Command | [`/teach`](commands/teach.md) | Teach a concept via reusable mental models, linked to a personal Concept Vocabulary repo |
 
 ## Installation
 
@@ -27,6 +28,7 @@ Then use it inside Claude Code:
 ```
 /team 4 "Refactor the API layer and add tests"
 /team "Audit the codebase for security issues"   # Claude picks the optimal team size
+/teach "Kalman filter"
 ```
 
 ### MCP servers
