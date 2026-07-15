@@ -8,6 +8,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 |------|------|-------------|
 | Command | [`/team`](commands/team.md) | Spin up a team of N parallel Sonnet workers to tackle a task |
 | Command | [`/teach`](commands/teach.md) | Teach a concept via reusable mental models, linked to a personal Concept Vocabulary repo |
+| MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
 ## Installation
 
@@ -34,6 +35,8 @@ Then use it inside Claude Code:
 ### MCP servers
 
 MCP server configs live in [`mcps/`](mcps/). See that folder's README for setup.
+
+Related project: [BlenderMCP](https://github.com/ahujasid/blender-mcp) connects MCP-compatible AI clients to Blender through an MCP server and Blender add-on.
 
 ## Repository layout
 
