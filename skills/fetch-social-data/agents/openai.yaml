@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fetch Social Data"
+  short_description: "Read social posts, feeds, groups, and comments"
+  default_prompt: "Use $fetch-social-data to retrieve Facebook posts, comments, groups, polls, or search results without side effects."
