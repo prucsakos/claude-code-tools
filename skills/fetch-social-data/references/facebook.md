@@ -126,6 +126,14 @@ Only open a voter list when the current snapshot exposes a separate, clearly rea
 3. Load more only through a clearly read-only list pagination control.
 4. Close the dialog without altering selection.
 
+On current desktop poll cards the safe percentage/count control can be a nested `[role=button]` inside the selectable option row. The outer row contains the checkbox and must never be clicked. Confirm the nested control from the current DOM, read its bounding box, and use a trusted screen click when a normal locator click is swallowed by Facebook's rerender. The resulting dialog header exposes both values in the form `{percentage}% · {absolute count} szavazat`.
+
+For long voter lists, use `scripts/facebook_harvest.mjs` and persist after every scroll step. Facebook may remove earlier voter nodes, and reaching the current scrollbar bottom can merely trigger the next lazy-loaded batch. Continue small downward overscrolls until voter count and scroll height remain unchanged for several passes. Canonicalize profile URLs and merge by URL. After a verified top-to-bottom sweep, distinguish:
+
+- `complete`: collected identities equal the absolute vote count;
+- `complete_visible_identity_gap`: the list is exhausted but Facebook rendered fewer identities than votes, for example because an account is unavailable;
+- `partial_virtualized`: extraction stopped before a stable end was proven.
+
 If the option itself is the only interactive target, the voter count is not clickable, the poll is anonymous, or permissions hide identities, return `voter_visibility: unavailable` and explain why. Do not attempt to reveal hidden voters through application state or private APIs.
 
 Observed limitation during validation: keyword searches for "poll"/"vote" do not reliably return native Facebook polls. Locate a known poll by permalink or browse the target group's feed; search text is relevance-based and may return ordinary posts merely mentioning voting.
@@ -242,6 +250,15 @@ Do not merge two posts merely because they contain the same reshared text.
 - Facebook obfuscates some timestamp text into shuffled character nodes. The DOM snapshot may still expose a human-readable accessible name; otherwise open a proven safe detail link.
 - Top-level feed posts are not consistently semantic `article` elements. Comments usually are.
 - Facebook virtualizes and lazy-loads feeds. Old DOM nodes can disappear after scrolling; extract and store each batch before the next scroll.
+- Voter dialogs can also virtualize or discard earlier rows. Never wait until the end to extract the whole list; union and save after each step.
+- The current scrollbar bottom is not proof of the end of a voter list. Downward overscroll can append another batch and increase `scrollHeight`.
+- A voter dialog may be nested beside duplicate post-detail dialogs. Select the dialog whose visible text matches `{N}% · {M} votes`, not the first `[role=dialog]`.
+- Search-card timestamp and wrapper links may be obfuscated hash URLs. Opening the visible comment-count control can reveal a safe post-detail dialog even when its accessible label says `Write a comment`; never type in or focus the composer afterward.
+- Post-detail UI can contain nested duplicate dialog roles. For comments, choose the innermost dialog that contains comment articles; for voters, choose the vote-header dialog.
+- Switching comment order to All comments temporarily removes articles and shows a loading state. Wait for comment articles to reappear before extracting or expanding replies.
+- Reply labels include both `X replied to Y's comment` and `X replied to Y's reply`. Multiple safe reply-expansion buttons can share the same label; count them, then expand each scoped occurrence and re-snapshot after every click.
+- Comment permalinks can reveal the canonical `/groups/{group}/posts/{post}` ID even when the search card does not expose a usable post permalink. Preserve `comment_id` and `reply_comment_id` while stripping tracking parameters.
+- Long monolithic browser runs risk losing in-memory progress on timeout. Use bounded batches and write the JSON after every voter scroll or comment-expansion batch.
 - `blockquote: Facebook` placeholders are noise, not posts.
 - The default comment order is often Most relevant. Loading visible comments without changing it is not exhaustive.
 - Reply-expansion buttons may be siblings of the parent comment article.

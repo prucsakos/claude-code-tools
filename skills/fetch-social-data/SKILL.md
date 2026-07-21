@@ -22,6 +22,8 @@ Retrieve visible social data through the user's authenticated browser session an
 6. Extract into the schemas below. Normalize URLs and deduplicate before scrolling for more items.
 7. Stop at the requested limit or explain the completeness boundary. Facebook feeds and comments are lazy-loaded and may not expose a stable total.
 
+For large Facebook polls or comment trees, use [scripts/facebook_harvest.mjs](scripts/facebook_harvest.mjs) from the browser runtime. Its voter and comment helpers merge each rendered batch directly into the JSON output so virtualization or a later browser timeout does not discard earlier data. Read the Facebook guide before using the script; it does not choose or click poll controls by itself.
+
 ## Side-effect boundary
 
 Treat the following as allowed read-only actions: navigation, search, changing result filters or sort order, opening post details, opening reaction or voter lists, expanding text, loading more comments, and expanding nested replies.
