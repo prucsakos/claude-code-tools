@@ -113,11 +113,12 @@ export async function scrollAndMergeVoterDialog({
   for (let step = 0; step < steps; step++) {
     if (!result.scroll) break;
     const atTop = result.scroll.top <= 3;
+    const atBottom = result.scroll.top + result.scroll.client >= result.scroll.height - 8;
     if (direction === "up" && atTop) break;
     const signature = `${result.available_voter_count}:${result.scroll.height}`;
-    unchanged = signature === previousSignature ? unchanged + 1 : 0;
+    unchanged = atBottom && signature === previousSignature ? unchanged + 1 : 0;
     previousSignature = signature;
-    if (direction === "down" && unchanged >= stablePasses) {
+    if (direction === "down" && atBottom && unchanged >= stablePasses) {
       stableEnd = true;
       break;
     }

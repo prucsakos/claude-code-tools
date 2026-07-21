@@ -252,6 +252,7 @@ Do not merge two posts merely because they contain the same reshared text.
 - Facebook virtualizes and lazy-loads feeds. Old DOM nodes can disappear after scrolling; extract and store each batch before the next scroll.
 - Voter dialogs can also virtualize or discard earlier rows. Never wait until the end to extract the whole list; union and save after each step.
 - The current scrollbar bottom is not proof of the end of a voter list. Downward overscroll can append another batch and increase `scrollHeight`.
+- Never mark a voter sweep complete from stable name/height counts alone. Require the scroll container to remain at its actual bottom while those counts stay unchanged across the configured stable passes.
 - A voter dialog may be nested beside duplicate post-detail dialogs. Select the dialog whose visible text matches `{N}% · {M} votes`, not the first `[role=dialog]`.
 - Search-card timestamp and wrapper links may be obfuscated hash URLs. Opening the visible comment-count control can reveal a safe post-detail dialog even when its accessible label says `Write a comment`; never type in or focus the composer afterward.
 - Post-detail UI can contain nested duplicate dialog roles. For comments, choose the innermost dialog that contains comment articles; for voters, choose the vote-header dialog.
