@@ -245,6 +245,14 @@ function commentTextFromLines(rawText, author, timestampText) {
   }).join("\n").trim();
 }
 
+function flattenCommentTree(items, output = []) {
+  for (const item of items ?? []) {
+    output.push({ ...item, replies: [] });
+    flattenCommentTree(item.replies, output);
+  }
+  return output;
+}
+
 async function readVisibleCommentArticles(tab) {
   return tab.playwright.evaluate(() => {
     const dialogs = [...document.querySelectorAll('[role="dialog"]')];
@@ -307,9 +315,20 @@ export async function mergeVisibleComments({ tab, targetPath, optionId }) {
     });
   }
 
-  const byId = new Map(flat.map((item) => [String(item.id), item]));
-  const roots = [];
+  const doc = readJson(targetPath);
+  const match = findOption(doc, optionId);
+  if (!match) throw new Error(`Unknown poll option ${optionId}`);
+  const combinedById = new Map();
+  for (const item of flattenCommentTree(match.post.comments?.items)) {
+    if (item.id) combinedById.set(String(item.id), item);
+  }
   for (const item of flat) {
+    if (item.id) combinedById.set(String(item.id), item);
+  }
+  const combined = [...combinedById.values()];
+  const byId = new Map(combined.map((item) => [String(item.id), item]));
+  const roots = [];
+  for (const item of combined) {
     if (item.parent_comment_id && byId.has(String(item.parent_comment_id))) {
       byId.get(String(item.parent_comment_id)).replies.push(item);
     } else {
@@ -317,22 +336,19 @@ export async function mergeVisibleComments({ tab, targetPath, optionId }) {
     }
   }
 
-  const firstPermalink = flat[0]?.permalink;
+  const firstPermalink = flat[0]?.permalink ?? combined[0]?.permalink;
   const postMatch = firstPermalink?.match(/\/groups\/([^/]+)\/posts\/(\d+)/);
-  const doc = readJson(targetPath);
-  const match = findOption(doc, optionId);
-  if (!match) throw new Error(`Unknown poll option ${optionId}`);
   if (postMatch) {
     match.post.facebook_post_id = postMatch[2];
     match.post.permalink = `https://www.facebook.com/groups/${postMatch[1]}/posts/${postMatch[2]}`;
   }
   const displayedTotal = +match.post.engagement?.comment_count || null;
   match.post.comments = {
-    status: displayedTotal !== null && flat.length >= displayedTotal
+    status: displayedTotal !== null && combined.length >= displayedTotal
       ? "complete_displayed_count_match"
       : "partial_visible",
     sort: observed.sort,
-    loaded_count: flat.length,
+    loaded_count: combined.length,
     top_level_count: roots.length,
     items: roots,
   };
@@ -340,7 +356,7 @@ export async function mergeVisibleComments({ tab, targetPath, optionId }) {
   return {
     status: match.post.comments.status,
     sort: observed.sort,
-    loaded_count: flat.length,
+    loaded_count: combined.length,
     top_level_count: roots.length,
     post_id: match.post.facebook_post_id,
   };

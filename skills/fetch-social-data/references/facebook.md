@@ -262,6 +262,7 @@ Do not merge two posts merely because they contain the same reshared text.
 - Reply labels include both `X replied to Y's comment` and `X replied to Y's reply`. Multiple safe reply-expansion buttons can share the same label; count them, then expand each scoped occurrence and re-snapshot after every click.
 - Comment permalinks can reveal the canonical `/groups/{group}/posts/{post}` ID even when the search card does not expose a usable post permalink. Preserve `comment_id` and `reply_comment_id` while stripping tracking parameters.
 - Long monolithic browser runs risk losing in-memory progress on timeout. Use bounded batches and write the JSON after every voter scroll or comment-expansion batch.
+- Comment snapshots can shrink after a reload, timeout, or incremental reply expansion. Merge every visible comment batch by stable comment/reply ID into the persisted tree; never replace a larger saved tree with a smaller current snapshot.
 - `blockquote: Facebook` placeholders are noise, not posts.
 - The default comment order is often Most relevant. Loading visible comments without changing it is not exhaustive.
 - Reply-expansion buttons may be siblings of the parent comment article.
