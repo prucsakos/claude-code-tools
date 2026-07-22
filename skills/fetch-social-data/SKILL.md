@@ -24,6 +24,16 @@ Retrieve visible social data through the user's authenticated browser session an
 
 For large Facebook polls or comment trees, use [scripts/facebook_harvest.mjs](scripts/facebook_harvest.mjs) from the browser runtime. Its voter and comment helpers merge each rendered batch directly into the JSON output so virtualization or a later browser timeout does not discard earlier data. Read the Facebook guide before using the script; it does not choose or click poll controls by itself.
 
+For the FIRE-group collection restricted to Balázs Bognár, use [scripts/balazs_bognar_polls.mjs](scripts/balazs_bognar_polls.mjs). It hard-locks the author to Facebook ID `100001332278141`, audits every post before processing, performs the slow bidirectional voter-list verification, expands and union-merges nested replies, builds a cheapest-first pending-work queue, and exports explicit voter-to-option records. It still requires the agent to open the proven nested percentage/count control rather than the selectable poll row.
+
+Useful CLI commands:
+
+```text
+node scripts/balazs_bognar_polls.mjs audit input.json
+node scripts/balazs_bognar_polls.mjs queue input.json
+node scripts/balazs_bognar_polls.mjs export input.json output.json
+```
+
 ## Side-effect boundary
 
 Treat the following as allowed read-only actions: navigation, search, changing result filters or sort order, opening post details, opening reaction or voter lists, expanding text, loading more comments, and expanding nested replies.

@@ -99,6 +99,8 @@ Useful structure:
 
 Build the tree by matching the reply article's named parent and, when available, its `comment_id`/`reply_comment_id`. Names are not globally unique, so prefer IDs when present.
 
+For the author-locked FIRE dataset, `harvestOpenPostComments` in `scripts/balazs_bognar_polls.mjs` switches the open post dialog to All comments, activates only visible read-only `N replies` controls, union-merges after every action, scrolls to a stable boundary, and refreshes completeness. Keep the post detail dialog open and never focus the adjacent composer.
+
 Never focus or fill the comment textbox. The disabled submit button may become active after accidental input.
 
 ## Fetching polls and voters
@@ -133,6 +135,8 @@ For long voter lists, use `scripts/facebook_harvest.mjs` and persist after every
 - `complete`: collected identities equal the absolute vote count;
 - `complete_visible_identity_gap`: the list is exhausted but Facebook rendered fewer identities than votes, for example because an account is unavailable;
 - `partial_virtualized`: extraction stopped before a stable end was proven.
+
+For the Balázs Bognár FIRE dataset, prefer `harvestOpenVoterDialogVerified` from `scripts/balazs_bognar_polls.mjs` after the safe nested percentage/count control has opened the voter dialog. It automates the coarse downward pass, slow smaller-delta reverse and final passes, deliberate bottom nudge, evidence capture, and completeness refresh. It refuses option IDs belonging to any other author.
 
 If the option itself is the only interactive target, the voter count is not clickable, the poll is anonymous, or permissions hide identities, return `voter_visibility: unavailable` and explain why. Do not attempt to reveal hidden voters through application state or private APIs.
 
@@ -263,6 +267,8 @@ Do not merge two posts merely because they contain the same reshared text.
 - Comment permalinks can reveal the canonical `/groups/{group}/posts/{post}` ID even when the search card does not expose a usable post permalink. Preserve `comment_id` and `reply_comment_id` while stripping tracking parameters.
 - Long monolithic browser runs risk losing in-memory progress on timeout. Use bounded batches and write the JSON after every voter scroll or comment-expansion batch.
 - Comment snapshots can shrink after a reload, timeout, or incremental reply expansion. Merge every visible comment batch by stable comment/reply ID into the persisted tree; never replace a larger saved tree with a smaller current snapshot.
+- A dataset that is meant to contain one person's polls needs an identity lock, not merely a name search. The Balázs pipeline requires both the visible name `Balázs Bognár` and Facebook ID `100001332278141`; audit failure stops queueing and export.
+- Store the voter list under each option and also export a flat `vote_records` relation. The latter makes “who voted for which option” directly queryable without losing the original per-option evidence.
 - `blockquote: Facebook` placeholders are noise, not posts.
 - The default comment order is often Most relevant. Loading visible comments without changing it is not exhaustive.
 - Reply-expansion buttons may be siblings of the parent comment article.
