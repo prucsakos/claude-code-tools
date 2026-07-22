@@ -99,7 +99,7 @@ Useful structure:
 
 Build the tree by matching the reply article's named parent and, when available, its `comment_id`/`reply_comment_id`. Names are not globally unique, so prefer IDs when present.
 
-For the author-locked FIRE dataset, `harvestOpenPostComments` in `scripts/balazs_bognar_polls.mjs` switches the open post dialog to All comments, activates only visible read-only `N replies` controls, union-merges after every action, scrolls to a stable boundary, and refreshes completeness. Keep the post detail dialog open and never focus the adjacent composer.
+For the author-locked FIRE dataset, `harvestOpenPostComments` in `scripts/balazs_bognar_polls.mjs` switches the comment surface to All comments, activates only visible read-only `N replies` controls, union-merges after every action, scrolls to a stable boundary, and refreshes completeness. It supports both the post dialog and inline comments on `/posts/{id}` permalink pages by filtering comment articles to the expected post ID. Never focus the adjacent composer.
 
 Never focus or fill the comment textbox. The disabled submit button may become active after accidental input.
 
@@ -263,17 +263,20 @@ Do not merge two posts merely because they contain the same reshared text.
 - Search-card timestamp and wrapper links may be obfuscated hash URLs. Opening the visible comment-count control can reveal a safe post-detail dialog even when its accessible label says `Write a comment`; never type in or focus the composer afterward.
 - Post-detail UI can contain nested duplicate dialog roles. For comments, choose the innermost dialog that contains comment articles; for voters, choose the vote-header dialog.
 - Switching comment order to All comments temporarily removes articles and shows a loading state. Wait for comment articles to reappear before extracting or expanding replies.
+- Switching comment order can replace the entire Facebook panel and invalidate an otherwise live tab/page handle. After the sort click, reacquire the controlled tab, take a fresh snapshot, and continue from the persisted JSON; do not treat the detached handle as lost data.
+- Some canonical `/posts/{id}` and `/permalink/{id}` routes render the target comments inline instead of as a named post dialog, and Facebook can leave an unrelated feed beneath the target. Filter articles by comment permalinks containing the exact expected post ID rather than assuming a dialog or scraping every visible article.
 - Reply labels include both `X replied to Y's comment` and `X replied to Y's reply`. Multiple safe reply-expansion buttons can share the same label; count them, then expand each scoped occurrence and re-snapshot after every click.
 - Comment permalinks can reveal the canonical `/groups/{group}/posts/{post}` ID even when the search card does not expose a usable post permalink. Preserve `comment_id` and `reply_comment_id` while stripping tracking parameters.
 - Long monolithic browser runs risk losing in-memory progress on timeout. Use bounded batches and write the JSON after every voter scroll or comment-expansion batch.
 - Comment snapshots can shrink after a reload, timeout, or incremental reply expansion. Merge every visible comment batch by stable comment/reply ID into the persisted tree; never replace a larger saved tree with a smaller current snapshot.
 - A dataset that is meant to contain one person's polls needs an identity lock, not merely a name search. The Balázs pipeline requires both the visible name `Balázs Bognár` and Facebook ID `100001332278141`; audit failure stops queueing and export.
+- Estimate pending work from absolute vote counts or persisted voter counts, never from percentages. Facebook may render joined text such as `100% · 45 votes`; a naive digit join becomes `10045` and corrupts queue ordering.
 - Store the voter list under each option and also export a flat `vote_records` relation. The latter makes “who voted for which option” directly queryable without losing the original per-option evidence.
 - `blockquote: Facebook` placeholders are noise, not posts.
 - The default comment order is often Most relevant. Loading visible comments without changing it is not exhaustive.
 - Reply-expansion buttons may be siblings of the parent comment article.
 - Counts can change during extraction. Record them as displayed observations, not immutable totals.
-- A displayed comment count can include a deleted, unavailable, or otherwise non-renderable item. After selecting All comments, exhausting every read-only reply/load control, and proving stable bottom scrolls, keep the record `partial_visible` when unique rendered articles remain below the displayed count; save the exact boundary evidence and never invent the missing comment.
+- A displayed comment count can include a deleted, unavailable, or otherwise non-renderable item. After selecting All comments, exhausting every read-only reply/load control, and proving stable bottom scrolls, mark the terminal state `complete_visible_comment_gap` when unique rendered articles remain below the displayed count. Save both counts and the boundary note; never invent the missing comment.
 - A generic `See all (N)` / `Az összes megtekintése (N)` control elsewhere in the post can belong to poll options, reactions, or another post element. Never treat it as comment pagination unless a fresh snapshot proves it is scoped to the comments region and its action is read-only.
 - Private group data is visible only through the user's current membership. Never copy unrelated private content into diagnostics or examples.
 - Search filters and labels vary by locale, group type, permissions, and rollout. Re-snapshot after any locator failure; do not retry the same guessed selector.

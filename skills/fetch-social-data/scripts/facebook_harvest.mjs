@@ -253,12 +253,24 @@ function flattenCommentTree(items, output = []) {
   return output;
 }
 
-async function readVisibleCommentArticles(tab) {
-  return tab.playwright.evaluate(() => {
+async function readVisibleCommentArticles(tab, expectedPostId = null) {
+  return tab.playwright.evaluate((postId) => {
     const dialogs = [...document.querySelectorAll('[role="dialog"]')];
-    const dialog = dialogs.find((item) => !item.querySelector('[role="dialog"]')) ?? dialogs.at(-1);
-    if (!dialog) return null;
-    const articles = [...dialog.querySelectorAll('[role="article"]')].map((article) => ({
+    // Facebook keeps background and transient dialogs mounted together. Prefer
+    // the leaf dialog that actually contains comment articles and the composer.
+    const leafDialogs = dialogs.filter((item) => !item.querySelector('[role="dialog"]'));
+    const dialog = leafDialogs.find((item) =>
+      item.querySelector('[role="article"]')
+      && item.querySelector('[contenteditable="true"], textarea, [aria-label*="Hozzászólás"], [aria-label*="Comment"]')
+    ) ?? leafDialogs.find((item) => item.querySelector('[role="article"]')) ?? dialogs.at(-1);
+    const root = dialog ?? document;
+    const candidates = [...root.querySelectorAll('[role="article"]')];
+    const matching = postId
+      ? candidates.filter((article) => [...article.querySelectorAll('a[href*="comment_id="]')]
+        .some((link) => link.href.includes(`/posts/${postId}/`)))
+      : candidates;
+    if (!dialog && matching.length === 0) return null;
+    const articles = matching.map((article) => ({
       aria: article.getAttribute("aria-label") || "",
       text: article.innerText || "",
       links: [...article.querySelectorAll("a[href]")].map((link) => ({
@@ -270,16 +282,28 @@ async function readVisibleCommentArticles(tab) {
         text: (button.innerText || "").trim(),
       })),
     }));
-    const sortButton = [...dialog.querySelectorAll('[role="button"]')]
-      .map((button) => (button.innerText || "").trim())
-      .find((text) => text === "Az összes hozzászólás" || text === "A legújabbak" || text === "A legrelevánsabbak") ?? null;
-    return { articles, sort: sortButton };
-  });
+    const sortLabels = new Map([
+      ["az összes hozzászólás", "Az összes hozzászólás"],
+      ["all comments", "All comments"],
+      ["a legújabbak", "A legújabbak"],
+      ["newest", "Newest"],
+      ["a legrelevánsabbak", "A legrelevánsabbak"],
+      ["most relevant", "Most relevant"],
+    ]);
+    const sortButton = [...root.querySelectorAll('[role="button"]')]
+      .map((button) => (button.innerText || button.textContent || "").replace(/\s+/g, " ").trim())
+      .map((text) => sortLabels.get(text.toLocaleLowerCase("hu-HU")) ?? null)
+      .find(Boolean) ?? null;
+    return { articles, sort: sortButton, surface: dialog ? "dialog" : "inline" };
+  }, expectedPostId);
 }
 
 export async function mergeVisibleComments({ tab, targetPath, optionId }) {
-  const observed = await readVisibleCommentArticles(tab);
-  if (!observed) return { status: "dialog_missing" };
+  const doc = readJson(targetPath);
+  const match = findOption(doc, optionId);
+  if (!match) throw new Error(`Unknown poll option ${optionId}`);
+  const observed = await readVisibleCommentArticles(tab, match.post.facebook_post_id ?? null);
+  if (!observed) return { status: "comment_surface_missing" };
   const flat = [];
   for (const article of observed.articles) {
     const replyMatch = article.aria.match(/^(.+?) válasza (.+?) (?:hozzászólására|válaszára) \((.+)\)$/);
@@ -315,9 +339,6 @@ export async function mergeVisibleComments({ tab, targetPath, optionId }) {
     });
   }
 
-  const doc = readJson(targetPath);
-  const match = findOption(doc, optionId);
-  if (!match) throw new Error(`Unknown poll option ${optionId}`);
   const combinedById = new Map();
   for (const item of flattenCommentTree(match.post.comments?.items)) {
     if (item.id) combinedById.set(String(item.id), item);
@@ -343,11 +364,12 @@ export async function mergeVisibleComments({ tab, targetPath, optionId }) {
     match.post.permalink = `https://www.facebook.com/groups/${postMatch[1]}/posts/${postMatch[2]}`;
   }
   const displayedTotal = +match.post.engagement?.comment_count || null;
+  const observedSort = observed.sort ?? match.post.comments?.sort ?? null;
   match.post.comments = {
     status: displayedTotal !== null && combined.length >= displayedTotal
       ? "complete_displayed_count_match"
       : "partial_visible",
-    sort: observed.sort,
+    sort: observedSort,
     loaded_count: combined.length,
     top_level_count: roots.length,
     items: roots,
@@ -355,9 +377,10 @@ export async function mergeVisibleComments({ tab, targetPath, optionId }) {
   writeJson(targetPath, doc);
   return {
     status: match.post.comments.status,
-    sort: observed.sort,
+    sort: observedSort,
     loaded_count: combined.length,
     top_level_count: roots.length,
     post_id: match.post.facebook_post_id,
+    surface: observed.surface,
   };
 }

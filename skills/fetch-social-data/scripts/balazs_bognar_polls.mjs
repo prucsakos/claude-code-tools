@@ -156,7 +156,12 @@ export function buildExtractionQueue(targetPath) {
         status: post.comments?.status ?? "unprocessed",
         anchor_option_id: String(post.poll.options[0].option_id),
       },
-      estimated_cost: pendingOptions.reduce((sum, option) => sum + (+option.percentage || 0), 0)
+      // Percentages are display metadata, not work estimates. A malformed
+      // joined label such as `100% · 45 votes` can otherwise become 10045.
+      estimated_cost: pendingOptions.reduce((sum, option) => {
+        const source = post.poll.options.find((item) => String(item.option_id) === option.option_id);
+        return sum + (+source?.vote_count || +source?.available_voter_count || 1);
+      }, 0)
         + (commentsPending ? (+post.engagement?.comment_count || 0) : 0),
     });
   }
@@ -275,14 +280,15 @@ export async function selectAllCommentsInOpenPost({
   await tab.playwright.domSnapshot();
   const dialog = tab.playwright.getByRole("dialog", { name: dialogName, exact: true });
   const dialogCount = await dialog.count();
-  if (dialogCount !== 1) throw new Error(`Expected one ${dialogName} dialog, found ${dialogCount}`);
+  if (dialogCount > 1) throw new Error(`Expected at most one ${dialogName} dialog, found ${dialogCount}`);
+  const root = dialogCount === 1 ? dialog : tab.playwright;
 
-  const alreadyAll = dialog.getByText(allCommentsLabel, { exact: true });
+  const alreadyAll = root.getByText(allCommentsLabel, { exact: true }).filter({ visible: true });
   if (await alreadyAll.count() === 1) return { changed: false, sort: allCommentsLabel };
 
   let sortControl = null;
   for (const label of currentSortLabels) {
-    const candidate = dialog.getByText(label, { exact: true });
+    const candidate = root.getByText(label, { exact: true }).filter({ visible: true });
     if (await candidate.count() === 1) {
       sortControl = candidate;
       break;
@@ -316,7 +322,7 @@ export async function harvestOpenPostComments({
   const { post } = findBalazsOption(doc, optionId);
   const dialog = tab.playwright.getByRole("dialog", { name: dialogName, exact: true });
   const dialogCount = await dialog.count();
-  if (dialogCount !== 1) throw new Error(`Expected one ${dialogName} dialog, found ${dialogCount}`);
+  if (dialogCount > 1) throw new Error(`Expected at most one ${dialogName} dialog, found ${dialogCount}`);
 
   if (selectAll) await selectAllCommentsInOpenPost({ tab, dialogName, waitMs: delayMs });
 
@@ -342,10 +348,12 @@ export async function harvestOpenPostComments({
       continue;
     }
 
-    const rect = await dialog.evaluate((element) => {
-      const box = element.getBoundingClientRect();
-      return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
-    });
+    const rect = dialogCount === 1
+      ? await dialog.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+      })
+      : await tab.playwright.evaluate(() => ({ x: innerWidth / 2, y: innerHeight / 2 }));
     await tab.cua.scroll({ x: rect.x, y: rect.y, scrollX: 0, scrollY: scrollDelta });
     await tab.playwright.waitForTimeout(delayMs);
     await tab.playwright.domSnapshot();
@@ -355,14 +363,42 @@ export async function harvestOpenPostComments({
   }
 
   const displayed = +post.engagement?.comment_count || null;
+  let terminal = merged;
+  if (
+    displayed !== null
+    && merged.loaded_count < displayed
+    && scrollsWithoutGrowth >= stableScrollPasses
+    && (merged.sort === "Az összes hozzászólás" || merged.sort === "All comments")
+  ) {
+    terminal = { ...merged, ...markVisibleCommentSweepComplete(targetPath, optionId) };
+  }
   return {
-    ...merged,
+    ...terminal,
     displayed_count: displayed,
     reply_actions: actions,
     stable_scroll_passes: scrollsWithoutGrowth,
-    complete: displayed !== null && merged.loaded_count >= displayed,
+    complete: displayed !== null && (merged.loaded_count >= displayed || terminal.status === "complete_visible_comment_gap"),
     completeness: refreshCompleteness(targetPath),
   };
+}
+
+export function markVisibleCommentSweepComplete(targetPath, optionId) {
+  const doc = readJson(targetPath);
+  const { post } = findBalazsOption(doc, optionId);
+  const loaded = +post.comments?.loaded_count || 0;
+  const displayed = +post.engagement?.comment_count || null;
+  if (post.comments?.sort !== "Az összes hozzászólás" && post.comments?.sort !== "All comments") {
+    throw new Error("Visible comment-gap completion requires All comments sort");
+  }
+  post.comments.status = "complete_visible_comment_gap";
+  post.comments.available_comment_count = loaded;
+  post.comments.displayed_comment_count = displayed;
+  post.comments.extraction_notes = [...new Set([
+    ...(post.comments.extraction_notes ?? []),
+    "All comments was exhausted after reply expansion and stable scrolling, but Facebook rendered fewer comment identities than the displayed count; deleted, unavailable, or withheld comments are not inferred.",
+  ])];
+  writeJson(targetPath, doc);
+  return { status: post.comments.status, loaded_count: loaded, displayed_count: displayed };
 }
 
 export function exportBalazsPolls({ targetPath, outputPath }) {

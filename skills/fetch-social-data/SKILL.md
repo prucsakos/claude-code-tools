@@ -24,7 +24,9 @@ Retrieve visible social data through the user's authenticated browser session an
 
 For large Facebook polls or comment trees, use [scripts/facebook_harvest.mjs](scripts/facebook_harvest.mjs) from the browser runtime. Its voter and comment helpers merge each rendered batch directly into the JSON output so virtualization or a later browser timeout does not discard earlier data. Read the Facebook guide before using the script; it does not choose or click poll controls by itself.
 
-For the FIRE-group collection restricted to Balázs Bognár, use [scripts/balazs_bognar_polls.mjs](scripts/balazs_bognar_polls.mjs). It hard-locks the author to Facebook ID `100001332278141`, audits every post before processing, performs the slow bidirectional voter-list verification, expands and union-merges nested replies, builds a cheapest-first pending-work queue, and exports explicit voter-to-option records. It still requires the agent to open the proven nested percentage/count control rather than the selectable poll row.
+For the FIRE-group collection restricted to Balázs Bognár, use [scripts/balazs_bognar_polls.mjs](scripts/balazs_bognar_polls.mjs). It hard-locks the author to Facebook ID `100001332278141`, audits every post before processing, performs the slow bidirectional voter-list verification, expands and union-merges nested replies on both post dialogs and inline permalink pages, builds a cheapest-first pending-work queue, and exports explicit voter-to-option records. It still requires the agent to open the proven nested percentage/count control rather than the selectable poll row.
+
+Run Facebook work sequentially with the script defaults: one open voter/comment surface, a 650 ms settle delay, durable merge after every rendered batch, and several unchanged passes before completion. Do not claim that this prevents rate limits. Stop on checkpoint, CAPTCHA, login, permission, or unusual loading failures and resume from the persisted JSON instead of increasing concurrency or retry speed.
 
 Useful CLI commands:
 
@@ -97,6 +99,7 @@ feed = {source, source_url, order, extracted_at, items: [post], completeness}
 - Return absolute timestamps when exposed through accessible labels; keep relative display text separately.
 - Strip tracking parameters from canonical entity URLs, but preserve identifiers such as `comment_id` and `reply_comment_id` when they identify a requested comment.
 - Mark counts as displayed, approximate, or unavailable. Do not infer hidden voters, deleted comments, private profiles, or unrendered results.
+- Distinguish `complete_displayed_count_match` from `complete_visible_comment_gap`. The latter means All comments and every visible reply/load boundary were exhausted, but Facebook rendered fewer identities than its displayed count.
 - State the sort order used for comments and feeds.
 - Treat search results as relevance-ranked unless the UI explicitly proves another order.
 - Do not expose unrelated private feed content in examples, logs, or the final answer.
