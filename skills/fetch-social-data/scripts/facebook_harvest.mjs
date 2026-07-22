@@ -103,8 +103,8 @@ export async function scrollAndMergeVoterDialog({
   direction = "down",
   steps = 6,
   delta = 420,
-  delayMs = 180,
-  stablePasses = 3,
+  delayMs = 650,
+  stablePasses = 5,
 }) {
   let result = await mergeVisibleVoterDialog({ tab, targetPath, optionId });
   let unchanged = 0;
