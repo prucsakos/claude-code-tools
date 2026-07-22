@@ -267,6 +267,7 @@ Do not merge two posts merely because they contain the same reshared text.
 - Reply-expansion buttons may be siblings of the parent comment article.
 - Counts can change during extraction. Record them as displayed observations, not immutable totals.
 - A displayed comment count can include a deleted, unavailable, or otherwise non-renderable item. After selecting All comments, exhausting every read-only reply/load control, and proving stable bottom scrolls, keep the record `partial_visible` when unique rendered articles remain below the displayed count; save the exact boundary evidence and never invent the missing comment.
+- A generic `See all (N)` / `Az összes megtekintése (N)` control elsewhere in the post can belong to poll options, reactions, or another post element. Never treat it as comment pagination unless a fresh snapshot proves it is scoped to the comments region and its action is read-only.
 - Private group data is visible only through the user's current membership. Never copy unrelated private content into diagnostics or examples.
 - Search filters and labels vary by locale, group type, permissions, and rollout. Re-snapshot after any locator failure; do not retry the same guessed selector.
 - A navigation timeout can still leave the destination loaded. Check the current URL and take a fresh snapshot before retrying.
