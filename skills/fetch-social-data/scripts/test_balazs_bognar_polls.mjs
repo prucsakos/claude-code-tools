@@ -4,9 +4,11 @@ import os from "node:os";
 import path from "node:path";
 
 import {
+  BALAZS_BOGNAR,
   auditBalazsDataset,
   buildExtractionQueue,
   exportBalazsPolls,
+  verifyBalazsDatasetComplete,
 } from "./balazs_bognar_polls.mjs";
 
 const directory = fs.mkdtempSync(path.join(os.tmpdir(), "balazs-polls-test-"));
@@ -64,9 +66,15 @@ fs.writeFileSync(sourcePath, JSON.stringify(fixture), "utf8");
 
 const audit = auditBalazsDataset(sourcePath);
 assert.equal(audit.ok, true);
+assert.equal(audit.complete, true);
 assert.equal(audit.posts, 1);
+assert.equal(audit.posts_with_voter_data, 1);
+assert.equal(audit.posts_with_complete_voter_lists, 1);
+assert.equal(audit.complete_options, 1);
+assert.equal(audit.pending_options, 0);
 assert.equal(audit.vote_records, 2);
 assert.equal(audit.comments, 2);
+assert.equal(verifyBalazsDatasetComplete(sourcePath).complete, true);
 
 const queue = buildExtractionQueue(sourcePath);
 assert.equal(queue.remaining_posts, 0);
@@ -83,5 +91,37 @@ fs.writeFileSync(sourcePath, JSON.stringify(fixture), "utf8");
 const rejected = auditBalazsDataset(sourcePath);
 assert.equal(rejected.ok, false);
 assert.match(rejected.errors[0], /author is not Balázs Bognár/);
+
+fixture.posts[0].author.name = BALAZS_BOGNAR.name;
+delete fixture.posts[0].poll.options[0].voter_list_status;
+fs.writeFileSync(sourcePath, JSON.stringify(fixture), "utf8");
+const incomplete = auditBalazsDataset(sourcePath);
+assert.equal(incomplete.ok, true);
+assert.equal(incomplete.complete, false);
+assert.equal(incomplete.posts_with_complete_voter_lists, 0);
+assert.equal(incomplete.pending_options, 1);
+assert.equal(incomplete.pending_voter_lists[0].option_id, "1");
+assert.throws(() => verifyBalazsDatasetComplete(sourcePath), /structurally valid but incomplete/);
+
+fixture.posts[0].poll.options[0].voter_list_status = "complete";
+const nonInvestment = structuredClone(fixture.posts[0]);
+nonInvestment.record_id = "poll-option-2";
+nonInvestment.facebook_post_id = "100";
+nonInvestment.title = "Biztosítás szavazás 1/2";
+nonInvestment.poll.options[0].option_id = "2";
+delete nonInvestment.poll.options[0].voter_list_status;
+fixture.posts.push(nonInvestment);
+fs.writeFileSync(sourcePath, JSON.stringify(fixture), "utf8");
+
+const allPolls = auditBalazsDataset(sourcePath);
+assert.equal(allPolls.scope, "all_polls");
+assert.equal(allPolls.complete, false);
+assert.equal(allPolls.posts, 2);
+const investments = auditBalazsDataset(sourcePath, { investmentOnly: true });
+assert.equal(investments.scope, "investment_polls");
+assert.equal(investments.complete, true);
+assert.equal(investments.posts, 1);
+assert.equal(verifyBalazsDatasetComplete(sourcePath, { investmentOnly: true }).complete, true);
+assert.equal(buildExtractionQueue(sourcePath, { investmentOnly: true }).remaining_posts, 0);
 
 console.log("balazs_bognar_polls tests passed");

@@ -14,6 +14,12 @@ export const BALAZS_BOGNAR = Object.freeze({
   name: "Balázs Bognár",
 });
 
+const NON_INVESTMENT_TITLE_PREFIXES = Object.freeze([
+  "infláció hatása",
+  "csoport tagok, csatlakozás",
+  "biztosítás szavazás",
+]);
+
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
@@ -25,6 +31,19 @@ function writeJson(filePath, value) {
 function isBalazs(post) {
   return String(post?.author?.id ?? "") === BALAZS_BOGNAR.id
     && String(post?.author?.name ?? "") === BALAZS_BOGNAR.name;
+}
+
+function normalizeTitle(value) {
+  return String(value ?? "").normalize("NFKC").toLocaleLowerCase("hu-HU").trim().replace(/\s+/g, " ");
+}
+
+export function isBalazsInvestmentPoll(post) {
+  const title = normalizeTitle(post?.title);
+  return isBalazs(post) && !NON_INVESTMENT_TITLE_PREFIXES.some((prefix) => title.startsWith(prefix));
+}
+
+function scopedPosts(doc, { investmentOnly = false } = {}) {
+  return (doc.posts ?? []).filter((post) => !investmentOnly || isBalazsInvestmentPoll(post));
 }
 
 function findBalazsOption(doc, optionId) {
@@ -61,16 +80,22 @@ function flattenComments(items, output = []) {
   return output;
 }
 
-export function auditBalazsDataset(targetPath) {
+export function auditBalazsDataset(targetPath, { investmentOnly = false } = {}) {
   const doc = readJson(targetPath);
+  const posts = scopedPosts(doc, { investmentOnly });
   const errors = [];
   const optionIds = new Set();
   let optionCount = 0;
+  let completeOptionCount = 0;
+  let pendingOptionCount = 0;
+  let postsWithVoterData = 0;
+  let postsWithCompleteVoterLists = 0;
   let voterCount = 0;
   let voteRecordCount = 0;
   let commentCount = 0;
+  const pendingVoterLists = [];
 
-  for (const [postIndex, post] of (doc.posts ?? []).entries()) {
+  for (const [postIndex, post] of posts.entries()) {
     if (!isBalazs(post)) {
       errors.push(`posts[${postIndex}] author is not ${BALAZS_BOGNAR.name} (${BALAZS_BOGNAR.id})`);
     }
@@ -78,6 +103,8 @@ export function auditBalazsDataset(targetPath) {
       errors.push(`posts[${postIndex}] is not a poll or has no options`);
       continue;
     }
+    let postHasVoterData = false;
+    let postVoterListsComplete = true;
     for (const option of post.poll.options) {
       optionCount++;
       const optionId = String(option.option_id ?? "");
@@ -87,6 +114,7 @@ export function auditBalazsDataset(targetPath) {
 
       const voterUrls = new Set();
       for (const voter of option.voters ?? []) {
+        postHasVoterData = true;
         voterCount++;
         voteRecordCount++;
         const url = canonicalProfileUrl(voter.profile_url ?? voter.url);
@@ -97,7 +125,26 @@ export function auditBalazsDataset(targetPath) {
       if (option.available_voter_count != null && option.available_voter_count !== voterUrls.size) {
         errors.push(`option ${optionId} available_voter_count=${option.available_voter_count}, actual=${voterUrls.size}`);
       }
+
+      const status = String(option.voter_list_status ?? "unprocessed");
+      if (status.startsWith("complete")) {
+        completeOptionCount++;
+      } else {
+        pendingOptionCount++;
+        postVoterListsComplete = false;
+        pendingVoterLists.push({
+          record_id: post.record_id ?? null,
+          facebook_post_id: post.facebook_post_id ?? null,
+          permalink: post.permalink ?? null,
+          title: post.title ?? null,
+          option_id: optionId,
+          option_label: option.label ?? null,
+          status,
+        });
+      }
     }
+    if (postHasVoterData) postsWithVoterData++;
+    if (postVoterListsComplete) postsWithCompleteVoterLists++;
 
     const flatComments = flattenComments(post.comments?.items);
     commentCount += flatComments.length;
@@ -115,23 +162,42 @@ export function auditBalazsDataset(targetPath) {
 
   return {
     ok: errors.length === 0,
+    complete: errors.length === 0 && pendingOptionCount === 0,
+    scope: investmentOnly ? "investment_polls" : "all_polls",
     author: BALAZS_BOGNAR,
-    posts: (doc.posts ?? []).length,
+    posts: posts.length,
+    posts_with_voter_data: postsWithVoterData,
+    posts_with_complete_voter_lists: postsWithCompleteVoterLists,
     options: optionCount,
+    complete_options: completeOptionCount,
+    pending_options: pendingOptionCount,
     voters: voterCount,
     vote_records: voteRecordCount,
     comments: commentCount,
+    pending_voter_lists: pendingVoterLists,
     errors,
   };
 }
 
-export function buildExtractionQueue(targetPath) {
+export function verifyBalazsDatasetComplete(targetPath, options = {}) {
+  const audit = auditBalazsDataset(targetPath, options);
+  if (!audit.ok) throw new Error(`Dataset audit failed:\n${audit.errors.join("\n")}`);
+  if (!audit.complete) {
+    throw new Error(
+      `Dataset is structurally valid but incomplete: ${audit.pending_options}/${audit.options} voter lists remain pending across `
+      + `${audit.posts - audit.posts_with_complete_voter_lists}/${audit.posts} posts`,
+    );
+  }
+  return audit;
+}
+
+export function buildExtractionQueue(targetPath, { investmentOnly = false } = {}) {
   const doc = readJson(targetPath);
-  const audit = auditBalazsDataset(targetPath);
+  const audit = auditBalazsDataset(targetPath, { investmentOnly });
   if (!audit.ok) throw new Error(`Dataset audit failed:\n${audit.errors.join("\n")}`);
 
   const posts = [];
-  for (const post of doc.posts ?? []) {
+  for (const post of scopedPosts(doc, { investmentOnly })) {
     const pendingOptions = (post.poll?.options ?? [])
       .filter((option) => !String(option.voter_list_status ?? "").startsWith("complete"))
       .map((option) => ({
@@ -166,7 +232,12 @@ export function buildExtractionQueue(targetPath) {
     });
   }
   posts.sort((a, b) => a.estimated_cost - b.estimated_cost || String(a.title).localeCompare(String(b.title)));
-  return { author: BALAZS_BOGNAR, remaining_posts: posts.length, posts };
+  return {
+    scope: investmentOnly ? "investment_polls" : "all_polls",
+    author: BALAZS_BOGNAR,
+    remaining_posts: posts.length,
+    posts,
+  };
 }
 
 export async function harvestOpenVoterDialogVerified({
@@ -421,10 +492,12 @@ export function exportBalazsPolls({ targetPath, outputPath }) {
       }
     }
     return {
+      record_id: post.record_id ?? null,
       facebook_post_id: post.facebook_post_id ?? null,
       permalink: post.permalink ?? null,
       title: post.title,
       published_at: post.published_at ?? null,
+      published_month: post.published_month ?? null,
       publication_year: post.publication_year ?? null,
       author: post.author,
       text: post.text_visible ?? null,
@@ -460,12 +533,14 @@ export function exportBalazsPolls({ targetPath, outputPath }) {
 
 const argv = globalThis.process?.argv;
 if (Array.isArray(argv) && argv[1] && import.meta.url === pathToFileURL(argv[1]).href) {
-  const [command, targetPath, outputPath] = argv.slice(2);
+  const investmentOnly = argv.includes("--investment-only");
+  const [command, targetPath, outputPath] = argv.slice(2).filter((value) => value !== "--investment-only");
   if (!command || !targetPath) {
-    throw new Error("Usage: node balazs_bognar_polls.mjs <audit|queue|export> <input.json> [output.json]");
+    throw new Error("Usage: node balazs_bognar_polls.mjs <audit|verify|queue|export> <input.json> [output.json] [--investment-only]");
   }
-  if (command === "audit") console.log(JSON.stringify(auditBalazsDataset(targetPath), null, 2));
-  else if (command === "queue") console.log(JSON.stringify(buildExtractionQueue(targetPath), null, 2));
+  if (command === "audit") console.log(JSON.stringify(auditBalazsDataset(targetPath, { investmentOnly }), null, 2));
+  else if (command === "verify") console.log(JSON.stringify(verifyBalazsDatasetComplete(targetPath, { investmentOnly }), null, 2));
+  else if (command === "queue") console.log(JSON.stringify(buildExtractionQueue(targetPath, { investmentOnly }), null, 2));
   else if (command === "export") {
     if (!outputPath) throw new Error("export requires an output path");
     console.log(JSON.stringify(exportBalazsPolls({ targetPath, outputPath }), null, 2));

@@ -32,9 +32,49 @@ Useful CLI commands:
 
 ```text
 node scripts/balazs_bognar_polls.mjs audit input.json
+node scripts/balazs_bognar_polls.mjs verify input.json
+node scripts/balazs_bognar_polls.mjs verify input.json --investment-only
 node scripts/balazs_bognar_polls.mjs queue input.json
 node scripts/balazs_bognar_polls.mjs export input.json output.json
 ```
+
+`audit` distinguishes structural validity (`ok`) from voter-list completeness
+(`complete`) and lists every pending option. Before treating an extraction as
+finished or running a downstream analytics pipeline, run `verify`; it exits
+non-zero while any voter list remains pending.
+
+Use `--investment-only` with `audit`, `verify`, or `queue` when the requested
+scope is the recurring FIRE investment polls. The full export also contains
+unrelated inflation, group-membership, and insurance polls; their pending voter
+lists must not make a completed investment-only pipeline look incomplete.
+
+### Collection gotchas
+
+- Persist after every visible voter batch. Facebook virtualizes long dialogs,
+  so identities scrolled out of view cannot be reconstructed after a timeout or
+  reload unless each batch was already union-merged into the working JSON.
+- Prove exhaustion bidirectionally. Sweep down, up, and down again with several
+  unchanged passes before marking a list complete. Newer polls may display a
+  much larger vote count while rendering only about ten identities; record
+  `complete_visible_identity_gap` after stable exhaustion and never invent the
+  hidden names.
+- Click only the nested percentage or vote-count control that is proven to open
+  the voter dialog. The surrounding option row is the voting control and is a
+  prohibited side effect.
+- Treat Facebook group search as a discovery aid, not a complete chronological
+  index. Date filters and query text can remain stale or omit results. Validate
+  the visible author, title, and year on every result, search by distinctive
+  title fragments, and deduplicate by stable option/post identifiers.
+- Parse percentage and vote-count text independently. Joined accessible text
+  such as `100% · 45 votes` can otherwise become the impossible number `10045`.
+  Queue estimates must prefer the explicit vote count, then visible voter count,
+  and use percentages only as display metadata.
+- Preserve `record_id` and `published_month` in exports. Some older posts expose
+  neither a Facebook post ID, permalink, nor exact timestamp; stable record IDs
+  support date overrides and the month field provides an auditable fallback.
+- Separate structural validity from requested-scope completeness. `audit.ok`
+  means the data is internally consistent; `audit.complete` means every voter
+  list in the selected scope reached a terminal status.
 
 ## Side-effect boundary
 
