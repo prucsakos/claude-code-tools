@@ -128,7 +128,7 @@ Only open a voter list when the current snapshot exposes a separate, clearly rea
 
 On current desktop poll cards the safe percentage/count control can be a nested `[role=button]` inside the selectable option row. The outer row contains the checkbox and must never be clicked. Confirm the nested control from the current DOM, read its bounding box, and use a trusted screen click when a normal locator click is swallowed by Facebook's rerender. The resulting dialog header exposes both values in the form `{percentage}% · {absolute count} szavazat`.
 
-For long voter lists, use `scripts/facebook_harvest.mjs` and persist after every scroll step. Facebook may remove earlier voter nodes, and reaching the current scrollbar bottom can merely trigger the next lazy-loaded batch. Continue small downward overscrolls until voter count and scroll height remain unchanged for several passes. Canonicalize profile URLs and merge by URL. After a verified top-to-bottom sweep, distinguish:
+For long voter lists, use `scripts/facebook_harvest.mjs` and persist after every scroll step. Facebook may remove earlier voter nodes, and reaching the current scrollbar bottom can merely trigger the next lazy-loaded batch. Continue small downward overscrolls until voter count and scroll height remain unchanged for several passes. Canonicalize profile URLs and merge by URL. After a verified down-up-down sweep, using a smaller scroll delta for the reverse and final passes, distinguish:
 
 - `complete`: collected identities equal the absolute vote count;
 - `complete_visible_identity_gap`: the list is exhausted but Facebook rendered fewer identities than votes, for example because an account is unavailable;
@@ -253,6 +253,7 @@ Do not merge two posts merely because they contain the same reshared text.
 - Voter dialogs can also virtualize or discard earlier rows. Never wait until the end to extract the whole list; union and save after each step.
 - The current scrollbar bottom is not proof of the end of a voter list. Downward overscroll can append another batch and increase `scrollHeight`.
 - Never mark a voter sweep complete from stable name/height counts alone. Require the scroll container to remain at its actual bottom while those counts stay unchanged across the configured stable passes.
+- A first stable bottom with fewer rendered identities than votes is not proof of a visible identity gap. Reverse-sweep to the top with a smaller delta, then sweep down again; this can reveal lazy batches skipped by the first pass. `scrollAndMergeVoterDialog` therefore leaves such a result `partial_virtualized`; call `markVisibleVoterSweepComplete` only after the bidirectional verification.
 - A voter dialog may be nested beside duplicate post-detail dialogs. Select the dialog whose visible text matches `{N}% · {M} votes`, not the first `[role=dialog]`.
 - Search-card timestamp and wrapper links may be obfuscated hash URLs. Opening the visible comment-count control can reveal a safe post-detail dialog even when its accessible label says `Write a comment`; never type in or focus the composer afterward.
 - Post-detail UI can contain nested duplicate dialog roles. For comments, choose the innermost dialog that contains comment articles; for voters, choose the vote-header dialog.

@@ -131,15 +131,10 @@ export async function scrollAndMergeVoterDialog({
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     result = await mergeVisibleVoterDialog({ tab, targetPath, optionId });
   }
-  if (stableEnd && result.vote_count !== null && result.available_voter_count < result.vote_count) {
-    const doc = readJson(targetPath);
-    const match = findOption(doc, optionId);
-    if (match) {
-      match.option.voter_list_status = "complete_visible_identity_gap";
-      writeJson(targetPath, doc);
-      result.status = "complete_visible_identity_gap";
-    }
-  }
+  result.stable_bottom_reached = stableEnd;
+  result.bidirectional_verification_required = Boolean(
+    stableEnd && result.vote_count !== null && result.available_voter_count < result.vote_count
+  );
   return result;
 }
 
