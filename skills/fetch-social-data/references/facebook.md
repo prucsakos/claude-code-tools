@@ -266,6 +266,7 @@ Do not merge two posts merely because they contain the same reshared text.
 - The default comment order is often Most relevant. Loading visible comments without changing it is not exhaustive.
 - Reply-expansion buttons may be siblings of the parent comment article.
 - Counts can change during extraction. Record them as displayed observations, not immutable totals.
+- A displayed comment count can include a deleted, unavailable, or otherwise non-renderable item. After selecting All comments, exhausting every read-only reply/load control, and proving stable bottom scrolls, keep the record `partial_visible` when unique rendered articles remain below the displayed count; save the exact boundary evidence and never invent the missing comment.
 - Private group data is visible only through the user's current membership. Never copy unrelated private content into diagnostics or examples.
 - Search filters and labels vary by locale, group type, permissions, and rollout. Re-snapshot after any locator failure; do not retry the same guessed selector.
 - A navigation timeout can still leave the destination loaded. Check the current URL and take a fresh snapshot before retrying.
