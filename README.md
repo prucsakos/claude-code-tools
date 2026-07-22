@@ -8,6 +8,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 |------|------|-------------|
 | Command | [`/team`](commands/team.md) | Spin up a team of N parallel Sonnet workers to tackle a task |
 | Command | [`/teach`](commands/teach.md) | Teach a concept via reusable mental models, linked to a personal Concept Vocabulary repo |
+| Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
 ## Installation
@@ -32,6 +33,16 @@ Then use it inside Claude Code:
 /teach "Kalman filter"
 ```
 
+### Skills
+
+Copy a skill folder into your Codex skills directory:
+
+```bash
+cp -R skills/fetch-social-data ~/.codex/skills/
+```
+
+Then invoke it as `$fetch-social-data` in Codex.
+
 ### MCP servers
 
 MCP server configs live in [`mcps/`](mcps/). See that folder's README for setup.
@@ -43,6 +54,7 @@ Related project: [BlenderMCP](https://github.com/ahujasid/blender-mcp) connects 
 ```
 commands/   # Slash commands (markdown files, one per command)
 mcps/       # MCP server configurations and docs
+skills/     # Reusable Codex skills (one self-contained folder per skill)
 ```
 
 ## Contributing
