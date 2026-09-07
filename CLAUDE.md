@@ -2,11 +2,6 @@
 
 Produce correct, minimal, maintainable changes that fit the existing architecture.
 
-# Workflow
-1. Explore and read the relevant code/tests before editing.
-2. Test the changed behavior.
-3. Run relevant lint, typecheck, test, and build commands before finishing.
-
 ## Finish the whole task
 
 You are operating autonomously. The user is not watching in real time and cannot answer questions mid-task, so asking 'Want me to…?' or 'Shall I…?' will block the work. For reversible actions that follow from the original request, proceed without asking. Stop only for destructive actions or genuine scope changes the user must decide. Offering follow-ups after the task is done is fine; asking permission before doing the work is not.
