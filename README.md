@@ -1,6 +1,6 @@
 # claude-code-tools
 
-A collection of reusable [Claude Code](https://claude.com/claude-code) tools: slash commands, MCP server configs, and agent workflows.
+A collection of reusable [Claude Code](https://claude.com/claude-code) tools: slash commands, MCP server configs, and agent workflows. Some tools also ship a ChatGPT-compatible version under `chatgpt/`.
 
 ## Contents
 
@@ -8,7 +8,9 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 |------|------|-------------|
 | Command | [`/team`](commands/team.md) | Spin up a team of N parallel Sonnet workers to tackle a task |
 | Command | [`/teach`](commands/teach.md) | Teach a concept via reusable mental models, linked to a personal Concept Vocabulary repo |
+| Command | [`/full-code-audit`](commands/full-code-audit.md) | Audit a codebase for duplicated logic, inconsistent patterns, and architectural problems |
 | Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
+| ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
 ## Installation
@@ -31,6 +33,7 @@ Then use it inside Claude Code:
 /team 4 "Refactor the API layer and add tests"
 /team "Audit the codebase for security issues"   # Claude picks the optimal team size
 /teach "Kalman filter"
+/full-code-audit src/
 ```
 
 ### Skills
@@ -42,6 +45,13 @@ cp -R skills/fetch-social-data ~/.codex/skills/
 ```
 
 Then invoke it as `$fetch-social-data` in Codex.
+
+### ChatGPT
+
+Files under `chatgpt/` are plain prompt text, not an installable format. Use one of:
+
+- **Custom GPT:** paste the file's content into the GPT's *Instructions* field.
+- **One-off chat:** paste the prompt, replace `{{TARGET}}` with what you're auditing (or drop that line and paste/upload the code right after the prompt).
 
 ### MCP servers
 
@@ -55,6 +65,7 @@ Related project: [BlenderMCP](https://github.com/ahujasid/blender-mcp) connects 
 commands/   # Slash commands (markdown files, one per command)
 mcps/       # MCP server configurations and docs
 skills/     # Reusable Codex skills (one self-contained folder per skill)
+chatgpt/    # ChatGPT/custom-GPT prompt versions of select tools
 ```
 
 ## Contributing
