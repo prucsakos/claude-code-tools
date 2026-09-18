@@ -8,7 +8,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 |------|------|-------------|
 | Command | [`/team`](commands/team.md) | Spin up a team of N parallel Sonnet workers to tackle a task |
 | Command | [`/teach`](commands/teach.md) | Teach a concept via reusable mental models, linked to a personal Concept Vocabulary repo |
-| Command | [`/full-code-audit`](commands/full-code-audit.md) | Audit a codebase for duplicated logic, inconsistent patterns, and architectural problems |
+| Command | [`/full-code-audit`](commands/full-code-audit.md) | Load a folder's production source code into context, verbatim and unanalyzed |
 | Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |

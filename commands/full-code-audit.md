@@ -1,44 +1,26 @@
 ---
-description: Audit all production code in a folder for duplication, inconsistent patterns, and architectural problems
-argument-hint: "path to the folder to audit"
+description: Load all production source code from a folder into context, verbatim and unanalyzed, excluding comments, tests, docs, generated files, and vendor directories
+argument-hint: "path to the folder to load"
 ---
 
-# Full-Code Audit
+# Load Code Context
 
-Audit all production code inside: `$ARGUMENTS`
+Load all production source code from: `$ARGUMENTS`
 
-## Instructions
+## Rules
 
-1. Recursively load all production source code in the target folder into context.
-2. Exclude:
-   - tests/specs
-   - comments
-   - generated/vendor/build files
-   - documentation
-3. Preserve file paths and code structure.
-4. Do not modify code.
+- Recursively read every source-code file in the target folder.
+- Load the actual code into the model context.
+- Exclude:
+  - comments
+  - tests/specs
+  - documentation
+  - generated files
+  - build artifacts
+  - dependencies/vendor directories
+- Preserve file paths and boundaries between files.
+- Do not summarize, analyze, modify, or omit production code.
+- Do not replace code with descriptions.
+- Continue until all eligible code in the folder has been loaded.
 
-Analyze the codebase globally, comparing implementations across files.
-
-Find:
-- duplicated or redundant implementations
-- inconsistent patterns or conventions
-- unnecessary complexity
-- poor abstractions
-- architectural inconsistencies
-- dependency/layering problems
-- obsolete or competing approaches
-- opportunities to consolidate or simplify
-
-Infer the project's dominant conventions from the code itself rather than imposing arbitrary style preferences.
-
-For every finding provide:
-- files/locations
-- what is inconsistent or suboptimal
-- evidence/comparison
-- recommended canonical approach
-- confidence
-
-Prioritize high-impact findings and avoid cosmetic issues.
-
-If the code does not fit in context, process coherent modules separately, build a compact architectural index, then perform the same cross-module analysis.
+If everything cannot fit in context, report that explicitly instead of silently dropping files.
