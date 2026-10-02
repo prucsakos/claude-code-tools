@@ -1,0 +1,4 @@
+interface:
+  display_name: "Explain Simple"
+  short_description: "Explain in ASD-STE100, no fixed structure"
+  default_prompt: "Use $explain-simple to explain this concept in ASD-STE100 Simplified Technical English."

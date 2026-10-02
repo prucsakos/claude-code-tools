@@ -1,0 +1,4 @@
+interface:
+  display_name: "Explain"
+  short_description: "Explain in ASD-STE100 with mental models"
+  default_prompt: "Use $explain to explain this concept in ASD-STE100 Simplified Technical English."

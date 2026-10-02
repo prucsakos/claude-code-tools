@@ -12,6 +12,8 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | Command | [`/full-code-audit`](commands/full-code-audit.md) | Load a folder's production source code into context, verbatim and unanalyzed |
 | Command | [`/my-code-simplify`](commands/my-code-simplify.md) | Aggressively simplify the current changes and prune their tests, preserving behavior |
 | Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
+| Skill | [`explain`](skills/explain/) | Codex version of the `/explain` command |
+| Skill | [`explain-simple`](skills/explain-simple/) | Codex version of the `/explain-simple` command |
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
@@ -45,10 +47,10 @@ Then use it inside Claude Code:
 Copy a skill folder into your Codex skills directory:
 
 ```bash
-cp -R skills/fetch-social-data ~/.codex/skills/
+cp -R skills/explain ~/.codex/skills/
 ```
 
-Then invoke it as `$fetch-social-data` in Codex.
+Then invoke it as `$explain` in Codex.
 
 ### ChatGPT
 
