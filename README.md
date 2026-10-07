@@ -17,6 +17,21 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
+## Plugins I use
+
+Claude Code plugins enabled in my user settings (`name@marketplace`).
+
+| Plugin | Marketplace |
+|--------|-------------|
+| `you-should-know` (`cc-plugin-you-should-know`) | `builtin` |
+| `code-review` | `anthropics/claude-plugins-official` |
+| `feature-dev` | `anthropics/claude-plugins-official` |
+| `security-guidance` | `anthropics/claude-plugins-official` |
+| `playwright` | `anthropics/claude-plugins-official` |
+| `linear` | `anthropics/claude-plugins-official` |
+| `github` | `anthropics/claude-plugins-official` |
+| `i-have-adhd` | `ayghri/i-have-adhd` |
+
 ## Installation
 
 ### Commands
