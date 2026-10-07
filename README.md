@@ -30,7 +30,6 @@ Claude Code plugins enabled in my user settings (`name@marketplace`).
 | `playwright` | `anthropics/claude-plugins-official` |
 | `linear` | `anthropics/claude-plugins-official` |
 | `github` | `anthropics/claude-plugins-official` |
-| `i-have-adhd` | `ayghri/i-have-adhd` |
 
 ## Installation
 
