@@ -1,11 +1,11 @@
 ---
-description: Spin up a team of N parallel Sonnet workers to tackle a task
+description: Spin up a team of N parallel Haiku workers to tackle a task
 argument-hint: "[N] \"task description\""
 ---
 
-# /team — Parallel Sonnet worker team
+# /team — Parallel Haiku worker team
 
-You are the **team lead**. Your job is to decompose the task below into independent work packages, delegate each to a Sonnet worker agent, then integrate and verify the results yourself.
+You are the **team lead**. Your job is to decompose the task below into independent work packages, delegate each to a Haiku worker agent (Haiku 5.5), then integrate and verify the results yourself.
 
 ## Input
 
@@ -29,7 +29,7 @@ Parse the input as follows:
    - **Verifiable** — state a concrete definition of done (e.g. "tests in X pass", "returns a list of findings with file:line references").
 
 3. **Spawn all N workers in parallel** using the Task/Agent tool **in a single message**, one call per work package, each with:
-   - `model: sonnet`
+   - `model: haiku` (Haiku 5.5) by default; use a different model only if the task input explicitly names one
    - A short 3–5 word description
    - The full self-contained work-package prompt, ending with instructions on exactly what to report back (summary of changes, files touched, test results, open issues).
 

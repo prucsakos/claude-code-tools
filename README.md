@@ -6,7 +6,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 
 | Type | Name | Description |
 |------|------|-------------|
-| Command | [`/team`](commands/team.md) | Spin up a team of N parallel Sonnet workers to tackle a task |
+| Command | [`/team`](commands/team.md) | Spin up a team of N parallel Haiku workers to tackle a task |
 | Command | [`/explain`](commands/explain.md) | Explain a concept in ASD-STE100 Simplified Technical English via reusable mental models, linked to a personal Concept Vocabulary repo |
 | Command | [`/explain-simple`](commands/explain-simple.md) | Same ASD-STE100 rules and Concept Vocabulary as `/explain`, without the fixed explanation structure |
 | Command | [`/full-code-audit`](commands/full-code-audit.md) | Load a folder's production source code into context, verbatim and unanalyzed |
