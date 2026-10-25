@@ -55,7 +55,11 @@ Then:
 1. Check that the working tree is clean. If it is not, stop and tell the user. Tell them not to edit the main checkout during the run.
 2. Create `RUN_DIR` = `<parent of REPO>/<repo name>.optimize/`. It sits outside the repo, so test runners and linters in MAIN never see the worktrees. `STATE` = `RUN_DIR/state.md`. `LOCK` = `RUN_DIR/measure.lock` if the lock is on, else `none`.
 3. Create the measuring worktree: `git -C REPO worktree add --detach RUN_DIR/wt/measure MAIN`, then run SETUP_CMD in it. You and research measure MAIN only there, never in the main checkout, so measurement output cannot block the implementer's fast-forward. Measure B0 with `measure.sh` (3 runs, T_TEST each) and run CORRECT_CMD. It must pass. This also proves that SETUP_CMD gives a working worktree.
-4. Derive R, the runs per side for testers, from the B0 median run time `run`. L = N if the lock is on, else 1, because testers queue for the lock. `R = clamp(min(floor(T_TEST / run), floor(T_ITER / (4 × L × run))), 1, 5)`. So R runs fit in T_TEST, and both sides' measurements, queueing included, fit in half of T_ITER.
+4. Plan the measurements from the B0 median run time `run`:
+   - Lock on: testers measure only the candidate and compare it with the current baseline Bk, which you measured under the same lock. No contention is left for an A/B pair to cancel, and the lock time halves. Lock off: testers measure base and candidate in their own worktree.
+   - S = sides a tester measures (1 with the lock on, 2 with it off). L = testers that queue for the lock (N with the lock on, 1 with it off).
+   - `R = clamp(min(floor(T_TEST / run), floor(T_ITER / (2 × S × L × run))), 1, 5)`, the runs per side. So R runs fit in T_TEST, and all queued measurements fit in half of T_ITER.
+   - If even R = 1 does not fit (2 × S × L × run > T_ITER), lower N to the largest value that fits, at least 1. Say so in the setup summary, with the reason.
 5. Write STATE and show the user the setup summary and the empty report.
 
 ## 2. Event loop
@@ -76,7 +80,7 @@ React to events. Update STATE after each one, then print the report (section 4).
 
 **Dispatch a tester** for the queued idea with the highest rank:
 1. `git -C REPO worktree add -b opt/<id> RUN_DIR/wt/<id> MAIN`, run SETUP_CMD in it, and record the base SHA.
-2. Spawn an agent with `tester-prompt.md`. Include the deadline as a clock time. If MEASURE_CMD contains single quotes, write each as `'\''`.
+2. Spawn an agent with `tester-prompt.md`. Include the deadline as a clock time. With the lock on, BASE_VALUES = the runs of the current Bk; with it off, `none`. If MEASURE_CMD contains single quotes, write each as `'\''`.
 3. Start its timer for T_ITER. Record the agentId, timer ID, base SHA and dispatch time in STATE.
 
 **Start research:** `git -C RUN_DIR/wt/measure checkout --detach MAIN`, then spawn an agent with `research-prompt.md` and a deadline of T_RESEARCH. Start its timer for T_RESEARCH.
@@ -106,7 +110,7 @@ Record the reason in one line. Remove worktrees with `git -C REPO worktree remov
 
 **Implementer batch:** `git -C REPO worktree add -b opt/batch-<k> RUN_DIR/wt/batch-<k> MAIN`. Spawn `implementer-prompt.md` with the accepted branches, ordered by measured gain. Its timer is T_ITER × (number of items).
 
-**After a batch:** `git -C RUN_DIR/wt/measure checkout --detach MAIN`, measure it with R runs → Bk, then run CORRECT_CMD there.
+**After a batch:** `git -C RUN_DIR/wt/measure checkout --detach MAIN`, measure it → Bk (3 runs if they fit in T_ITER, else R), then run CORRECT_CMD there.
 - Bk is worse than B(k-1) beyond the spread, or correctness fails: measure each batch commit in the measuring worktree, then spawn the implementer in revert mode for the commits that made it worse. Re-queue those ideas as `retest`.
 - Bk gains less than the product of the item ratios: note "overlapping gains" in the report. No other action.
 
@@ -142,7 +146,7 @@ On stop: TaskStop every running agent and timer. Remove all worktrees and run `g
 |---|---|
 | Asking setup questions over several turns | One form, one answer, defaults for the rest. |
 | Waiting in a sleep loop for agents | End the turn; notifications wake you. |
-| A tester measures only the candidate | It measures its base and the candidate in the same worktree with the same command. |
+| A tester's base comes from somewhere else | Lock on: the Bk runs you give it, measured under the same lock. Lock off: its own base runs in its own worktree, with the same command. |
 | Timing measurements without the lock | Parallel load hides real gains: in testing, a change that saves about 0.4 s per run measured as within noise next to other agents. Keep the lock on in `time` mode. |
 | Reporting a ratio without its baseline | Name the baseline (B0, Bk) next to every number. |
 | Two agents writing to MAIN | Only the implementer fast-forwards MAIN. |
