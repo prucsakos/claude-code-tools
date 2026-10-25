@@ -1,5 +1,5 @@
 ---
-name: iterative-optimization
+name: my-iterative-optimization
 description: Use when the user wants to make a script, program or code base measurably faster, cheaper, smaller or more accurate by testing many candidate improvements in parallel against a baseline over fast iterations, and to keep going until they stop it. Claude Code only; the target must be a git repository.
 ---
 
