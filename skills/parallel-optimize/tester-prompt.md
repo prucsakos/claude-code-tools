@@ -37,7 +37,7 @@ It prints one value per run, or `TIMEOUT` / `FAIL <code>`.
 1. **Base:** measure `{{WT}}` before you change anything.
 2. **Implement** the idea with the smallest change that does it. Do not change the measurement command, the correctness command, test inputs or reference outputs. Do not game the metric (caching results across runs, skipping required work, special-casing the benchmark input). If the idea turns out not to apply, report `STATUS: failed` with the reason. Do not substitute a different idea.
 3. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise report `CORRECTNESS: fail`.
-4. **Commit** exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows whole files changed where you edited a few lines, your editor changed line endings or encoding. Restore the original ones, because whole-file diffs make the later migration conflict. Then: `git -C {{WT}} add -A && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
+4. **Commit** exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows whole files changed where you edited a few lines, your editor changed line endings or encoding. Restore the original ones, because whole-file diffs make the later migration conflict. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
 5. **Candidate:** measure `{{WT}}` again with the same command.
 
 ## Report

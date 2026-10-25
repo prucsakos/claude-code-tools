@@ -44,15 +44,15 @@ Collect these inputs. Take what the arguments or the conversation already give, 
 | N | Concurrent testers. |
 | T | Strict wall-clock budget for one tester assignment, from dispatch to report, covering implementation and measurement. |
 | Models | One per role (opus, sonnet, haiku, fable). Default: opus for every role. |
-| Parallel-safe | Can several copies of MEASURE_CMD run at once (no fixed ports, shared output paths, single GPU)? If not, measurements are serialized with a lock. |
+| Measurement lock | Serializes measurements so that only one runs at a time. In `time` mode the lock is on, because parallel runs distort timings; turn it off only if the user asks. In `stdout` mode, ask whether parallel runs would break or distort the value (fixed ports, shared output paths, single GPU, rate limits); if yes, the lock is on. |
 
-Ask N, T, models and parallel-safe with one AskUserQuestion call. Ask for the free-form inputs in plain chat.
+Ask N, T, models and (in `stdout` mode) the lock question with one AskUserQuestion call. Ask for the free-form inputs in plain chat.
 
 Then:
 1. Check that the working tree is clean. If it is not, stop and tell the user. Tell them not to edit the main checkout during the run.
-2. Create `RUN_DIR` = `<parent of REPO>/<repo name>.optimize/`. It sits outside the repo, so test runners and linters in MAIN never see the worktrees. `STATE` = `RUN_DIR/state.md`. `LOCK` = `RUN_DIR/measure.lock` if measurements are serialized, else `none`.
+2. Create `RUN_DIR` = `<parent of REPO>/<repo name>.optimize/`. It sits outside the repo, so test runners and linters in MAIN never see the worktrees. `STATE` = `RUN_DIR/state.md`. `LOCK` = `RUN_DIR/measure.lock` if the lock is on, else `none`.
 3. Create the measuring worktree: `git -C REPO worktree add --detach RUN_DIR/wt/measure MAIN`, then run SETUP_CMD in it. You and research measure MAIN only there, never in the main checkout, so measurement output cannot block the implementer's fast-forward. Measure B0 with `measure.sh` (3 runs if they fit within T, else 1) and run CORRECT_CMD. It must pass. This also proves that SETUP_CMD gives a working worktree.
-4. Derive R, the runs per side for testers: `R = clamp(floor(0.4 × T / (2 × median run time)), 1, 5)`. Per-run timeout = 3 × the median run time.
+4. Derive R, the runs per side for testers: `R = clamp(floor(0.4 × T / (2 × median run time)), 1, 5)`. With the lock on, testers queue for it, so divide by N as well: `R = clamp(floor(0.4 × T / (2 × N × median run time)), 1, 5)`. Per-run timeout = 3 × the median run time.
 5. Write STATE and show the user the setup summary and the empty report.
 
 ## 2. Event loop
@@ -65,7 +65,7 @@ React to events. Update STATE after each one, then print the report (section 4).
 | Tester finishes | TaskStop its timer (and grace timer). Evaluate it (section 3). Start the implementer if a batch is ready. Fill the free slot. |
 | A timer fires and its agent is still running | Send the agent: `TIME UP for <id>: stop editing, end the current command, and report within <G> s with what you have.` Post one line to the user. Start a grace timer of G = min(120, max(30, T/5)) seconds. |
 | A grace timer fires and its agent is still running | TaskStop it. A tester's idea gets status `timeout` and its worktree is removed. |
-| Implementer finishes with `MERGED: yes` | Measure MAIN → Bk, then run CORRECT_CMD (section 3). Remove the batch worktree, then delete the batch branch and the migrated item branches with `git branch -D` (cherry-picks get new SHAs, so `-d` refuses). |
+| Implementer finishes with `MERGED: yes` | Measure MAIN → Bk, then run CORRECT_CMD (section 3). Remove the batch worktree, then delete the batch branch and the migrated item branches with `git branch -D` (cherry-picks get new SHAs, so `-d` refuses). The hot spots have moved, so clear research `exhausted`, and re-queue ideas rejected as `within noise` or `timeout` as `retest`, once each. |
 | Implementer finishes with `MERGED: no` | Read the reason. If you can remove the cause, run the batch again; otherwise tell the user. |
 | Research finishes | TaskStop its timer. If it reports `exhausted: yes`, or two bursts in a row brought no new idea, set research to exhausted and tell the user. |
 | The user changes N, T, models or batch size | Apply it to new dispatches. |
@@ -92,7 +92,7 @@ React to events. Update STATE after each one, then print the report (section 4).
 - The gain is larger than the run-to-run spread on both sides.
 - The diff is in scope: `git -C REPO diff <base>..opt/<id>`. It does not change MEASURE_CMD, CORRECT_CMD, test inputs or reference outputs, and it does not game the metric (caching results across runs, skipping required work).
 
-Accepted: remove the worktree and keep the branch. Rejected or failed: remove the worktree and delete the branch. Record the reason either way.
+Remove worktrees with `git -C REPO worktree remove --force <dir>`, because measurement output leaves untracked files. Accepted: remove the worktree and keep the branch. Rejected or failed: remove the worktree and delete the branch. Record the reason either way.
 
 **Overlapping ideas:** if two accepted ideas change the same code for the same gain (for example two fixes of one hot loop), put only the one with the larger measured gain in the batch. Mark the other `superseded by #<id>` and delete its branch.
 
@@ -120,7 +120,7 @@ Main: B0 120.4 s → B2 9.1 s  (13.2× vs B0)  ·  2 batches · 5 accepted · 3 
 
 - Est. vs B0 = (its base's gain vs B0) × the item's ratio. It is an estimate until the item is in MAIN; after that, the baseline table holds the measured value.
 - Statuses: queued → testing → accepted / rejected (reason) / timeout → migrating → in MAIN (Bk) / skipped (reason) / superseded by #id / retest.
-- If measurements run in parallel, add one line: absolute times were measured under parallel load, and ratios are the reliable figure.
+- If the lock is off, add one line: absolute values were measured under parallel load, and ratios are the more reliable figure.
 
 ## 5. State, compaction and stop
 
@@ -133,7 +133,8 @@ On stop: TaskStop every running agent and timer. Remove all worktrees and run `g
 | Mistake | Fix |
 |---|---|
 | Waiting in a sleep loop for agents | End the turn; notifications wake you. |
-| A tester measures only the candidate | It measures its base and the candidate in the same worktree, so the ratio is fair under load. |
+| A tester measures only the candidate | It measures its base and the candidate in the same worktree with the same command. |
+| Timing measurements without the lock | Parallel load hides real gains: in testing, a change that saves about 0.4 s per run measured as within noise next to other agents. Keep the lock on in `time` mode. |
 | Reporting a ratio without its baseline | Name the baseline (B0, Bk) next to every number. |
 | Two agents writing to MAIN | Only the implementer fast-forwards MAIN. |
 | Reusing a tester for the next idea | Spawn a fresh tester on a fresh worktree from the current MAIN. |
