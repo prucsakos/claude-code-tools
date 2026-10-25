@@ -4,7 +4,9 @@
 # Usage: bash measure.sh <workdir> <runs> <timeout_s> <time|stdout> <lockdir|none> <command>
 #   time    the value is the command's wall-clock seconds
 #   stdout  the value is the last number the command prints on stdout
-# A run that exceeds <timeout_s> prints "TIMEOUT"; a non-zero exit prints "FAIL <code>".
+# A run that exceeds <timeout_s> prints "TIMEOUT" and ends the measurement, because
+# repeating a run that hangs or is too slow only burns the time budget.
+# A non-zero exit prints "FAIL <code>".
 # With a lockdir, only one measurement on the machine runs at a time, so parallel
 # testers do not slow each other down.
 set -u
@@ -40,7 +42,7 @@ for _ in $(seq "$runs"); do
   end=$(date +%s.%N)
   release_lock
 
-  if [ "$code" -eq 124 ]; then echo TIMEOUT; continue; fi
+  if [ "$code" -eq 124 ]; then echo TIMEOUT; break; fi
   if [ "$code" -ne 0 ]; then echo "FAIL $code"; continue; fi
   if [ "$mode" = time ]; then
     awk -v s="$start" -v e="$end" 'BEGIN { printf "%.3f\n", e - s }'

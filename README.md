@@ -14,7 +14,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
 | Skill | [`explain`](skills/explain/) | Codex version of the `/explain` command |
 | Skill | [`explain-simple`](skills/explain-simple/) | Codex version of the `/explain-simple` command |
-| Skill | [`parallel-optimize`](skills/parallel-optimize/) | Claude Code skill: improve a measurable metric (speed, cost, accuracy) with a research agent, N parallel testers and one implementer that migrates accepted changes to main in batches |
+| Skill | [`iterative-optimization`](skills/iterative-optimization/) | Claude Code skill: improve a measurable metric (speed, cost, accuracy) with a research agent, N parallel testers and one implementer that migrates accepted changes to main in batches |
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
@@ -67,16 +67,16 @@ cp -R skills/explain ~/.codex/skills/
 
 Then invoke it as `$explain` in Codex.
 
-`parallel-optimize` is a Claude Code skill. Copy it into your Claude Code skills directory instead:
+`iterative-optimization` is a Claude Code skill. Copy it into your Claude Code skills directory instead:
 
 ```bash
-cp -R skills/parallel-optimize ~/.claude/skills/
+cp -R skills/iterative-optimization ~/.claude/skills/
 ```
 
 Then use it inside Claude Code:
 
 ```
-/parallel-optimize "Make scripts/build_report.py faster without changing its output"
+/iterative-optimization "Make scripts/build_report.py faster without changing its output"
 ```
 
 ### ChatGPT

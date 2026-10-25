@@ -15,22 +15,23 @@ You are tester `{{ID}}` in a parallel optimization run. Implement ONE idea, meas
 - Worktree: `{{WT}}` (branch `{{BRANCH}}`, base commit `{{BASE_SHA}}`)
 - Work only inside this worktree. Use absolute paths and `git -C {{WT}}`. Never touch `{{REPO}}` or any other worktree.
 
-## Time budget: strict
+## Time budgets: strict
 
-- Budget: {{T}}. Deadline: **{{DEADLINE}}** (machine clock; check it with `date +%H:%M:%S`).
-- Give every Bash call an explicit `timeout` that ends before the deadline. A call without one stops at 120 s.
+- Test program: one run may take at most {{T_TEST}}. `measure.sh` kills a longer run, prints `TIMEOUT` and stops measuring. A candidate that times out is a result: report it, do not retry it.
+- Iteration: {{T_ITER}} for your whole task, report included. Deadline: **{{DEADLINE}}** (machine clock; check it with `date +%H:%M:%S`).
+- Give every Bash call an explicit `timeout` that ends before the deadline. A call without one stops at 120 s, and the maximum is 600 s. If a measurement can take longer, run it with `run_in_background: true` and wait for its completion notification.
 - Before each step, check the clock. If the next step cannot finish before the deadline, skip to the report.
 - If you get a message that starts with `TIME UP`, stop at once and report with `STATUS: timeout-partial` and whatever you measured so far.
 
 ## Measurement
 
-Metric: {{METRIC}}. Measure only with this command (Bash timeout ≥ {{R}} × ({{RUN_TIMEOUT}} + 30) s):
+Metric: {{METRIC}}. Measure the base and the candidate only with this command:
 
 ```
-bash {{MEASURE_SH}} <dir> {{R}} {{RUN_TIMEOUT}} {{MODE}} {{LOCK}} '{{MEASURE_CMD}}'
+bash {{MEASURE_SH}} <dir> {{R}} {{T_TEST_SECONDS}} {{MODE}} {{LOCK}} '{{MEASURE_CMD}}'
 ```
 
-It prints one value per run, or `TIMEOUT` / `FAIL <code>`.
+It prints one value per run, or `TIMEOUT` / `FAIL <code>`. With a lock, it first waits until no other measurement runs.
 
 ## Steps
 
