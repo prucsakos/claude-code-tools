@@ -1,0 +1,27 @@
+# Pillars
+
+A pillar is an area of the target project to improve. Each selected pillar becomes a track with its own metric and measurement command, so it needs a proxy that a command can measure. A tool the repo lacks can run from a harness under `RUN_DIR/harness/`. If no proxy works for a selected pillar, drop the pillar and give the reason in the setup form. The "Improves" text is the option description in the pillar question, and "Group" is the question the pillar appears in.
+
+| Group | Pillar | Improves | Example proxies (choose one per pillar) | Gaming to reject |
+|---|---|---|---|---|
+| Product | Performance | Speed, memory, size and cost of running the code | wall time of a benchmark; peak memory; bundle or binary size; requests per second; API cost per run | caching results across runs, skipping required work |
+| Product | UX | How fast and easily a user completes a task | Lighthouse performance score or LCP of key pages; CLI time to first output; time or steps of a scripted user flow (e.g. Playwright) | removing steps or features the flow needs, hiding errors instead of fixing them |
+| Product | UI | Visual consistency and correctness of the interface | hard-coded colors, font sizes and spacings outside the design tokens (stylelint count); visual-regression diff count; layout shift (CLS); CSS size | deleting styles or elements, excluding files from the lint |
+| Reach | Accessibility | Use by people with disabilities and with assistive technology | axe or pa11y violation count on key pages; Lighthouse accessibility score | `aria-hidden` or removed elements to silence checks, empty alt text |
+| Reach | SEO | How easily search engines find, read and rank the site's pages | Lighthouse SEO score of key pages; pages without a title, meta description or canonical link; broken internal links (linkinator, lychee) on a local preview | hidden keyword text, serving crawlers different content, meta text that does not match the page |
+| Reach | i18n | Readiness of the interface for translation and other locales | hard-coded user-facing strings (eslint-plugin-i18next or a similar lint); missing or unused translation keys (i18next-parser, i18n-unused); dates and numbers formatted without the locale | marking strings as not translatable, per-line lint disables, keys with empty or copied translations |
+| Engineering | Quality | Correctness of the code | failing or flaky tests; type-check error count; coverage; mutation score | `ts-ignore` / `type: ignore` comments, deleted or assert-free tests, lowered thresholds |
+| Engineering | DX | Developer experience: how fast and easily developers build, test and change the project | clean build time (MEASURE_CMD clears the build caches first); test-suite time; install and first-run time from a fresh clone; CI pipeline time | skipped build or test steps, removed tests, caches kept between measured runs |
+| Engineering | OX | Operator experience: deploying, configuring, monitoring and debugging the project in production | start-up time; container image size; log lines or errors per smoke-test request; config errors found at start-up instead of at run time | silenced logs, swallowed errors, removed checks |
+| Engineering | Security | Known weaknesses in the code and its dependencies | vulnerability count from `npm audit` / `pip-audit` / `cargo audit`; Semgrep or CodeQL findings; secret-scan findings | ignore lists, suppression comments, files excluded from the scan |
+| Code health | Code hygiene | Clean code without dead weight or clutter | lint warning count; dead code and unused exports (knip, vulture); duplication (jscpd); complexity (radon, eslint `complexity`) | rule disables, `noqa` / `eslint-disable` comments, files excluded from the scan, functions split only to lower a per-function score |
+| Code health | Dependency health | A small, current and maintained dependency tree (known vulnerabilities belong to Security) | unused dependencies (knip, depcheck, deptry); outdated or deprecated packages (`npm outdated`, `pip list --outdated`); direct and transitive dependency count; install size | entries in the checker's ignore list, dependency code copied into the repo, removing a dependency the code still needs |
+| Code health | Documentation | Docs that exist and are correct | docstring coverage (interrogate, eslint-plugin-jsdoc); broken links in the docs (lychee); README commands that fail; undocumented public functions | empty or boilerplate docstrings, links removed instead of fixed |
+
+The gaming lists are per pillar. For every pillar, add the gaming that its chosen metric invites (for LCP: shrinking or removing the largest element).
+
+Outdated-package counts and external link checks read the network, so a new release or a slow site can change the value during the run. Prefer an offline proxy when one fits: unused dependencies, dependency count, install size, internal links only.
+
+A pillar the user names under "Other" (for example Cost or Reliability) follows the same rules: write a one-line definition, a measurable proxy and its gaming list yourself.
+
+Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: pipe the tool's JSON output into a counter that prints the count last and exits 0.

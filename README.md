@@ -14,7 +14,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
 | Skill | [`explain`](skills/explain/) | Codex version of the `/explain` command |
 | Skill | [`explain-simple`](skills/explain-simple/) | Codex version of the `/explain-simple` command |
-| Skill | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Claude Code skill: improve a measurable metric (speed, cost, accuracy) with a research agent, N parallel testers and one implementer that migrates accepted changes to main in batches |
+| Skill | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Claude Code skill: improve a code base in the pillars you pick from four groups (Product: Performance, UX, UI · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation), each with its own measurable metric, using a research agent, N parallel testers and one implementer that migrates accepted changes to main in batches |
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
@@ -77,6 +77,8 @@ Then use it inside Claude Code:
 
 ```
 /my-iterative-optimization "Make scripts/build_report.py faster without changing its output"
+/my-iterative-optimization "Improve this project"   # offers the pillars as a multiple choice
+/my-iterative-optimization "Improve DX and Quality"
 ```
 
 ### ChatGPT

@@ -8,12 +8,14 @@ You are tester `{{ID}}` in a parallel optimization run. Implement ONE idea, meas
 
 ## Your idea
 
+Pillar: {{PILLAR}}. Other selected pillars: {{OTHER_PILLARS}}.
+
 {{IDEA}}
 
 ## Your workspace
 
 - Worktree: `{{WT}}` (branch `{{BRANCH}}`, base commit `{{BASE_SHA}}`)
-- Work only inside this worktree. Use absolute paths and `git -C {{WT}}`. Never touch `{{REPO}}` or any other worktree.
+- Work only inside this worktree. Use absolute paths and `git -C {{WT}}`. Never edit a file outside this worktree, and never touch `{{REPO}}`.
 
 ## Time budgets: strict
 
@@ -36,9 +38,9 @@ It prints one value per run, or `TIMEOUT` / `FAIL <code>`. With a lock, it first
 ## Steps
 
 1. **Base:** given base values: `{{BASE_VALUES}}`. If they are given (not `none`), use them and do not measure the base. Otherwise measure `{{WT}}` before you change anything.
-2. **Implement** the idea with the smallest change that does it. Do not change the measurement command, the correctness command, test inputs or reference outputs. Do not game the metric (caching results across runs, skipping required work, special-casing the benchmark input). If the idea turns out not to apply, report `STATUS: failed` with the reason. Do not substitute a different idea.
+2. **Implement** the idea with the smallest change that does it. Do not weaken a check: do not change the benchmark or test code that the measurement and correctness commands run, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, checker ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs. Do not game the metric: no special-casing of the measured input, and none of these: {{GAMING}}. Do not knowingly make the other selected pillars worse. If the idea turns out not to apply, report `STATUS: failed` with the reason. Do not substitute a different idea.
 3. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise report `CORRECTNESS: fail`.
-4. **Commit** exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows whole files changed where you edited a few lines, your editor changed line endings or encoding. Restore the original ones, because whole-file diffs make the later migration conflict. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
+4. **Commit** exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows whole files changed where you edited a few lines, your editor changed line endings or encoding. Restore the original ones, because whole-file diffs make the later migration conflict. A generated lockfile is the exception: a dependency change can rewrite large parts of it. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
 5. **Candidate:** measure `{{WT}}` again with the same command.
 
 ## Report
@@ -56,6 +58,6 @@ FILES: <changed files>
 CORRECTNESS: pass | fail (<detail>) | not run
 BASE_RUNS: <values, unit; say "given" if you did not measure them>
 CANDIDATE_RUNS: <values, unit>
-RATIO: <improvement factor; >1 means better: base/candidate when lower is better, candidate/base when higher is better>
+RATIO: <improvement factor; >1 means better: base/candidate when lower is better, candidate/base when higher is better; if a lower-is-better candidate is 0, write "n/a (<base> → 0)">
 NOTES: <risks, side effects, what you could not finish>
 ```

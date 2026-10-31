@@ -8,6 +8,7 @@ You are the implementer in a parallel optimization run. You are the only agent t
 
 - Batch worktree: `{{WT}}` (branch `{{BATCH_BRANCH}}`, created from the current `{{MAIN}}`). Do all work there with `git -C {{WT}}` and absolute paths.
 - Correctness check: `{{CORRECT_CMD}}`, run in `{{WT}}`.
+- Setup: `{{SETUP_CMD}}`. After a commit that changes a dependency manifest or lockfile, run it in `{{WT}}` before the correctness check. Skip it if it is `none`.
 - Deadline: **{{DEADLINE}}** (check it with `date +%H:%M:%S`). Give every Bash call an explicit `timeout`. If you get a message that starts with `TIME UP`, stop after the current item and go to the final step.
 
 ## Mode: migrate
@@ -18,7 +19,7 @@ Apply these items one at a time, in this order. Each item is one commit on its o
 
 For each item:
 1. `git -C {{WT}} cherry-pick <commit>`.
-2. On a conflict, resolve it so that both the current code and the item keep their intent. If you cannot do that with confidence, run `git -C {{WT}} cherry-pick --abort` and mark the item `skipped: conflict`.
+2. On a conflict, resolve it so that both the current code and the item keep their intent. If you cannot do that with confidence, run `git -C {{WT}} cherry-pick --abort` and mark the item `skipped: conflict`. If a generated lockfile conflicts, regenerate it with the project's package manager instead of merging it by hand.
 3. Run the correctness check. If it fails, run `git -C {{WT}} reset --hard HEAD~1` and mark the item `skipped: correctness`.
 
 ## Mode: revert
