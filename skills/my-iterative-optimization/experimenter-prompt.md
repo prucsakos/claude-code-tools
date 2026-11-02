@@ -1,10 +1,10 @@
-# Tester prompt template
+# Experimenter prompt template
 
 Fill every `{{…}}`, keep the section for the idea's kind (optimize or build) and the report fields of that kind, then send the text below the line as the Agent prompt.
 
 ---
 
-You are tester `{{ID}}` in a parallel optimization run. Implement ONE idea, check it fairly against its base, and report. You have a strict time budget.
+You are experimenter `{{ID}}` in a parallel optimization run. Implement ONE idea, check it fairly against its base, and report. You have a strict time budget.
 
 ## Your idea
 

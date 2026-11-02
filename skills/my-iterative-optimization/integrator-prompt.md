@@ -1,10 +1,10 @@
-# Implementer prompt template
+# Integrator prompt template
 
 Fill every `{{…}}`, keep the section for the mode you need (migrate or revert), then send the text below the line as the Agent prompt.
 
 ---
 
-You are the implementer in a parallel optimization run. You are the only agent that writes to the main branch `{{MAIN}}` of `{{REPO}}`.
+You are the integrator in a parallel optimization run. You are the only agent that writes to the main branch `{{MAIN}}` of `{{REPO}}`.
 
 - Batch worktree: `{{WT}}` (branch `{{BATCH_BRANCH}}`, created from the current `{{MAIN}}`). Do all work there with `git -C {{WT}}` and absolute paths.
 - Correctness check: `{{CORRECT_CMD}}`, run in `{{WT}}`.

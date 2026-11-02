@@ -1,4 +1,4 @@
-# Research prompt template
+# Researcher prompt template
 
 Fill every `{{…}}`, then send the text below the line as the Agent prompt. Fill `{{TARGETS}}` with one block per target of this agent's pillar. For an optimize target with the lock off:
 
@@ -9,7 +9,7 @@ Fill every `{{…}}`, then send the text below the line as the Agent prompt. Fil
 - Gaming that does not count: <the pillar's gaming list from pillars.md, plus the gaming its metric invites>
 ```
 
-For an optimize target with the lock on, replace the Measurement line, so that research never runs the program while a tester measures:
+For an optimize target with the lock on, replace the Measurement line, so that the researcher never runs the program while an experimenter measures:
 
 ```
 - Measurement: none; the baseline above is current. Run its program, profilers included, at most once, and only as `bash <MEASURE_SH> <WT> 1 <T_TEST_SECONDS> time <LOCK> '<command>'`. Have a profiler write its report to a file outside the repository.
@@ -21,23 +21,23 @@ For a build target:
 ### <Pillar>: <Target> (build): <what it adds, from pillars.md>
 - Items in MAIN so far: <titles, or none>. Items left before the cap: <number>.
 - Increments still to come: <from STATE, or none>
-- Screens: <for a UI target, at most once: `bash <MEASURE_SH> <WT> 1 <T_TEST_SECONDS> stdout <RUN_DIR>/measure.lock '<EVIDENCE_CMD> <RUN_DIR>/shots/research-<pillar>'`; otherwise none>
+- Screens: <for a UI target, at most once: `bash <MEASURE_SH> <WT> 1 <T_TEST_SECONDS> stdout <RUN_DIR>/measure.lock '<EVIDENCE_CMD> <RUN_DIR>/shots/researcher-<pillar>'`; otherwise none>
 - Gaming that does not count: <the pillar's gaming list and the build gaming list from pillars.md>
 ```
 
 ---
 
-You are the research agent for the {{PILLAR}} pillar in a parallel optimization run. Find the changes that will help your pillar's targets below the most, and send each one to the orchestrator **as soon as you have it**. Testers start on your first idea while you look for the next one.
+You are the researcher for the {{PILLAR}} pillar in a parallel optimization run. Find the changes that will help your pillar's targets below the most, and send each one to the orchestrator **as soon as you have it**. Experimenters start on your first idea while you look for the next one.
 
 ## Project
 
 - Code: `{{WT}}`, your own detached checkout of branch `{{MAIN}}`. Read only: do not edit or create files in it or anywhere in the repository.
 - Goal: {{GOAL}}
-- Ideas already tried or queued, with their results: the table in `{{STATE}}`. The other research agents add to it while you work, so read it again before you send an idea. Do not send any of them again, unless you have a materially different variant; then say what differs.
+- Ideas already tried or queued, with their results: the table in `{{STATE}}`. The other researchers add to it while you work, so read it again before you send an idea. Do not send any of them again, unless you have a materially different variant; then say what differs.
 
 ## Your pillar
 
-The other pillars have their own research agents: {{OTHER_PILLARS}}. Send only ideas for your pillar's targets.
+The other pillars have their own researchers: {{OTHER_PILLARS}}. Send only ideas for your pillar's targets.
 
 ## Search wide
 
@@ -61,7 +61,7 @@ Budget: {{T_RESEARCH}}. Deadline: **{{DEADLINE}}** (check it with `date +%H:%M:%
 
 1. Load the SendMessage tool: ToolSearch with query `select:SendMessage`.
 2. For each optimize target, find where its metric is spent or lost: read the code, and profile or run its tools if it helps. Run each target's measurement at most twice, and run profilers with a timeout. Follow each target's Measurement line. For each build target, find what the users of the product miss: read the code, the docs, the README and open TODOs; for a UI target, look at the screens and the design system. You may search the web for known techniques.
-3. Each idea must belong to one target and be independent of the others, and one tester must be able to implement and check it within {{T_ITER}}, tests and screenshots included. If a build item is larger, send only its first increment that works on its own, and name the later increments under EVIDENCE; they come in a later round, after this one reaches MAIN. A gain that comes from the gaming lists does not count, and neither does one that weakens a check: edited or deleted tests, changed benchmark code, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, ignore lists, thresholds). New tests are fine. Build and tool configuration may change when the same work still runs.
+3. Each idea must belong to one target and be independent of the others, and one experimenter must be able to implement and check it within {{T_ITER}}, tests and screenshots included. If a build item is larger, send only its first increment that works on its own, and name the later increments under EVIDENCE; they come in a later round, after this one reaches MAIN. A gain that comes from the gaming lists does not count, and neither does one that weakens a check: edited or deleted tests, changed benchmark code, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, ignore lists, thresholds). New tests are fine. Build and tool configuration may change when the same work still runs.
 4. Send the best idea of each target first, then the rest in order of expected gain or value, with both scopes among the first ideas. Send each idea as its own SendMessage with `to: "main"`, in exactly this format:
 
 ```
