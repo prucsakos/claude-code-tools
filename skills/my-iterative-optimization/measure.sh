@@ -8,7 +8,7 @@
 # repeating a run that hangs or is too slow only burns the time budget.
 # A non-zero exit prints "FAIL <code>".
 # With a lockdir, only one measurement on the machine runs at a time, so parallel
-# testers do not slow each other down.
+# experimenters do not slow each other down.
 set -u
 
 if [ $# -ne 6 ]; then

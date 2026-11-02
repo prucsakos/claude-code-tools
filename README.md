@@ -14,7 +14,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
 | Skill | [`explain`](skills/explain/) | Codex version of the `/explain` command |
 | Skill | [`explain-simple`](skills/explain-simple/) | Codex version of the `/explain-simple` command |
-| Skill | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Claude Code skill: improve a code base in the pillars you pick from four groups (Product: Performance, UX, UI · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation), each with its own measurable metric, using a research agent, N parallel testers and one implementer that migrates accepted changes to main in batches |
+| Skill | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Claude Code skill: work on the targets you pick inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch |
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
@@ -77,8 +77,11 @@ Then use it inside Claude Code:
 
 ```
 /my-iterative-optimization "Make scripts/build_report.py faster without changing its output"
-/my-iterative-optimization "Improve this project"   # offers the pillars as a multiple choice
+/my-iterative-optimization "Improve this project"   # offers the pillars, then their targets, as a multiple choice
 /my-iterative-optimization "Improve DX and Quality"
+/my-iterative-optimization high auto "Make the build faster"   # profile and mode skip their form rows
+/my-iterative-optimization low review "Improve Code hygiene"
+/my-iterative-optimization review "Make it faster and add a CSV export of reports"   # an optimize and a build target
 ```
 
 ### ChatGPT
