@@ -44,9 +44,11 @@ cp -R skills/explain ~/.codex/skills/
 
 ## Commands
 
-Copy a command file into your commands directory, from a clone of this repository:
+Clone this repository and copy a command file into your commands directory:
 
 ```bash
+git clone https://github.com/prucsakos/claude-code-tools && cd claude-code-tools
+
 # Available in every project (user-level)
 cp commands/team.md ~/.claude/commands/
 
@@ -54,17 +56,24 @@ cp commands/team.md ~/.claude/commands/
 cp commands/team.md your-project/.claude/commands/
 ```
 
+Then use it inside Claude Code. Arguments come from each command's `argument-hint`:
+
+| Command | Arguments | Example |
+|---------|-----------|---------|
+| `/team` | `[N] "task description"` | `/team 4 "Refactor the API layer and add tests"` |
+| `/explain` | `<topic> [--diagram mermaid\|image] [--web static\|interactive] [--video storyboard\|full]` | `/explain "Kalman filter" --diagram mermaid` |
+| `/explain-simple` | `<topic> [--diagram mermaid\|image] [--web static\|interactive] [--video storyboard\|full]` | `/explain-simple "Kalman filter"` |
+| `/full-code-audit` | `path to the folder to load` | `/full-code-audit src/` |
+| `/my-code-simplify` | `optional scope (files, folder, PR); defaults to the current changes` | `/my-code-simplify` |
+
+`/team` without N lets Claude pick the team size, e.g. `/team "Audit the codebase for security issues"`.
+
 ### `/team`
 
 Spin up a team of N parallel Haiku workers to tackle a task.
 
 ```bash
 cp commands/team.md ~/.claude/commands/
-```
-
-```
-/team 4 "Refactor the API layer and add tests"
-/team "Audit the codebase for security issues"   # Claude picks the optimal team size
 ```
 
 ### `/explain`
@@ -75,20 +84,12 @@ Explain a concept in ASD-STE100 Simplified Technical English via reusable mental
 cp commands/explain.md ~/.claude/commands/
 ```
 
-```
-/explain "Kalman filter" --diagram mermaid
-```
-
 ### `/explain-simple`
 
 Same ASD-STE100 rules and Concept Vocabulary as `/explain`, without the fixed explanation structure.
 
 ```bash
 cp commands/explain-simple.md ~/.claude/commands/
-```
-
-```
-/explain-simple "Kalman filter"
 ```
 
 ### `/full-code-audit`
@@ -99,20 +100,12 @@ Load a folder's production source code into context, verbatim and unanalyzed.
 cp commands/full-code-audit.md ~/.claude/commands/
 ```
 
-```
-/full-code-audit src/
-```
-
 ### `/my-code-simplify`
 
 Aggressively simplify the current changes and prune their tests, preserving behavior.
 
 ```bash
 cp commands/my-code-simplify.md ~/.claude/commands/
-```
-
-```
-/my-code-simplify
 ```
 
 ## Skills
