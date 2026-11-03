@@ -31,6 +31,7 @@ Each note comes from exactly one excerpt: `prompt_uuid` is that excerpt and `use
 - `next_time`: one imperative sentence that tells Claude what to do in that situation so the user does not need to step in. Example: "Run the test suite after a change without asking first."
 - `category`: the area of the preference, one of the values the output schema allows.
 - `scope`: `project` when the note applies only to that project, otherwise `global`.
+- `basis`: `stated` when the user said the preference in words, for example "always run tests first"; `inferred` when you deduced it from a question or reaction, for example a follow-up question that implies they wanted more detail.
 - `situation`: two to four sentences that make the note understandable without the conversation: what the user was working on and why, what had happened just before, and what the message referred to.
 - `claude_action`: one sentence about what Claude did or said that led to the message. Use an empty string when nothing before the message is relevant.
 - `user_quote`: the user's words that show the trigger, copied exactly, at most 300 characters.

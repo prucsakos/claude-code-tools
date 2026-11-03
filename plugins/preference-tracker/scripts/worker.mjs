@@ -4,7 +4,6 @@
 // JSONL database in a plugin-owned clone of the repository, and pushes. Failures go to
 // last-error.txt, which the next Stop hook shows.
 import { spawnSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
 import {
   appendFileSync,
   closeSync,
@@ -17,7 +16,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { redact } from "./redact.mjs";
+import { OUTPUT_SCHEMA, toRecords, truncate } from "./records.mjs";
 
 const DEFAULT_REPO_URL = "https://github.com/prucsakos/claude-preferences.git";
 const DEFAULT_MODEL = "sonnet";
@@ -34,60 +33,11 @@ const MAX_TOOL_CALL_CHARS = 120;
 const MAX_EARLIER_MESSAGES = 5;
 const MAX_EARLIER_MESSAGE_CHARS = 300;
 const MAX_SUMMARY_CHARS = 3000;
-// Limits on what a note publishes, so a summary or a long message is not copied into it whole.
-const MAX_SITUATION_CHARS = 1000;
-const MAX_QUOTE_CHARS = 300;
 
 const GIT_TIMEOUT_MS = 2 * 60 * 1000;
 const EXTRACTOR_TIMEOUT_MS = 5 * 60 * 1000;
 // Longer than the worst-case run, so only a killed worker leaves a lock this old.
 const LOCK_STALE_MS = 15 * 60 * 1000;
-
-const NOTE_PROPERTIES = {
-  prompt_uuid: { type: "string" },
-  trigger: {
-    type: "string",
-    enum: ["unclear_response", "clarification_question", "avoidable_request", "correction"],
-  },
-  note: { type: "string" },
-  next_time: { type: "string" },
-  category: {
-    type: "string",
-    enum: [
-      "communication",
-      "code-style",
-      "architecture",
-      "testing",
-      "workflow",
-      "tooling",
-      "git",
-      "documentation",
-      "other",
-    ],
-  },
-  scope: { type: "string", enum: ["global", "project"] },
-  situation: { type: "string" },
-  claude_action: { type: "string" },
-  user_quote: { type: "string" },
-  supersedes: { type: ["string", "null"] },
-};
-
-const OUTPUT_SCHEMA = {
-  type: "object",
-  properties: {
-    notes: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: NOTE_PROPERTIES,
-        required: Object.keys(NOTE_PROPERTIES),
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ["notes"],
-  additionalProperties: false,
-};
 
 const dataDir = process.env.CLAUDE_PLUGIN_DATA;
 const [sessionId, transcriptPath] = process.argv.slice(2);
@@ -135,7 +85,7 @@ function run() {
       .map((prompt) => truncate(prompt.userMessage, MAX_EARLIER_MESSAGE_CHARS)),
   };
   const { notes: extracted, usage } = extractPreferences(prompts, conversationBefore, existing, config.model);
-  const { records, problems } = toRecords(extracted, prompts, existing);
+  const { records, problems } = toRecords(extracted, prompts, existing, sessionId);
   if (records.length > 0) {
     appendRecords(databaseFile, records);
     commitAndPush(repoDir, records);
@@ -292,46 +242,6 @@ function extractPreferences(prompts, conversationBefore, existing, model) {
   };
 }
 
-function toRecords(extracted, prompts, existing) {
-  const promptsByUuid = new Map(prompts.map((prompt) => [prompt.uuid, prompt]));
-  const existingIds = new Set(existing.map((record) => record.id));
-  const records = [];
-  const problems = [];
-  for (const item of extracted) {
-    const prompt = promptsByUuid.get(item.prompt_uuid);
-    if (!prompt) {
-      problems.push(`Dropped "${item.note}": unknown prompt_uuid ${item.prompt_uuid}`);
-      continue;
-    }
-    let supersedes = item.supersedes;
-    if (supersedes !== null && !existingIds.has(supersedes)) {
-      problems.push(`Recorded "${item.note}" without supersedes: unknown id ${supersedes}`);
-      supersedes = null;
-    }
-    records.push({
-      id: `pref_${randomBytes(6).toString("hex")}`,
-      trigger: item.trigger,
-      note: redact(item.note),
-      next_time: redact(item.next_time),
-      category: item.category,
-      scope: item.scope,
-      context: {
-        situation: truncate(redact(item.situation), MAX_SITUATION_CHARS),
-        claude_action: redact(item.claude_action),
-        user_quote: truncate(redact(item.user_quote), MAX_QUOTE_CHARS),
-      },
-      supersedes,
-      source: {
-        project: prompt.project,
-        session_id: sessionId,
-        prompt_uuid: prompt.uuid,
-        timestamp: prompt.timestamp,
-      },
-    });
-  }
-  return { records, problems };
-}
-
 function syncRepo(repoDir, repoUrl) {
   if (!existsSync(join(repoDir, ".git"))) {
     git(dataDir, ["clone", repoUrl, repoDir]);
@@ -417,8 +327,4 @@ function readLedger(file) {
 function writeLedger(file, uuids) {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, JSON.stringify(uuids));
-}
-
-function truncate(text, maxChars) {
-  return text.length <= maxChars ? text : `${text.slice(0, maxChars)}\n[truncated]`;
 }
