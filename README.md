@@ -2,42 +2,49 @@
 
 A collection of reusable [Claude Code](https://claude.com/claude-code) tools: slash commands, MCP server configs, and agent workflows. Some tools also ship a ChatGPT-compatible version under `chatgpt/`.
 
-## Contents
+[Quickstart](#quickstart) · [Commands](#commands) · [Skills](#skills) · [Plugin](#plugin-preference-tracker) · [ChatGPT](#chatgpt) · [MCP](#mcp) · [Layout](#repository-layout)
 
-| Type | Name | Description |
-|------|------|-------------|
-| Command | [`/team`](commands/team.md) | Spin up a team of N parallel Haiku workers to tackle a task |
-| Command | [`/explain`](commands/explain.md) | Explain a concept in ASD-STE100 Simplified Technical English via reusable mental models, linked to a personal Concept Vocabulary repo |
-| Command | [`/explain-simple`](commands/explain-simple.md) | Same ASD-STE100 rules and Concept Vocabulary as `/explain`, without the fixed explanation structure |
-| Command | [`/full-code-audit`](commands/full-code-audit.md) | Load a folder's production source code into context, verbatim and unanalyzed |
-| Command | [`/my-code-simplify`](commands/my-code-simplify.md) | Aggressively simplify the current changes and prune their tests, preserving behavior |
-| Skill | [`fetch-social-data`](skills/fetch-social-data/) | Retrieve structured Facebook posts, feeds, groups, polls, and comments without side effects |
-| Skill | [`explain`](skills/explain/) | Codex version of the `/explain` command |
-| Skill | [`explain-simple`](skills/explain-simple/) | Codex version of the `/explain-simple` command |
-| Skill | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Claude Code skill: work on the targets you pick inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch |
-| Plugin | [`preference-tracker`](plugins/preference-tracker/) | Claude Code plugin: after each Claude turn, a background worker writes taste notes when you had to step in (a correction, a follow-up question, something unclear, or a request Claude could have handled itself) and pushes them to `preferences/preferences.jsonl` in a private repository |
-| ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
-| MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
+## Quickstart
 
-## Plugins I use
+Install the `preference-tracker` plugin from this repository's marketplace (`prucsakos-tools`):
 
-Claude Code plugins enabled in my user settings (`name@marketplace`).
+```bash
+claude plugin marketplace add prucsakos/claude-code-tools
+claude plugin install preference-tracker@prucsakos-tools
+```
 
-| Plugin | Marketplace |
-|--------|-------------|
-| `you-should-know` (`cc-plugin-you-should-know`) | `builtin` |
-| `code-review` | `anthropics/claude-plugins-official` |
-| `feature-dev` | `anthropics/claude-plugins-official` |
-| `security-guidance` | `anthropics/claude-plugins-official` |
-| `playwright` | `anthropics/claude-plugins-official` |
-| `linear` | `anthropics/claude-plugins-official` |
-| `github` | `anthropics/claude-plugins-official` |
+Install a command (here `/team`) for every project:
 
-## Installation
+```bash
+git clone https://github.com/prucsakos/claude-code-tools && cd claude-code-tools
+cp commands/team.md ~/.claude/commands/
+```
 
-### Commands
+Install a Codex skill (here `explain`), from the same clone:
 
-Copy any command file into your commands directory:
+```bash
+cp -R skills/explain ~/.codex/skills/
+```
+
+## Tools
+
+| Tool | What it does |
+|------|--------------|
+| [`/team`](commands/team.md) | Command: run N parallel Haiku workers on a task |
+| [`/explain`](commands/explain.md) | Command: explain a concept in Simplified English |
+| [`/explain-simple`](commands/explain-simple.md) | Command: `/explain` without the fixed structure |
+| [`/full-code-audit`](commands/full-code-audit.md) | Command: load a folder's source code into context |
+| [`/my-code-simplify`](commands/my-code-simplify.md) | Command: simplify current changes, keep behavior |
+| [`explain`](skills/explain/) | Codex skill: version of `/explain` |
+| [`explain-simple`](skills/explain-simple/) | Codex skill: version of `/explain-simple` |
+| [`my-iterative-optimization`](skills/my-iterative-optimization/) | Skill: improve a project with parallel experiments |
+| [`preference-tracker`](plugins/preference-tracker/) | Plugin: record taste notes to a private repo |
+| [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT prompt: version of `/full-code-audit` |
+| [BlenderMCP](https://github.com/ahujasid/blender-mcp) | MCP: connect an AI client to Blender |
+
+## Commands
+
+Copy a command file into your commands directory, from a clone of this repository:
 
 ```bash
 # Available in every project (user-level)
@@ -47,28 +54,85 @@ cp commands/team.md ~/.claude/commands/
 cp commands/team.md your-project/.claude/commands/
 ```
 
-Then use it inside Claude Code:
+### `/team`
+
+Spin up a team of N parallel Haiku workers to tackle a task.
+
+```bash
+cp commands/team.md ~/.claude/commands/
+```
 
 ```
 /team 4 "Refactor the API layer and add tests"
 /team "Audit the codebase for security issues"   # Claude picks the optimal team size
+```
+
+### `/explain`
+
+Explain a concept in ASD-STE100 Simplified Technical English via reusable mental models, linked to a personal Concept Vocabulary repo.
+
+```bash
+cp commands/explain.md ~/.claude/commands/
+```
+
+```
 /explain "Kalman filter" --diagram mermaid
+```
+
+### `/explain-simple`
+
+Same ASD-STE100 rules and Concept Vocabulary as `/explain`, without the fixed explanation structure.
+
+```bash
+cp commands/explain-simple.md ~/.claude/commands/
+```
+
+```
 /explain-simple "Kalman filter"
+```
+
+### `/full-code-audit`
+
+Load a folder's production source code into context, verbatim and unanalyzed.
+
+```bash
+cp commands/full-code-audit.md ~/.claude/commands/
+```
+
+```
 /full-code-audit src/
+```
+
+### `/my-code-simplify`
+
+Aggressively simplify the current changes and prune their tests, preserving behavior.
+
+```bash
+cp commands/my-code-simplify.md ~/.claude/commands/
+```
+
+```
 /my-code-simplify
 ```
 
-### Skills
+## Skills
 
-Copy a skill folder into your Codex skills directory:
+### `explain` and `explain-simple` (Codex)
+
+Codex versions of the `/explain` and `/explain-simple` commands. Copy a skill folder into your Codex skills directory:
 
 ```bash
 cp -R skills/explain ~/.codex/skills/
+cp -R skills/explain-simple ~/.codex/skills/
 ```
 
-Then invoke it as `$explain` in Codex.
+Then invoke it as `$explain` (or `$explain-simple`) in Codex.
 
-`my-iterative-optimization` is a Claude Code skill. Copy it into your Claude Code skills directory instead:
+### `my-iterative-optimization` (Claude Code)
+
+Claude Code skill: work on the targets you pick inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch.
+
+It is a Claude Code skill, so copy it into your Claude Code skills directory:
 
 ```bash
 cp -R skills/my-iterative-optimization ~/.claude/skills/
@@ -85,7 +149,9 @@ Then use it inside Claude Code:
 /my-iterative-optimization review "Make it faster and add a CSV export of reports"   # an optimize and a build target
 ```
 
-### Plugins
+## Plugin: preference-tracker
+
+Claude Code plugin: after each Claude turn, a background worker writes taste notes when you had to step in (a correction, a follow-up question, something unclear, or a request Claude could have handled itself) and pushes them to `preferences/preferences.jsonl` in a private repository.
 
 This repository is also a Claude Code plugin marketplace (`prucsakos-tools`):
 
@@ -96,18 +162,38 @@ claude plugin install preference-tracker@prucsakos-tools
 
 `preference-tracker` needs `node` and `git` on your PATH, plus push access to the preference repository. Each note records the trigger, a short summary of the situation, what Claude did, your words, the taste note and what Claude should do next time. By default the notes go to my private repository `prucsakos/claude-preferences`; set the `repo_url` option to use your own. That repository needs a `.gitattributes` line `preferences/preferences.jsonl merge=union`, so notes from several machines merge. Before a note is written, a pattern check removes tokens, keys, passwords, email addresses and URLs from it. Set the `model` option to change the extraction model (default `sonnet`). If a background run fails, the error is shown after the next Claude turn.
 
-### ChatGPT
+Example: after installing, work in Claude Code as usual. When you correct Claude, the next turn's background run appends a note to `preferences/preferences.jsonl` in the configured repository.
 
-Files under `chatgpt/` are plain prompt text, not an installable format. Use one of:
+## ChatGPT
+
+### `full-code-audit`
+
+ChatGPT/custom-GPT version of the full-code-audit command. Files under `chatgpt/` are plain prompt text, not an installable format. Use one of:
 
 - **Custom GPT:** paste the file's content into the GPT's *Instructions* field.
 - **One-off chat:** paste the prompt, replace `{{TARGET}}` with what you're auditing (or drop that line and paste/upload the code right after the prompt).
 
-### MCP servers
+## MCP
 
 MCP server configs live in [`mcps/`](mcps/). See that folder's README for setup.
 
-Related project: [BlenderMCP](https://github.com/ahujasid/blender-mcp) connects MCP-compatible AI clients to Blender through an MCP server and Blender add-on.
+### BlenderMCP
+
+Related project: [BlenderMCP](https://github.com/ahujasid/blender-mcp) connects MCP-compatible AI clients to Blender through an MCP server and Blender add-on. Install and example usage are in its README; setup notes for this repository are in [`mcps/`](mcps/).
+
+## Plugins I use
+
+Claude Code plugins enabled in my user settings (`name@marketplace`).
+
+| Plugin | Marketplace |
+|--------|-------------|
+| `you-should-know` (`cc-plugin-you-should-know`) | `builtin` |
+| `code-review` | `anthropics/claude-plugins-official` |
+| `feature-dev` | `anthropics/claude-plugins-official` |
+| `security-guidance` | `anthropics/claude-plugins-official` |
+| `playwright` | `anthropics/claude-plugins-official` |
+| `linear` | `anthropics/claude-plugins-official` |
+| `github` | `anthropics/claude-plugins-official` |
 
 ## Repository layout
 
