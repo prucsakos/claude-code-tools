@@ -131,7 +131,7 @@ function run() {
   const repoDir = join(dataDir, "repo");
   syncRepo(repoDir, config.repoUrl);
   const databaseFile = join(repoDir, DATABASE_PATH);
-  const existing = readJsonl(databaseFile);
+  const existing = existsSync(databaseFile) ? readJsonl(databaseFile) : [];
   // The database also counts as processed, in case a run pushed but died before writing the ledger.
   const processed = new Set([...ledger, ...existing.map((record) => record.source.prompt_uuid)]);
   const prompts = allPrompts.filter((prompt) => !processed.has(prompt.uuid)).slice(0, MAX_PROMPTS_PER_RUN);
@@ -178,7 +178,7 @@ function readHumanPrompts(file) {
   let claudeTexts = [];
   let toolCalls = [];
   let summary = null;
-  for (const entry of readTranscript(file)) {
+  for (const entry of readJsonl(file, { allowPartialLastLine: true })) {
     if (entry.isSidechain) continue;
     if (entry.type === "user" && entry.isCompactSummary) {
       summary = truncate(stripInjectedText(entry.message.content), MAX_SUMMARY_CHARS);
@@ -241,19 +241,6 @@ function stripInjectedText(content) {
     .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "")
     .replace(/<local-command-(\w+)>[\s\S]*?<\/local-command-\1>/g, "")
     .trim();
-}
-
-function readTranscript(file) {
-  const lines = readFileSync(file, "utf8").split(/\r?\n/).filter(Boolean);
-  return lines.flatMap((line, index) => {
-    try {
-      return [JSON.parse(line)];
-    } catch (error) {
-      // Claude Code may still be writing the last line.
-      if (index === lines.length - 1) return [];
-      throw new Error(`${file}:${index + 1} is not valid JSON: ${error.message}`);
-    }
-  });
 }
 
 function extractPreferences(prompts, conversationBefore, existing, model) {
@@ -412,18 +399,17 @@ function checkExit(result, label) {
   if (result.status !== 0) throw new Error(`${label} exited with ${result.status}: ${result.stderr.trim()}`);
 }
 
-function readJsonl(file) {
-  if (!existsSync(file)) return [];
-  return readFileSync(file, "utf8")
-    .split(/\r?\n/)
-    .filter(Boolean)
-    .map((line, index) => {
-      try {
-        return JSON.parse(line);
-      } catch (error) {
-        throw new Error(`${file}:${index + 1} is not valid JSON: ${error.message}`);
-      }
-    });
+function readJsonl(file, { allowPartialLastLine = false } = {}) {
+  const lines = readFileSync(file, "utf8").split(/\r?\n/).filter(Boolean);
+  return lines.flatMap((line, index) => {
+    try {
+      return [JSON.parse(line)];
+    } catch (error) {
+      // Claude Code may still be writing the last line of a transcript.
+      if (allowPartialLastLine && index === lines.length - 1) return [];
+      throw new Error(`${file}:${index + 1} is not valid JSON: ${error.message}`);
+    }
+  });
 }
 
 function appendRecords(file, records) {
