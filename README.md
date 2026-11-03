@@ -15,6 +15,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | Skill | [`explain`](skills/explain/) | Codex version of the `/explain` command |
 | Skill | [`explain-simple`](skills/explain-simple/) | Codex version of the `/explain-simple` command |
 | Skill | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Claude Code skill: work on the targets you pick inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch |
+| Plugin | [`preference-tracker`](plugins/preference-tracker/) | Claude Code plugin: after each Claude turn, a background worker writes taste notes when you had to step in (a correction, a follow-up question, something unclear, or a request Claude could have handled itself) and pushes them to [`preferences/preferences.jsonl`](preferences/preferences.jsonl) |
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
@@ -84,6 +85,17 @@ Then use it inside Claude Code:
 /my-iterative-optimization review "Make it faster and add a CSV export of reports"   # an optimize and a build target
 ```
 
+### Plugins
+
+This repository is also a Claude Code plugin marketplace (`prucsakos-tools`):
+
+```bash
+claude plugin marketplace add prucsakos/claude-code-tools
+claude plugin install preference-tracker@prucsakos-tools
+```
+
+`preference-tracker` needs `node` and `git` on your PATH, plus push access to the preference repository. Each note records the trigger, what Claude did, your words, the taste note and what Claude should do next time. By default the notes go to this repository, which is public, so the extractor replaces secrets, other people's names, company names and internal URLs with placeholders. Set the `repo_url` option to use another repository, and the `model` option to change the extraction model (default `sonnet`). If a background run fails, the error is shown after the next Claude turn.
+
 ### ChatGPT
 
 Files under `chatgpt/` are plain prompt text, not an installable format. Use one of:
@@ -100,10 +112,13 @@ Related project: [BlenderMCP](https://github.com/ahujasid/blender-mcp) connects 
 ## Repository layout
 
 ```
-commands/   # Slash commands (markdown files, one per command)
-mcps/       # MCP server configurations and docs
-skills/     # Reusable skills, Codex unless noted (one self-contained folder per skill)
-chatgpt/    # ChatGPT/custom-GPT prompt versions of select tools
+.claude-plugin/  # Plugin marketplace manifest
+commands/        # Slash commands (markdown files, one per command)
+mcps/            # MCP server configurations and docs
+plugins/         # Claude Code plugins (one folder per plugin)
+preferences/     # Taste notes written by preference-tracker
+skills/          # Reusable skills, Codex unless noted (one self-contained folder per skill)
+chatgpt/         # ChatGPT/custom-GPT prompt versions of select tools
 ```
 
 ## Contributing

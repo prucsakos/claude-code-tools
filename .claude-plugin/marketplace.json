@@ -1,0 +1,14 @@
+{
+  "name": "prucsakos-tools",
+  "description": "Claude Code plugins from prucsakos/claude-code-tools",
+  "owner": {
+    "name": "Ákos Prucs"
+  },
+  "plugins": [
+    {
+      "name": "preference-tracker",
+      "source": "./plugins/preference-tracker",
+      "description": "Records the preferences you express to Claude, with their context, in a git-synced JSONL file"
+    }
+  ]
+}

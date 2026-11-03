@@ -1,0 +1,17 @@
+{
+  "description": "After each Claude turn, start a background worker that records new preferences",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/on-stop.mjs"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
