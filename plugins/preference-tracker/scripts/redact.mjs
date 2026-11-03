@@ -2,14 +2,17 @@
 // extractor prompt also asks the model to redact, but a model can miss a secret or be
 // talked into copying one by text inside the transcript, so this check does not rely on it.
 
-const PATTERNS = [
-  [/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g, "[secret]"],
-  [/\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})/g, "[secret]"],
-  [/\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/g, "[secret]"],
-  [/\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g, "[secret]"],
-  [/\bxox[abposr]-[A-Za-z0-9-]{10,}/g, "[secret]"],
-  [/\bAIza[0-9A-Za-z_-]{35}/g, "[secret]"],
-  [/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g, "[secret]"],
+const SECRET_PATTERNS = [
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g,
+  /\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})/g,
+  /\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}/g,
+  /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/g,
+  /\bxox[abposr]-[A-Za-z0-9-]{10,}/g,
+  /\bAIza[0-9A-Za-z_-]{35}/g,
+  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g,
+];
+
+const PATTERNS_WITH_OWN_REPLACEMENT = [
   [/\bBearer\s+[A-Za-z0-9._~+/-]{16,}=*/g, "Bearer [secret]"],
   [
     /\b(password|passwd|pwd|secret|token|api[_-]?key|access[_-]?key|client[_-]?secret)(["']?\s*[:=]\s*)["']?[^\s"',;]{6,}/gi,
@@ -27,7 +30,8 @@ const MIN_TOKEN_ENTROPY_BITS = 4.2;
 
 export function redact(text) {
   let result = text;
-  for (const [pattern, replacement] of PATTERNS) result = result.replace(pattern, replacement);
+  for (const pattern of SECRET_PATTERNS) result = result.replace(pattern, "[secret]");
+  for (const [pattern, replacement] of PATTERNS_WITH_OWN_REPLACEMENT) result = result.replace(pattern, replacement);
   return result.replace(LONG_TOKEN, (candidate) => (looksRandom(candidate) ? "[secret]" : candidate));
 }
 
