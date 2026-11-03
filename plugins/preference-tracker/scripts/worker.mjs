@@ -43,6 +43,35 @@ const EXTRACTOR_TIMEOUT_MS = 5 * 60 * 1000;
 // Longer than the worst-case run, so only a killed worker leaves a lock this old.
 const LOCK_STALE_MS = 15 * 60 * 1000;
 
+const NOTE_PROPERTIES = {
+  prompt_uuid: { type: "string" },
+  trigger: {
+    type: "string",
+    enum: ["unclear_response", "clarification_question", "avoidable_request", "correction"],
+  },
+  note: { type: "string" },
+  next_time: { type: "string" },
+  category: {
+    type: "string",
+    enum: [
+      "communication",
+      "code-style",
+      "architecture",
+      "testing",
+      "workflow",
+      "tooling",
+      "git",
+      "documentation",
+      "other",
+    ],
+  },
+  scope: { type: "string", enum: ["global", "project"] },
+  situation: { type: "string" },
+  claude_action: { type: "string" },
+  user_quote: { type: "string" },
+  supersedes: { type: ["string", "null"] },
+};
+
 const OUTPUT_SCHEMA = {
   type: "object",
   properties: {
@@ -50,46 +79,8 @@ const OUTPUT_SCHEMA = {
       type: "array",
       items: {
         type: "object",
-        properties: {
-          prompt_uuid: { type: "string" },
-          trigger: {
-            type: "string",
-            enum: ["unclear_response", "clarification_question", "avoidable_request", "correction"],
-          },
-          note: { type: "string" },
-          next_time: { type: "string" },
-          category: {
-            type: "string",
-            enum: [
-              "communication",
-              "code-style",
-              "architecture",
-              "testing",
-              "workflow",
-              "tooling",
-              "git",
-              "documentation",
-              "other",
-            ],
-          },
-          scope: { type: "string", enum: ["global", "project"] },
-          situation: { type: "string" },
-          claude_action: { type: "string" },
-          user_quote: { type: "string" },
-          supersedes: { type: ["string", "null"] },
-        },
-        required: [
-          "prompt_uuid",
-          "trigger",
-          "note",
-          "next_time",
-          "category",
-          "scope",
-          "situation",
-          "claude_action",
-          "user_quote",
-          "supersedes",
-        ],
+        properties: NOTE_PROPERTIES,
+        required: Object.keys(NOTE_PROPERTIES),
         additionalProperties: false,
       },
     },
