@@ -1,6 +1,6 @@
 {
   "name": "preference-tracker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Records the preferences you express to Claude, with their context, in a git-synced JSONL file",
   "author": {
     "name": "Ákos Prucs"

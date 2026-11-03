@@ -94,7 +94,7 @@ claude plugin marketplace add prucsakos/claude-code-tools
 claude plugin install preference-tracker@prucsakos-tools
 ```
 
-`preference-tracker` needs `node` and `git` on your PATH, plus push access to the preference repository. Each note records the trigger, what Claude did, your words, the taste note and what Claude should do next time. By default the notes go to this repository, which is public. The extractor replaces secrets, other people's names, company names and internal URLs in the notes with placeholders, but each note and commit message names the project folder unchanged. Set the `repo_url` option to use another repository, and the `model` option to change the extraction model (default `sonnet`). If a background run fails, the error is shown after the next Claude turn.
+`preference-tracker` needs `node` and `git` on your PATH, plus push access to the preference repository. Each note records the trigger, a short summary of the situation, what Claude did, your words, the taste note and what Claude should do next time. By default the notes go to this repository, which is public. The extractor replaces secrets, other people's names, company names and internal URLs in the notes with placeholders, but each note and commit message names the project folder unchanged. Set the `repo_url` option to use another repository, and the `model` option to change the extraction model (default `sonnet`). If a background run fails, the error is shown after the next Claude turn.
 
 ### ChatGPT
 
