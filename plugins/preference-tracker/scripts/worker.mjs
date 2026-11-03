@@ -144,7 +144,7 @@ function run() {
       .slice(Math.max(0, firstIndex - MAX_EARLIER_MESSAGES), firstIndex)
       .map((prompt) => truncate(prompt.userMessage, MAX_EARLIER_MESSAGE_CHARS)),
   };
-  const extracted = extractPreferences(prompts, conversationBefore, existing, config.model);
+  const { notes: extracted, usage } = extractPreferences(prompts, conversationBefore, existing, config.model);
   const { records, problems } = toRecords(extracted, prompts, existing);
   if (records.length > 0) {
     appendRecords(databaseFile, records);
@@ -153,7 +153,8 @@ function run() {
   writeLedger(ledgerFile, [...ledger, ...prompts.map((prompt) => prompt.uuid)]);
   appendFileSync(
     join(dataDir, "worker.log"),
-    `${new Date().toISOString()} session=${sessionId} prompts=${prompts.length} recorded=${records.length}\n`,
+    `${new Date().toISOString()} session=${sessionId} prompts=${prompts.length} recorded=${records.length}` +
+      ` tokens_in=${usage.tokensIn} tokens_out=${usage.tokensOut} cost_usd=${usage.costUsd}\n`,
   );
   if (problems.length > 0) throw new Error(`Extractor output problems:\n${problems.join("\n")}`);
 }
@@ -304,7 +305,15 @@ function extractPreferences(prompts, conversationBefore, existing, model) {
   if (response.is_error || !response.structured_output) {
     throw new Error(`Extractor returned no structured output: ${result.stdout.slice(0, 500)}`);
   }
-  return response.structured_output.notes;
+  const { usage } = response;
+  return {
+    notes: response.structured_output.notes,
+    usage: {
+      tokensIn: usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens,
+      tokensOut: usage.output_tokens,
+      costUsd: response.total_cost_usd,
+    },
+  };
 }
 
 function toRecords(extracted, prompts, existing) {
