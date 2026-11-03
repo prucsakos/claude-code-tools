@@ -17,14 +17,13 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { redact } from "./redact.mjs";
 
 const DEFAULT_REPO_URL = "https://github.com/prucsakos/claude-preferences.git";
 const DEFAULT_MODEL = "sonnet";
 // Must match the path that .gitattributes marks merge=union, so appends from two machines merge cleanly.
 const DATABASE_PATH = "preferences/preferences.jsonl";
-const PROMPT_FILE = fileURLToPath(new URL("./extractor-prompt.md", import.meta.url));
+const PROMPT_FILE = join(import.meta.dirname, "extractor-prompt.md");
 
 const MAX_PROMPTS_PER_RUN = 20;
 const MAX_USER_MESSAGE_CHARS = 4000;

@@ -4,7 +4,6 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 // The worker's own `claude -p` call runs with --safe-mode, so it loads no plugins.
 // This guard stops recursion even if that ever changes.
@@ -25,7 +24,7 @@ if (existsSync(errorFile)) {
   console.log(JSON.stringify({ systemMessage: `preference-tracker failed:\n${message}` }));
 }
 
-const workerPath = fileURLToPath(new URL("./worker.mjs", import.meta.url));
+const workerPath = join(import.meta.dirname, "worker.mjs");
 spawn(process.execPath, [workerPath, input.session_id, input.transcript_path], {
   detached: true,
   stdio: "ignore",
