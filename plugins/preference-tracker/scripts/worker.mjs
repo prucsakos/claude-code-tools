@@ -29,12 +29,12 @@ const PROMPT_FILE = fileURLToPath(new URL("./extractor-prompt.md", import.meta.u
 const MAX_PROMPTS_PER_RUN = 20;
 const MAX_USER_MESSAGE_CHARS = 4000;
 const MAX_CLAUDE_TEXT_CHARS = 4000;
-const MAX_TOOL_CALLS = 10;
-const MAX_TOOL_CALL_CHARS = 200;
+const MAX_TOOL_CALLS = 6;
+const MAX_TOOL_CALL_CHARS = 120;
 // Context from before the first excerpt, so a message that depends on the earlier task can be read correctly.
-const MAX_EARLIER_MESSAGES = 10;
-const MAX_EARLIER_MESSAGE_CHARS = 500;
-const MAX_SUMMARY_CHARS = 6000;
+const MAX_EARLIER_MESSAGES = 5;
+const MAX_EARLIER_MESSAGE_CHARS = 300;
+const MAX_SUMMARY_CHARS = 3000;
 // Limits on what a note publishes, so a summary or a long message is not copied into it whole.
 const MAX_SITUATION_CHARS = 1000;
 const MAX_QUOTE_CHARS = 300;
@@ -261,7 +261,6 @@ function extractPreferences(prompts, conversationBefore, existing, model) {
     existing_notes: existing.map((record) => ({
       id: record.id,
       note: record.note,
-      next_time: record.next_time,
       scope: record.scope,
       project: record.source.project,
     })),

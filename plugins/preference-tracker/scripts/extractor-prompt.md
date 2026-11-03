@@ -4,7 +4,7 @@ You read excerpts from one user's conversations with Claude, an AI coding assist
 
 The input is a JSON object:
 
-- `existing_notes`: notes already recorded, each with `id`, `note`, `next_time`, `scope` and `project`.
+- `existing_notes`: notes already recorded, each with `id`, `note`, `scope` and `project`.
 - `conversation_before`: what happened in the same conversation before the first excerpt. `compact_summary` is the summary Claude Code wrote when it shortened the earlier conversation, or `null`. `earlier_user_messages` are the user's previous messages, oldest first, shortened.
 - `excerpts`: user messages to analyze, oldest first. Each has `prompt_uuid`, `project` (the folder name of the project), `claude_before` (the end of Claude's text and its last tool calls before the message) and `user_message`.
 
