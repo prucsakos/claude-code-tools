@@ -27,9 +27,13 @@ const PROMPT_FILE = fileURLToPath(new URL("./extractor-prompt.md", import.meta.u
 
 const MAX_PROMPTS_PER_RUN = 20;
 const MAX_USER_MESSAGE_CHARS = 4000;
-const MAX_CLAUDE_TEXT_CHARS = 2000;
+const MAX_CLAUDE_TEXT_CHARS = 4000;
 const MAX_TOOL_CALLS = 10;
 const MAX_TOOL_CALL_CHARS = 200;
+// Context from before the first excerpt, so a message that depends on the earlier task can be read correctly.
+const MAX_EARLIER_MESSAGES = 10;
+const MAX_EARLIER_MESSAGE_CHARS = 500;
+const MAX_SUMMARY_CHARS = 6000;
 
 const GIT_TIMEOUT_MS = 2 * 60 * 1000;
 const EXTRACTOR_TIMEOUT_MS = 5 * 60 * 1000;
@@ -66,6 +70,7 @@ const OUTPUT_SCHEMA = {
             ],
           },
           scope: { type: "string", enum: ["global", "project"] },
+          situation: { type: "string" },
           claude_action: { type: "string" },
           user_quote: { type: "string" },
           supersedes: { type: ["string", "null"] },
@@ -77,6 +82,7 @@ const OUTPUT_SCHEMA = {
           "next_time",
           "category",
           "scope",
+          "situation",
           "claude_action",
           "user_quote",
           "supersedes",
@@ -115,7 +121,8 @@ function run() {
   };
   const ledgerFile = join(dataDir, "processed", `${sessionId}.json`);
   const ledger = readLedger(ledgerFile);
-  if (!readHumanPrompts(transcriptPath).some((prompt) => !ledger.includes(prompt.uuid))) return;
+  const allPrompts = readHumanPrompts(transcriptPath);
+  if (!allPrompts.some((prompt) => !ledger.includes(prompt.uuid))) return;
 
   const repoDir = join(dataDir, "repo");
   syncRepo(repoDir, config.repoUrl);
@@ -123,12 +130,17 @@ function run() {
   const existing = readJsonl(databaseFile);
   // The database also counts as processed, in case a run pushed but died before writing the ledger.
   const processed = new Set([...ledger, ...existing.map((record) => record.source.prompt_uuid)]);
-  const prompts = readHumanPrompts(transcriptPath)
-    .filter((prompt) => !processed.has(prompt.uuid))
-    .slice(0, MAX_PROMPTS_PER_RUN);
+  const prompts = allPrompts.filter((prompt) => !processed.has(prompt.uuid)).slice(0, MAX_PROMPTS_PER_RUN);
   if (prompts.length === 0) return;
 
-  const extracted = extractPreferences(prompts, existing, config.model);
+  const firstIndex = allPrompts.indexOf(prompts[0]);
+  const conversationBefore = {
+    compact_summary: prompts[0].summaryBefore,
+    earlier_user_messages: allPrompts
+      .slice(Math.max(0, firstIndex - MAX_EARLIER_MESSAGES), firstIndex)
+      .map((prompt) => truncate(prompt.userMessage, MAX_EARLIER_MESSAGE_CHARS)),
+  };
+  const extracted = extractPreferences(prompts, conversationBefore, existing, config.model);
   const { records, problems } = toRecords(extracted, prompts, existing);
   if (records.length > 0) {
     appendRecords(databaseFile, records);
@@ -154,14 +166,18 @@ function acquireLock(lockFile) {
   return acquireLock(lockFile);
 }
 
-// Returns the prompts the user typed, each with what Claude said and did since the previous prompt.
+// Returns the prompts the user typed, each with what Claude said and did since the previous
+// prompt, and the latest summary Claude Code wrote when it compacted the conversation before it.
 function readHumanPrompts(file) {
   const prompts = [];
   let claudeTexts = [];
   let toolCalls = [];
+  let summary = null;
   for (const entry of readTranscript(file)) {
     if (entry.isSidechain) continue;
-    if (entry.type === "assistant") {
+    if (entry.type === "user" && entry.isCompactSummary) {
+      summary = truncate(stripInjectedText(entry.message.content), MAX_SUMMARY_CHARS);
+    } else if (entry.type === "assistant") {
       for (const block of entry.message.content) {
         if (block.type === "text") claudeTexts.push(block.text);
         if (block.type === "tool_use") {
@@ -180,6 +196,7 @@ function readHumanPrompts(file) {
             text: claudeTexts.join("\n\n").slice(-MAX_CLAUDE_TEXT_CHARS),
             toolCalls: toolCalls.slice(-MAX_TOOL_CALLS),
           },
+          summaryBefore: summary,
         });
       }
       claudeTexts = [];
@@ -234,7 +251,7 @@ function readTranscript(file) {
   });
 }
 
-function extractPreferences(prompts, existing, model) {
+function extractPreferences(prompts, conversationBefore, existing, model) {
   const input = {
     existing_notes: existing.map((record) => ({
       id: record.id,
@@ -243,6 +260,7 @@ function extractPreferences(prompts, existing, model) {
       scope: record.scope,
       project: record.source.project,
     })),
+    conversation_before: conversationBefore,
     excerpts: prompts.map((prompt) => ({
       prompt_uuid: prompt.uuid,
       project: prompt.project,
@@ -309,6 +327,7 @@ function toRecords(extracted, prompts, existing) {
       category: item.category,
       scope: item.scope,
       context: {
+        situation: item.situation,
         claude_action: item.claude_action,
         user_quote: item.user_quote,
       },
