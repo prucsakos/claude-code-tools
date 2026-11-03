@@ -1,0 +1,21 @@
+{
+  "name": "preference-tracker",
+  "version": "0.1.0",
+  "description": "Records the preferences you express to Claude, with their context, in a git-synced JSONL file",
+  "author": {
+    "name": "Ákos Prucs"
+  },
+  "repository": "https://github.com/prucsakos/claude-code-tools",
+  "userConfig": {
+    "repo_url": {
+      "type": "string",
+      "title": "Preference repository",
+      "description": "Git URL of the repository that stores preferences/preferences.jsonl. Leave empty for https://github.com/prucsakos/claude-code-tools.git"
+    },
+    "model": {
+      "type": "string",
+      "title": "Extraction model",
+      "description": "Model alias or name that extracts preferences from your messages. Leave empty for sonnet"
+    }
+  }
+}
