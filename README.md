@@ -15,7 +15,7 @@ A collection of reusable [Claude Code](https://claude.com/claude-code) tools: sl
 | Skill | [`explain`](skills/explain/) | Codex version of the `/explain` command |
 | Skill | [`explain-simple`](skills/explain-simple/) | Codex version of the `/explain-simple` command |
 | Skill | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Claude Code skill: work on the targets you pick inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch |
-| Plugin | [`preference-tracker`](plugins/preference-tracker/) | Claude Code plugin: after each Claude turn, a background worker writes taste notes when you had to step in (a correction, a follow-up question, something unclear, or a request Claude could have handled itself) and pushes them to [`preferences/preferences.jsonl`](preferences/preferences.jsonl) |
+| Plugin | [`preference-tracker`](plugins/preference-tracker/) | Claude Code plugin: after each Claude turn, a background worker writes taste notes when you had to step in (a correction, a follow-up question, something unclear, or a request Claude could have handled itself) and pushes them to `preferences/preferences.jsonl` in a private repository |
 | ChatGPT Prompt | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT/custom-GPT version of the full-code-audit command |
 | MCP | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | Connect an MCP-compatible AI client to Blender for scene creation and manipulation |
 
@@ -94,7 +94,7 @@ claude plugin marketplace add prucsakos/claude-code-tools
 claude plugin install preference-tracker@prucsakos-tools
 ```
 
-`preference-tracker` needs `node` and `git` on your PATH, plus push access to the preference repository. Each note records the trigger, a short summary of the situation, what Claude did, your words, the taste note and what Claude should do next time. By default the notes go to this repository, which is public. The extractor is told to replace secrets, other people's names, company names and internal URLs with placeholders. A pattern check then removes tokens, keys, passwords, email addresses and URLs from every note before it is written. Names and other free-text details depend on the model alone, and each note and commit message names the project folder unchanged. Set the `repo_url` option to use another repository, and the `model` option to change the extraction model (default `sonnet`). If a background run fails, the error is shown after the next Claude turn.
+`preference-tracker` needs `node` and `git` on your PATH, plus push access to the preference repository. Each note records the trigger, a short summary of the situation, what Claude did, your words, the taste note and what Claude should do next time. By default the notes go to my private repository `prucsakos/claude-preferences`; set the `repo_url` option to use your own. That repository needs a `.gitattributes` line `preferences/preferences.jsonl merge=union`, so notes from several machines merge. Before a note is written, a pattern check removes tokens, keys, passwords, email addresses and URLs from it. Set the `model` option to change the extraction model (default `sonnet`). If a background run fails, the error is shown after the next Claude turn.
 
 ### ChatGPT
 
@@ -116,7 +116,6 @@ Related project: [BlenderMCP](https://github.com/ahujasid/blender-mcp) connects 
 commands/        # Slash commands (markdown files, one per command)
 mcps/            # MCP server configurations and docs
 plugins/         # Claude Code plugins (one folder per plugin)
-preferences/     # Taste notes written by preference-tracker
 skills/          # Reusable skills, Codex unless noted (one self-contained folder per skill)
 chatgpt/         # ChatGPT/custom-GPT prompt versions of select tools
 ```

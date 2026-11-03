@@ -20,7 +20,7 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { redact } from "./redact.mjs";
 
-const DEFAULT_REPO_URL = "https://github.com/prucsakos/claude-code-tools.git";
+const DEFAULT_REPO_URL = "https://github.com/prucsakos/claude-preferences.git";
 const DEFAULT_MODEL = "sonnet";
 // Must match the path that .gitattributes marks merge=union, so appends from two machines merge cleanly.
 const DATABASE_PATH = "preferences/preferences.jsonl";
