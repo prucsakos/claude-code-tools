@@ -18,6 +18,7 @@ import {
 } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { redact } from "./redact.mjs";
 
 const DEFAULT_REPO_URL = "https://github.com/prucsakos/claude-code-tools.git";
 const DEFAULT_MODEL = "sonnet";
@@ -34,6 +35,9 @@ const MAX_TOOL_CALL_CHARS = 200;
 const MAX_EARLIER_MESSAGES = 10;
 const MAX_EARLIER_MESSAGE_CHARS = 500;
 const MAX_SUMMARY_CHARS = 6000;
+// Limits on what a note publishes, so a summary or a long message is not copied into it whole.
+const MAX_SITUATION_CHARS = 1000;
+const MAX_QUOTE_CHARS = 300;
 
 const GIT_TIMEOUT_MS = 2 * 60 * 1000;
 const EXTRACTOR_TIMEOUT_MS = 5 * 60 * 1000;
@@ -322,14 +326,14 @@ function toRecords(extracted, prompts, existing) {
     records.push({
       id: `pref_${randomBytes(6).toString("hex")}`,
       trigger: item.trigger,
-      note: item.note,
-      next_time: item.next_time,
+      note: redact(item.note),
+      next_time: redact(item.next_time),
       category: item.category,
       scope: item.scope,
       context: {
-        situation: item.situation,
-        claude_action: item.claude_action,
-        user_quote: item.user_quote,
+        situation: truncate(redact(item.situation), MAX_SITUATION_CHARS),
+        claude_action: redact(item.claude_action),
+        user_quote: truncate(redact(item.user_quote), MAX_QUOTE_CHARS),
       },
       supersedes,
       source: {
