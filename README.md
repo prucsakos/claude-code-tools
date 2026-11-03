@@ -160,7 +160,59 @@ claude plugin marketplace add prucsakos/claude-code-tools
 claude plugin install preference-tracker@prucsakos-tools
 ```
 
-`preference-tracker` needs `node` and `git` on your PATH, plus push access to the preference repository. Each note records the trigger, a short summary of the situation, what Claude did, your words, the taste note and what Claude should do next time. By default the notes go to my private repository `prucsakos/claude-preferences`; set the `repo_url` option to use your own. That repository needs a `.gitattributes` line `preferences/preferences.jsonl merge=union`, so notes from several machines merge. Before a note is written, a pattern check removes tokens, keys, passwords, email addresses and URLs from it. Set the `model` option to change the extraction model (default `sonnet`). If a background run fails, the error is shown after the next Claude turn.
+**Requires**
+
+- `node` and `git` on your PATH
+- push access to the preference repository
+- in that repository, the `.gitattributes` line `preferences/preferences.jsonl merge=union`, so notes from several machines merge
+
+**Options**
+
+| Option | Default (when empty) | What it sets |
+|---|---|---|
+| `repo_url` | `https://github.com/prucsakos/claude-preferences.git` (my private repository) | Git URL of the repository that stores the notes. Set it to use your own. |
+| `model` | `sonnet` | Model alias or name that extracts the notes from your messages. |
+
+**When it writes a note**
+
+A note is written when one of your messages shows one of these triggers:
+
+- `correction`: you corrected, rejected or redirected what Claude did, or told it how you want things done.
+- `clarification_question`: you asked a follow-up question about Claude's response or work, which shows information Claude could have given without being asked.
+- `unclear_response`: you did not understand Claude's response.
+- `avoidable_request`: you asked Claude to do something it could have done without asking.
+
+**What a note looks like**
+
+Each note is one line of JSON; it is shown formatted here. It records the trigger, the taste note (`note`), what Claude should do next time (`next_time`), a short summary of the situation, what Claude did and your words. `category` is one of `communication`, `code-style`, `architecture`, `testing`, `workflow`, `tooling`, `git`, `documentation` or `other`; `scope` is `global` or `project`; `basis` is `stated` when you said the preference in words, `inferred` when it was deduced from a question or reaction; `supersedes` is the `id` of an older note that this one replaces, or `null`.
+
+```json
+{
+  "id": "pref_3f9a1c2b7d4e",
+  "trigger": "avoidable_request",
+  "note": "After a bug fix, the user wants Claude to run the existing tests before it reports, not ask whether to run them.",
+  "next_time": "Run the project's test command after a fix and report the result.",
+  "category": "testing",
+  "scope": "global",
+  "basis": "stated",
+  "context": {
+    "situation": "Claude fixed a date-parsing bug and asked whether to run the tests.",
+    "claude_action": "Ended its turn with \"Shall I run the tests?\"",
+    "user_quote": "yes, run them"
+  },
+  "supersedes": null,
+  "source": {
+    "project": "my-app",
+    "session_id": "0b6c2f4e-8a1d-4c3b-9e57-2d8f1a6b3c90",
+    "prompt_uuid": "5e2d9a7c-1f3b-4a8e-b6c4-7d0e2f9a1b35",
+    "timestamp": "2026-10-14T09:12:45.318Z"
+  }
+}
+```
+
+**Privacy:** before a note is written, a pattern check (`plugins/preference-tracker/scripts/redact.mjs`) removes tokens, keys, passwords, email addresses and URLs from its text.
+
+**Errors:** if a background run fails, the error is shown after the next Claude turn.
 
 Example: after installing, work in Claude Code as usual. When you correct Claude, the next turn's background run appends a note to `preferences/preferences.jsonl` in the configured repository.
 
