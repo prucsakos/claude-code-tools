@@ -124,10 +124,10 @@ Write `<project>/storyboard.json`:
 
 | Claim | Beat | Source |
 |---|---|---|
+| A one-by-one search looks at each name in turn | `hook` beat 2 | standard |
 | Checking names one by one takes up to 1,000,000 steps | `hook` beat 2 | computed: one check per name, 1,000,000 names |
-| Most languages build their dictionaries on hash maps | `intuition` beat 1 | unsourced |
 
-The source is the given material with its location (file and section, or URL), a computation, or general knowledge marked "unsourced". Recompute every number of the worked example with a one-off `python -c` calculation, and fix the beats where the result differs. Rewrite or cut a claim that is neither in the material nor computable; keep it only when the user must decide, and then name it in the summary. The claims summary is one line: "claims checked: n, unsourced: m", followed by the unsourced claims that remain.
+Established textbook knowledge of the topic (definitions, how a mechanism works) is marked "standard" and needs no citation. A specific fact needs the given material with its location (file and section, or URL) or a computation as its source: numbers, dates, names, quotes, attributions, benchmarks, records, and claims about current versions or products. Recompute every number of the worked example with a one-off `python -c` calculation, and fix the beats where the result differs. Mark a specific fact with neither source "unsourced", then rewrite or cut it; keep it only when the user must decide, and then name it in the summary. The claims summary is one line: "claims checked: n, standard: s, unsourced: m", followed by the unsourced claims that remain.
 
 In `storyboard` mode, stop here.
 
