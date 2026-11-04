@@ -9,6 +9,7 @@ sync at any video length.
 
     python make_video.py STORYBOARD.json             # video.mp4 + captions.srt
     python make_video.py STORYBOARD.json --preview   # one still per beat only
+    python make_video.py --doctor [--language hu]    # which tools are installed
 
 All output goes next to the storyboard: video.mp4, captions.srt and build/.
 """
@@ -16,6 +17,7 @@ All output goes next to the storyboard: video.mp4, captions.srt and build/.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import dataclasses
 import hashlib
 import json
@@ -478,20 +480,131 @@ def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: P
 
 # ---------------------------------------------------------------------- main
 
+FFMPEG_INSTALL = "winget install Gyan.FFmpeg / brew install ffmpeg / apt install ffmpeg"
+OPTIONAL_TOOLS = (("manim",), ("pdflatex", "latex"), ("magick",), ("inkscape",), ("mmdc",), ("node",))
+
+
+@dataclass(frozen=True)
+class Check:
+    name: str
+    ok: bool
+    detail: str
+    required: bool
+    install: str = ""
+
+
+def _version_line(path: str, flag: str) -> str:
+    result = subprocess.run([path, flag], capture_output=True, text=True)
+    lines = (result.stdout or result.stderr).strip().splitlines()
+    return lines[0] if lines else "found"
+
+
+def check_binary(name: str) -> Check:
+    path = shutil.which(name)
+    if path is None:
+        return Check(name, False, "missing", True, FFMPEG_INSTALL)
+    return Check(name, True, _version_line(path, "-version"), True)
+
+
+def check_playwright() -> list[Check]:
+    pip = f"{sys.executable} -m pip install playwright"
+    chromium_install = f"{sys.executable} -m playwright install chromium"
+    try:
+        from importlib.metadata import version
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return [Check("playwright", False, "missing", True, pip),
+                Check("chromium", False, "not checked (Playwright is missing)", True, chromium_install)]
+    package = Check("playwright", True, version("playwright"), True)
+    try:
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            browser_version = browser.version
+            browser.close()
+    except Exception as error:  # Playwright raises its generic Error when the browser is missing
+        return [package, Check("chromium", False, f"does not launch ({str(error).splitlines()[0]})", True, chromium_install)]
+    return [package, Check("chromium", True, f"launches ({browser_version})", True)]
+
+
+def check_edge_tts(language: str) -> Check:
+    try:
+        from importlib.metadata import version
+        import edge_tts
+    except ImportError:
+        return Check("edge-tts", False, "missing", True, f"{sys.executable} -m pip install edge-tts")
+    package = version("edge-tts")
+    try:
+        manager = asyncio.run(edge_tts.VoicesManager.create())
+    except Exception as error:  # edge-tts surfaces network failures as aiohttp and OS errors
+        return Check("edge-tts", True, f"{package}; voices not checked (network error: {error.__class__.__name__})", True)
+    voices = manager.find(Language=language)
+    return Check("edge-tts", True, f"{package}; {len(voices)} voices for language {language!r}", True)
+
+
+def check_sapi() -> list[Check]:
+    if sys.platform != "win32":
+        return []
+    command = ["powershell", "-NoProfile", "-NonInteractive", "-Command",
+               "Add-Type -AssemblyName System.Speech; "
+               "(New-Object System.Speech.Synthesis.SpeechSynthesizer).GetInstalledVoices() | "
+               "ForEach-Object { $_.VoiceInfo.Name }"]
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        return [Check("sapi voices", False, f"not listed ({result.stderr.strip()})", False)]
+    names = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return [Check("sapi voices", bool(names), ", ".join(names) or "none installed", False)]
+
+
+def check_optional() -> list[Check]:
+    checks = []
+    for names in OPTIONAL_TOOLS:
+        found = next((path for path in map(shutil.which, names) if path), None)
+        label = " or ".join(names)
+        checks.append(Check(label, found is not None, f"found ({found})" if found else "not found", False))
+    return checks
+
+
+def run_doctor(language: str) -> int:
+    """Prints one line per tool and returns the exit code: 0 when rendering can run."""
+    python_ok = sys.version_info >= (3, 9)
+    checks = [Check("python", python_ok, f"{sys.version.split()[0]} ({sys.executable})", True,
+                    "" if python_ok else "install Python 3.9 or newer"),
+              check_binary("ffmpeg"), check_binary("ffprobe"),
+              *check_playwright(), check_edge_tts(language), *check_sapi(), *check_optional()]
+    for check in checks:
+        status = "ok" if check.ok else ("MISSING" if check.required else "--")
+        print(f"{status:8} {check.name:18} {check.detail}")
+    missing = [check for check in checks if check.required and not check.ok]
+    if not missing:
+        print("doctor: every required tool is present")
+        return 0
+    print("doctor: required tools are missing; install them with:")
+    for check in missing:
+        print(f"  {check.name}: {check.install}")
+    return 1
+
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a teaching video from a storyboard JSON file.")
-    parser.add_argument("storyboard", type=Path, help="storyboard.json; all output goes next to it")
+    parser.add_argument("storyboard", type=Path, nargs="?", help="storyboard.json; all output goes next to it")
+    parser.add_argument("--doctor", action="store_true", help="report which tools are installed, then exit (no storyboard needed)")
+    parser.add_argument("--language", default="en", help="with --doctor: language code whose edge voices are counted (default en)")
     parser.add_argument("--preview", action="store_true", help="write one still per beat and contact sheets, no video")
     parser.add_argument("--burn-captions", action="store_true", help="burn captions into the picture (always on with tts none)")
     parser.add_argument("--tts", choices=TTS_BACKENDS, help="override the storyboard's tts backend")
     parser.add_argument("--voice", help="override the storyboard's voice")
     parser.add_argument("--rate", help='override the storyboard\'s edge speaking rate, e.g. "-10%%"')
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.storyboard is None and not args.doctor:
+        parser.error("the storyboard argument is required (or use --doctor)")
+    return args
 
 
 def main() -> None:
     args = parse_args()
+    if args.doctor:
+        sys.exit(run_doctor(args.language))
     root = args.storyboard.resolve().parent
     try:
         storyboard = load_storyboard(args.storyboard.resolve())

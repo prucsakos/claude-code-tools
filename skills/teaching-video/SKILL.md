@@ -23,7 +23,7 @@ A first argument `storyboard` or `full` picks the mode.
 
 ## Requirements
 
-Check them once, before section 4: `ffmpeg -version`, `python -c "import playwright"` and, for edge narration, `python -c "import edge_tts"`. Install what is missing:
+Check them once, before section 4, with `python SKILL_DIR/make_video.py --doctor` (add `--language hu` to count the voices of the narration language). It prints one line per tool: Python, ffmpeg, ffprobe, Playwright and whether Chromium launches, edge-tts and its voices, Windows SAPI voices, and optional tools (manim, LaTeX, ImageMagick, Inkscape, mmdc, node). It exits non-zero when a required tool is missing and prints the install command for each one. The usual commands are:
 
 ```
 python -m pip install playwright edge-tts

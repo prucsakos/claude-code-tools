@@ -151,6 +151,7 @@ Claude Code skill: turns a topic or study material (notes, a chapter, a paper, c
 
 - Python 3.9+ (`python3` on macOS and Linux, `python` or `py -3` on Windows), `ffmpeg` and `ffprobe` on your PATH
 - `python -m pip install playwright edge-tts`, then `python -m playwright install chromium`
+- `python skills/teaching-video/make_video.py --doctor` checks all of these and prints the install command for each missing tool
 
 ```bash
 cp -R skills/teaching-video ~/.claude/skills/
