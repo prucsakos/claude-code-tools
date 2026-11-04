@@ -55,7 +55,7 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 1. **Hook**: the problem or question that the concept answers, in a concrete situation. At most 20 seconds.
 2. **Intuition**: the plain-words version first, with an everyday analogy and no jargon. End it with one mapping beat: the screen pairs each analogy element with its domain term (for example `drawer → bucket`), each term in the color it keeps in later scenes. The domain terms enter through the analogy, so the Mechanism uses them without a new introduction.
 3. **Mechanism**: cause, then effect, one step per beat. Show a part before you name it, and name it when it is needed.
-4. **Worked example**: concrete values, walked through from start to end.
+4. **Worked example**: concrete values, walked through from start to end. Then a second, shorter example with new values in the same scene layout, so that only the values change: walk the same steps, but stop before the last step. The narration asks the viewer to do that step (`"pause": 3`), and the next beat shows the result. For an expert audience, the second example alone is enough. Unlike the check question, this step uses the same situation, not a new one.
 5. **Pitfall**: the common misconception, or where the concept stops applying. If the video used an analogy, also say where the analogy stops working.
 6. **Recap**: at most three points, in the same words that the video used before.
 7. **Check question**: one question that makes the viewer apply the idea. Pause for 3 seconds (`"pause": 3`), then give the answer.
@@ -68,7 +68,7 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 | Some background | Hook, then a short Intuition (the analogy and the mapping beat in one scene). More Mechanism beats and a second worked example |
 | Expert or student of the field | Skip the analogy and the mapping beat: the Intuition is one beat in domain terms. Lead with the Mechanism; the Pitfall covers edge cases and limits |
 
-**Procedure or tool tutorial.** Show the end result first, then the prerequisites, then the steps: one action per beat, and the state after each action. Then the most common error and its fix, then a recap. For software, use real screenshots in the scenes and highlight the control under discussion.
+**Procedure or tool tutorial.** Show the end result first, then the prerequisites, then the steps: one action per beat, and the state after each action. Then a shorter second run with new values: the screen does the earlier steps, the narration names the last step and lets the viewer say its action (`"pause": 3`), then the screen does it. Then the most common error and its fix, then a recap. For software, use real screenshots in the scenes and highlight the control under discussion.
 
 **Rules for every scene** (from research on multimedia learning):
 - One idea per scene, one change on screen per beat.
