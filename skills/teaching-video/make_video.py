@@ -10,6 +10,7 @@ sync at any video length.
     python make_video.py STORYBOARD.json             # video.mp4 + captions.srt
     python make_video.py STORYBOARD.json --preview   # one still per beat only
     python make_video.py --doctor [--language hu]    # which tools are installed
+    python make_video.py --doctor --install          # install the missing required tools
 
 All output goes next to the storyboard: video.mp4, captions.srt and build/.
 """
@@ -20,6 +21,7 @@ import argparse
 import asyncio
 import dataclasses
 import hashlib
+import importlib
 import json
 import math
 import re
@@ -564,8 +566,8 @@ def check_optional() -> list[Check]:
     return checks
 
 
-def run_doctor(language: str) -> int:
-    """Prints one line per tool and returns the exit code: 0 when rendering can run."""
+def report_checks(language: str) -> list[Check]:
+    """Prints one line per tool and returns the required tools that are missing."""
     python_ok = sys.version_info >= (3, 9)
     checks = [Check("python", python_ok, f"{sys.version.split()[0]} ({sys.executable})", True,
                     "" if python_ok else "install Python 3.9 or newer"),
@@ -574,7 +576,57 @@ def run_doctor(language: str) -> int:
     for check in checks:
         status = "ok" if check.ok else ("MISSING" if check.required else "--")
         print(f"{status:8} {check.name:18} {check.detail}")
-    missing = [check for check in checks if check.required and not check.ok]
+    return [check for check in checks if check.required and not check.ok]
+
+
+def ffmpeg_install_command() -> list[str] | None:
+    """The OS package manager command for ffmpeg (which includes ffprobe), or None when none is on PATH."""
+    if sys.platform == "win32" and shutil.which("winget"):
+        return ["winget", "install", "--id", "Gyan.FFmpeg", "-e"]
+    if sys.platform == "darwin" and shutil.which("brew"):
+        return ["brew", "install", "ffmpeg"]
+    if sys.platform.startswith("linux") and shutil.which("apt-get"):
+        return ["sudo", "apt-get", "install", "-y", "ffmpeg"]
+    return None
+
+
+def install_missing(missing: list[Check]) -> bool:
+    """Runs the install command of each missing tool; returns False when one fails."""
+    names = {check.name for check in missing}
+    commands = [[sys.executable, "-m", "pip", "install", package]
+                for package in ("playwright", "edge-tts") if package in names]
+    # Chromium is installed by Playwright, so it comes after the Playwright package.
+    if "chromium" in names:
+        commands.append([sys.executable, "-m", "playwright", "install", "chromium"])
+    if names & {"ffmpeg", "ffprobe"}:
+        ffmpeg_command = ffmpeg_install_command()
+        if ffmpeg_command is None:
+            print(f"doctor: no supported package manager found; install ffmpeg manually: {FFMPEG_INSTALL}")
+        else:
+            commands.append(ffmpeg_command)
+    if "python" in names:
+        print("doctor: install Python 3.9 or newer manually")
+    for command in commands:
+        print(f"doctor: running {subprocess.list2cmdline(command)}", flush=True)
+        result = subprocess.run(command)
+        if result.returncode != 0:
+            print(f"doctor: install failed (exit code {result.returncode}): {subprocess.list2cmdline(command)}")
+            return False
+    return True
+
+
+def run_doctor(language: str, install: bool = False) -> int:
+    """Prints one line per tool and returns the exit code: 0 when rendering can run.
+
+    With install, installs the missing required tools and checks again."""
+    missing = report_checks(language)
+    if missing and install:
+        if not install_missing(missing):
+            return 1
+        # Packages installed during this run must be importable by the second check.
+        importlib.invalidate_caches()
+        print("doctor: checking again")
+        missing = report_checks(language)
     if not missing:
         print("doctor: every required tool is present")
         return 0
@@ -590,6 +642,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("storyboard", type=Path, nargs="?", help="storyboard.json; all output goes next to it")
     parser.add_argument("--doctor", action="store_true", help="report which tools are installed, then exit (no storyboard needed)")
     parser.add_argument("--language", default="en", help="with --doctor: language code whose edge voices are counted (default en)")
+    parser.add_argument("--install", action="store_true", help="with --doctor: install the missing required tools, then check again")
     parser.add_argument("--preview", action="store_true", help="write one still per beat and contact sheets, no video")
     parser.add_argument("--burn-captions", action="store_true", help="burn captions into the picture (always on with tts none)")
     parser.add_argument("--tts", choices=TTS_BACKENDS, help="override the storyboard's tts backend")
@@ -598,13 +651,15 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.storyboard is None and not args.doctor:
         parser.error("the storyboard argument is required (or use --doctor)")
+    if args.install and not args.doctor:
+        parser.error("--install works only together with --doctor")
     return args
 
 
 def main() -> None:
     args = parse_args()
     if args.doctor:
-        sys.exit(run_doctor(args.language))
+        sys.exit(run_doctor(args.language, args.install))
     root = args.storyboard.resolve().parent
     try:
         storyboard = load_storyboard(args.storyboard.resolve())

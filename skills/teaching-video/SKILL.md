@@ -23,7 +23,7 @@ A first argument `storyboard` or `full` picks the mode.
 
 ## Requirements
 
-Check them once, before section 4, with `python SKILL_DIR/make_video.py --doctor` (add `--language hu` to count the voices of the narration language). It prints one line per tool: Python, ffmpeg, ffprobe, Playwright and whether Chromium launches, edge-tts and its voices, Windows SAPI voices, and optional tools (manim, LaTeX, ImageMagick, Inkscape, mmdc, node). It exits non-zero when a required tool is missing and prints the install command for each one. The usual commands are:
+Check them once, before section 4, with `python SKILL_DIR/make_video.py --doctor` (add `--language hu` to count the voices of the narration language). It prints one line per tool: Python, ffmpeg, ffprobe, Playwright and whether Chromium launches, edge-tts and its voices, Windows SAPI voices, and optional tools (manim, LaTeX, ImageMagick, Inkscape, mmdc, node). It exits non-zero when a required tool is missing and prints the install command for each one. When it reports a missing tool, run `python SKILL_DIR/make_video.py --doctor --install`: it prints and runs the install command for each missing tool (pip for Playwright and edge-tts, Playwright for Chromium, winget, brew or apt-get for ffmpeg), stops if one fails, then checks again and exits 0 only when every required tool is present. After a package manager installs ffmpeg, a new shell may be needed before it is on PATH. The usual commands are:
 
 ```
 python -m pip install playwright edge-tts
