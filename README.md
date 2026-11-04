@@ -125,9 +125,11 @@ Then invoke it as `$explain` (or `$explain-simple`) in Codex.
 
 Claude Code skill: work on the targets you pick inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch.
 
-It is a Claude Code skill, so copy it into your Claude Code skills directory:
+It is a Claude Code skill, so copy it into your Claude Code skills directory. These commands replace an earlier install of this skill only and leave your other skills alone:
 
 ```bash
+mkdir -p ~/.claude/skills
+rm -rf ~/.claude/skills/my-iterative-optimization
 cp -R skills/my-iterative-optimization ~/.claude/skills/
 ```
 

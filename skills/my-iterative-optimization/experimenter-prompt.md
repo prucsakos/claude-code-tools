@@ -1,6 +1,34 @@
 # Experimenter prompt template
 
-Fill every `{{…}}`, keep the section for the idea's kind (optimize or build) and the report fields of that kind, then send the text below the line as the Agent prompt.
+| Placeholder | Filled from |
+|---|---|
+| `{{ID}}` | The idea's id in STATE |
+| `{{TARGET}}` | The idea's target, as `<Pillar>: <Target>` |
+| `{{KIND}}` | The target's kind: `optimize` or `build` |
+| `{{OTHER_TARGETS}}` | The other selected targets, or `none` |
+| `{{IDEA}}` | The idea's technique and expected change, from STATE |
+| `{{WT}}` | `RUN_DIR/wt/<id>` (section 2, Dispatch an experimenter) |
+| `{{BRANCH}}` | `opt/<id>` |
+| `{{BASE_SHA}}` | The base SHA recorded in STATE at dispatch |
+| `{{REPO}}` | Form input REPO |
+| `{{T_TEST}}`, `{{T_ITER}}` | Form input T_TEST;T_ITER |
+| `{{T_TEST_SECONDS}}` | T_TEST in seconds |
+| `{{DEADLINE}}` | Dispatch time + T_ITER, as HH:MM:SS |
+| `{{METRIC}}` | Form input Metric of the target: name, unit, direction |
+| `{{MEASURE_SH}}` | Absolute path of `measure.sh` in this skill's directory |
+| `{{R}}` | Runs per side of the target (setup step 4) |
+| `{{MODE}}` | The target's mode: `time` or `stdout` |
+| `{{LOCK}}` | The target's LOCK (setup step 2); for a UI build item, `RUN_DIR/measure.lock` |
+| `{{MEASURE_CMD}}` | Form input MEASURE_CMD of the target, each `'` written as `'\''` |
+| `{{BASE_VALUES}}` | Lock on: the target's runs of the current Bk; lock off: `none` |
+| `{{CORRECT_CMD}}` | Form input CORRECT_CMD |
+| `{{GAMING}}` | Section 2, Dispatch an experimenter |
+| `{{ACCEPTANCE}}` | The idea's acceptance criteria, from STATE |
+| `{{SHOTS}}` | UI item: `RUN_DIR/shots/<id>`; otherwise `none` |
+| `{{BEFORE}}` | UI item: `RUN_DIR/shots/Bk` of the current baseline; otherwise `none` |
+| `{{EVIDENCE_CMD}}` | Form input EVIDENCE_CMD |
+
+Keep the section for the idea's kind (optimize or build) and the report fields of that kind.
 
 ---
 
@@ -27,7 +55,7 @@ Target: {{TARGET}} ({{KIND}}). Other selected targets: {{OTHER_TARGETS}}.
 
 ## Rules for every change
 
-Do not weaken a check. You may add new tests, but do not edit or delete existing tests, and do not change the benchmark code that the measurement runs, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, checker ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs. Do not game the result: none of these: {{GAMING}}. Do not knowingly make the other selected targets worse. If the idea turns out not to apply, report `STATUS: failed` with the reason. Do not substitute a different idea.
+Do not weaken a check. You may add new tests, but do not edit or delete existing tests. Do not change the benchmark code that the measurement runs, test inputs, or reference outputs. Do not change the rules the checks apply (lint and type-check rules, checker ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs. Do not game the result: none of these: {{GAMING}}. Do not knowingly make the other selected targets worse. If the idea turns out not to apply, report `STATUS: failed` with the reason. Do not substitute a different idea.
 
 ## Kind: optimize
 

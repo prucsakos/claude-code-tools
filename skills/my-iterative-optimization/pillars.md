@@ -1,6 +1,6 @@
 # Pillars and targets
 
-A pillar is an area of the project to work on. A target is one concrete goal inside a pillar, and each selected target becomes a track. The "Improves" text is the option description in the pillar question, and "Group" is the question the pillar appears in. Each target's bold name is its option label in the target question, and the text after it is the option description.
+The "Improves" text is the option description in the pillar question, and "Group" is the question the pillar appears in. Each target's bold name is its option label in the target question, and the text after it is the option description.
 
 Every target has a kind. An **optimize** target (the default) improves a metric, so it needs a proxy that a command can measure; a tool the repo lacks can run from a harness under `RUN_DIR/harness/`. A **build** target, marked *(build)*, adds something new and is accepted on acceptance criteria with evidence: new tests, and screenshots for UI. If a selected target has no measurable proxy, or a build target cannot show its evidence, drop it and give the reason in the setup form.
 
@@ -23,10 +23,10 @@ Every target has a kind. An **optimize** target (the default) improves a metric,
 
 The gaming lists are per pillar. For every optimize target, add the gaming that its metric invites (for LCP: shrinking or removing the largest element).
 
-Build gaming, for every build target: stubs, placeholders or TODOs in place of the feature; hard-coded demo data; tests that do not exercise the new behavior; a feature that no user can reach (no route, command or menu entry); edits to existing tests; changes to existing behavior.
+Build gaming applies to every build target. It covers stubs, placeholders or TODOs in place of the feature, hard-coded demo data, and tests that do not exercise the new behavior. It also covers a feature that no user can reach (no route, command or menu entry), edits to existing tests, and changes to existing behavior.
 
 Outdated-package counts and external link checks read the network, so a new release or a slow site can change the value during the run. Prefer an offline proxy when one fits: unused dependencies, dependency count, install size, internal links only.
 
-A pillar or target the user names under "Other" (for example Cost, Reliability, or "CSV export of reports") follows the same rules: write a one-line definition, its kind, a measurable proxy (optimize) or acceptance criteria (build), and its gaming list yourself.
+A pillar or target the user names under "Other" (for example Cost, Reliability, or "CSV export of reports") follows the same rules. Write its one-line definition, its kind, a measurable proxy (optimize) or acceptance criteria (build), and its gaming list yourself.
 
-Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: pipe the tool's JSON output into a counter that prints the count last and exits 0.
+Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: the MEASURE_CMD row in SKILL.md section 1 says how to count them.
