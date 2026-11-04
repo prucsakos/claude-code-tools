@@ -426,6 +426,61 @@ def build_timeline(storyboard: Storyboard, narrator: Narrator) -> tuple[list[Tim
     return timed_scenes, bytes(track)
 
 
+# ---------------------------------------------------------- read-aloud check
+
+# Edge neural voices at the default rate speak plain prose at 2.7 to 3.7 words per second
+# (shorter words, higher rate), so over 4 is rushed (dense text or a fast "rate") and
+# under 2 is dragging (long pauses inside the clip).
+FAST_WORDS_PER_SECOND = 4.0
+SLOW_WORDS_PER_SECOND = 2.0
+# A beat this short has too few words for a stable rate (a pause word or a name skews it).
+MIN_RATE_WORDS = 6
+# Listeners lose the thread of a spoken sentence past about 20 words.
+MAX_SENTENCE_WORDS = 20
+# Text-to-speech reads these literally: digits glued to letters or symbols ("1e6", "x2"),
+# math and code symbols ("x^2", "->", "O(n)" is caught by the parenthesis check), Latin abbreviations.
+LITERAL_TEXT = re.compile(r"\w*\d[A-Za-z^*/]\w*|[A-Za-z]\d\w*|[\^*=<>&%#@~|\\{}\[\]+_]|->|\b(?:e\.g|i\.e|etc|vs)\.", re.IGNORECASE)
+# Two or more capitals in a row are read letter by letter ("API", "CPU").
+LETTER_BY_LETTER = re.compile(r"\b[A-Z]{2,}s?\b")
+
+
+def read_aloud_warnings(timed_scenes: list[TimedScene], measured: bool) -> list[str]:
+    """One warning per problem a listener would hear; the speech rate only when `measured` (real TTS)."""
+    warnings = []
+    previous_first_word = None
+    for timed_scene in timed_scenes:
+        for index, beat in enumerate(timed_scene.beats):
+            problems = []
+            words = beat.text.split()
+            seconds = beat.end - beat.start
+            if measured and len(words) >= MIN_RATE_WORDS and seconds > 0:
+                rate = len(words) / seconds
+                if rate > FAST_WORDS_PER_SECOND:
+                    problems.append(f"rushed: {rate:.1f} words per second (over {FAST_WORDS_PER_SECOND:g}); cut words or split the beat")
+                elif rate < SLOW_WORDS_PER_SECOND:
+                    problems.append(f"dragging: {rate:.1f} words per second (under {SLOW_WORDS_PER_SECOND:g}); remove pauses or tighten the text")
+            for sentence in re.split(r"(?<=[.!?])\s+", beat.text):
+                count = len(sentence.split())
+                if count > MAX_SENTENCE_WORDS:
+                    problems.append(f"sentence of {count} words (over {MAX_SENTENCE_WORDS}): {' '.join(sentence.split()[:6])} ...")
+            if "(" in beat.text or ")" in beat.text:
+                problems.append("parenthesis: the voice does not read brackets; make it its own sentence")
+            if "/" in beat.text:
+                problems.append('slash: write "or", "per" or "over"')
+            literal = sorted({match.group(0) for match in LITERAL_TEXT.finditer(beat.text)})
+            if literal:
+                problems.append(f"read literally: {', '.join(literal)}; write it as spoken words")
+            letters = sorted({match.group(0) for match in LETTER_BY_LETTER.finditer(beat.text)})
+            if letters:
+                problems.append(f"read letter by letter: {', '.join(letters)}; spell it out unless it is said that way")
+            first_word = re.sub(r"\W", "", words[0]).lower() if words else None
+            if first_word and first_word == previous_first_word:
+                problems.append(f'starts with "{first_word}" like the beat before it')
+            previous_first_word = first_word
+            warnings += [f"read-aloud: {timed_scene.scene.id} beat {index}: {problem}" for problem in problems]
+    return warnings
+
+
 # ------------------------------------------------------------------ captions
 
 
@@ -993,6 +1048,8 @@ def main() -> None:
             for ts in timed_scenes
         ]
         (root / outputs.timeline).write_text(json.dumps(timeline, indent=2, ensure_ascii=False), encoding="utf-8")
+        for warning in read_aloud_warnings(timed_scenes, measured=storyboard.tts != "none"):
+            print(f"  warning: {warning}", flush=True)
         duration = timed_scenes[-1].end
         if args.preview:
             render_preview(timed_scenes, storyboard.fps, build)

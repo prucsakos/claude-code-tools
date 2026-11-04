@@ -79,7 +79,7 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 - Use concrete values before abstract rules, and a formula only after the viewer has seen what each symbol stands for.
 - Use the same term for the same thing in narration, labels and captions. Give a concept the same color in every scene. Write each concept into the storyboard's `terms` list before the beats: narration, labels and captions use only its `term` spelling, never an `avoid` word, and every element of that concept uses its `color` token in every scene.
 
-**Narration.** Write for the ear: second person, sentences of 8–20 words, one to three sentences per beat, about 150 words per minute. Text-to-speech reads symbols and abbreviations literally, so write them as spoken words ("x squared", "for example", "seven"). The captions show the same text.
+**Narration.** Write for the ear: second person, sentences of 8–20 words, one to three sentences per beat, about 150 words per minute. Text-to-speech reads symbols and abbreviations literally, so write them as spoken words ("x squared", "for example", "seven"). The captions show the same text. The preview checks this (section 5, read-aloud warnings).
 
 ## 3. Write the storyboard
 
@@ -164,6 +164,8 @@ This narrates every beat (cached in `build/tts/`, so later runs narrate only cha
 Look at every contact sheet. Check for text that overflows or is cut off, elements that overlap, text that is too small, an element that appears in the wrong beat, and empty frames. Warnings for JavaScript errors and files that did not load are printed with the scene id. Fix the scenes, and preview again until every still is correct.
 
 Fix each `terms` warning by rewording that beat with the `term` spelling. Then check the colors: for each term, search the scene files for its labels and shapes (for example `grep -n bucket scenes/*.html`) and confirm that each one uses that term's color (class `c1` or `var(--c1)`), and that no other concept uses that color. On the contact sheets, the concept has the same color in every still.
+
+Read the narration aloud too: the command prints one `read-aloud: <scene id> beat <index>` warning per problem a listener would hear, measured from the beat text and its spoken duration in `build/timeline.json`. It flags a beat faster than 4 or slower than 2 words per second (not with `"tts": "none"`, which has no voice to measure), a sentence over 20 words, a parenthesis or a slash, digits and symbols the voice reads literally ("O(n)", "1e6", "x^2", "->", "e.g."), capitals read letter by letter, and two beats in a row that start with the same word. Rewrite each flagged beat for the ear, then preview again; the narration is cached, so only the changed beats are spoken again. A warning that does not apply (an abbreviation that is said letter by letter, such as "CPU") can stay.
 
 ## 6. Render and check
 
