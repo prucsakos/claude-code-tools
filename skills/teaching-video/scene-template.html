@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Scene</title>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <!-- Beat N of this scene starts at var(--bN). Scene contract: SKILL.md, "4. Build the scenes". -->
+  <main class="stage">
+    <p class="kicker in" style="--at: var(--b0)">Section name</p>
+    <h1 class="in rise" style="--at: var(--b0)">One idea per scene</h1>
+    <div class="cols grow">
+      <ul class="points">
+        <li class="in rise" style="--at: var(--b1)">Appears when beat 1 starts</li>
+        <li class="in rise" style="--at: var(--b2)">Appears when beat 2 starts</li>
+      </ul>
+      <svg viewBox="0 0 700 400" width="700" height="400">
+        <path class="draw" pathLength="1" d="M 40 360 C 200 360 240 60 660 40"
+              style="--at: var(--b2); --dur: 1.2s; stroke: var(--c1); stroke-width: 10; fill: none; stroke-linecap: round"/>
+        <text class="in" x="660" y="100" text-anchor="end" style="--at: var(--b2)">label next to its shape</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

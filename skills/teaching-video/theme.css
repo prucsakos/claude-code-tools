@@ -1,0 +1,116 @@
+/* Shared look of every scene. make_video.py renders each scene as a 1920x1080 page;
+   the scene contract is in SKILL.md, "4. Build the scenes". */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=block");
+
+:root {
+  --bg: #0f1421;
+  --panel: #1a2234;
+  --line: #2e3a54;
+  --fg: #eef1f7;
+  --muted: #9aa5bc;
+  /* One accent per concept. Keep a concept's color the same in every scene. */
+  --c1: #4cc9f0;
+  --c2: #ffc857;
+  --c3: #ff8c61;
+  --c4: #8bd17c;
+  --c5: #c39bff;
+  --good: #8bd17c;
+  --bad: #ff6b6b;
+
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --dur: .6s;
+  --at: 0s;
+  --safe: 96px;
+  /* Captions (burned in or switched on in the player) cover the bottom of the frame. */
+  --caption-space: 180px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 44px/1.35 Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  padding: var(--safe) var(--safe) var(--caption-space);
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.stage.center { justify-content: center; align-items: center; text-align: center; }
+
+h1, h2, p { margin: 0; }
+h1 { font-size: 80px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
+h2 { font-size: 60px; font-weight: 800; line-height: 1.15; }
+.kicker { font-size: 32px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.big { font-size: 140px; font-weight: 800; line-height: 1; }
+.label { font-size: 32px; font-weight: 600; }
+.muted { color: var(--muted); }
+.c1 { color: var(--c1); } .c2 { color: var(--c2); } .c3 { color: var(--c3); }
+.c4 { color: var(--c4); } .c5 { color: var(--c5); }
+.good { color: var(--good); } .bad { color: var(--bad); }
+
+.row { display: flex; gap: 48px; align-items: center; }
+.cols { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 56px; align-items: center; }
+.grow { flex: 1; min-height: 0; }
+.card { background: var(--panel); border: 2px solid var(--line); border-radius: 24px; padding: 40px; }
+
+ul.points { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; }
+ul.points li { display: flex; gap: 28px; align-items: baseline; }
+ul.points li::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--c1);
+  transform: translateY(-4px);
+}
+
+code, pre.code { font-family: "JetBrains Mono", Consolas, monospace; }
+pre.code {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.5;
+  background: var(--panel);
+  border-radius: 20px;
+  padding: 36px 44px;
+}
+
+svg { overflow: visible; }
+svg text { font-family: Inter, "Segoe UI", system-ui, sans-serif; fill: var(--fg); }
+
+/* Beat animations. Set --at to a beat start, e.g. style="--at: var(--b2)"; --dur sets the length.
+   An element takes one of these classes; nest two elements to combine them.
+   rise and pop move the element, so use them on block or inline-block elements. */
+.in { animation: tv-fade var(--dur) var(--ease) var(--at) both; }
+.in.rise { animation-name: tv-rise; }
+.in.pop { animation-name: tv-pop; }
+.in.wipe { animation-name: tv-wipe; }
+/* SVG shapes with pathLength="1". */
+.draw { stroke-dasharray: 1; animation: tv-draw var(--dur) var(--ease) var(--at) both; }
+.mark {
+  background: linear-gradient(color-mix(in srgb, var(--c2) 40%, transparent) 0 0) no-repeat 0 90% / 0% 45%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: tv-mark var(--dur) var(--ease) var(--at) both;
+}
+.out { animation: tv-out var(--dur) var(--ease) var(--at) both; }
+.dim { animation: tv-dim var(--dur) var(--ease) var(--at) both; }
+
+@keyframes tv-fade { from { opacity: 0; } }
+@keyframes tv-rise { from { opacity: 0; transform: translateY(32px); } }
+@keyframes tv-pop { from { opacity: 0; transform: scale(.8); } }
+@keyframes tv-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes tv-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes tv-mark { to { background-size: 100% 45%; } }
+@keyframes tv-out { to { opacity: 0; } }
+@keyframes tv-dim { to { opacity: .25; } }
