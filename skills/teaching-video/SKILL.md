@@ -77,7 +77,7 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 - Put labels next to what they label, not in a legend.
 - Cut what the objective does not need: decorative images, background music, side topics.
 - Use concrete values before abstract rules, and a formula only after the viewer has seen what each symbol stands for.
-- Use the same term for the same thing in narration, labels and captions. Give a concept the same color in every scene.
+- Use the same term for the same thing in narration, labels and captions. Give a concept the same color in every scene. Write each concept into the storyboard's `terms` list before the beats: narration, labels and captions use only its `term` spelling, never an `avoid` word, and every element of that concept uses its `color` token in every scene.
 
 **Narration.** Write for the ear: second person, sentences of 8–20 words, one to three sentences per beat, about 150 words per minute. Text-to-speech reads symbols and abbreviations literally, so write them as spoken words ("x squared", "for example", "seven"). The captions show the same text.
 
@@ -93,6 +93,9 @@ Write `<project>/storyboard.json`:
   "tts": "edge",
   "voice": "en-US-AndrewNeural",
   "fps": 30,
+  "terms": [
+    {"term": "bucket", "color": "--c1", "avoid": ["slot", "slots", "bin", "bins"]}
+  ],
   "scenes": [
     {
       "id": "hook",
@@ -112,6 +115,7 @@ Write `<project>/storyboard.json`:
 | `voice` | edge: a short name such as `en-US-AndrewNeural`. sapi: an installed Windows voice such as `Microsoft Zira Desktop` (often English only); empty is the system default |
 | `rate` | edge only: speaking rate such as `"-10%"`. Default `"+0%"` |
 | `fps` | 24, 25, 30 (default) or 60 |
+| `terms` | Optional glossary, one entry per concept: `term` (the one spelling to use), `color` (its theme token: `--c1` to `--c5`, `--good` or `--bad`) and `avoid` (synonyms not to use). Every run warns with the scene id and beat index when a beat's `say` contains an `avoid` word. The match is whole-word and case-insensitive, so "Slot" matches `slot` but "slots" does not: list each form, such as `slot` and `slots` |
 | scene `lead`, `tail` | Seconds of silence before the first beat (0.4) and after the last beat (0.8) |
 | beat `say` | The narration. It is also the caption |
 | beat `show` | What the screen adds in this beat. It is for you and for storyboard mode; the renderer ignores it |
@@ -158,6 +162,8 @@ python SKILL_DIR/make_video.py <project>/storyboard.json --preview
 This narrates every beat (cached in `build/tts/`, so later runs narrate only changed text), writes `build/timeline.json` with the start and end of each beat, and saves one still per beat to `build/preview/`: the last frame before the next beat, so it shows everything the beat added. Contact sheets `build/preview/sheet-NN.png` hold 9 stills each in storyboard order; the command prints which still is which beat. Stills of a scene whose HTML, other files in its folder (such as `theme.css` and images) and timing did not change are reused from `build/preview/cache/`, so a preview after a fix re-shoots only the changed scenes.
 
 Look at every contact sheet. Check for text that overflows or is cut off, elements that overlap, text that is too small, an element that appears in the wrong beat, and empty frames. Warnings for JavaScript errors and files that did not load are printed with the scene id. Fix the scenes, and preview again until every still is correct.
+
+Fix each `terms` warning by rewording that beat with the `term` spelling. Then check the colors: for each term, search the scene files for its labels and shapes (for example `grep -n bucket scenes/*.html`) and confirm that each one uses that term's color (class `c1` or `var(--c1)`), and that no other concept uses that color. On the contact sheets, the concept has the same color in every still.
 
 ## 6. Render and check
 

@@ -55,6 +55,8 @@ CAPTION_LINE_CHARS = 42
 # Sizes are in libass units of a 288-pixel-high frame: 14 is about 52 px at 1080p. Two lines fit in --caption-space (theme.css).
 CAPTION_STYLE = "FontName=Arial,FontSize=14,Outline=1.2,Shadow=0,MarginV=10"
 PREVIEW_SHEET_TILES = "3x3"
+# The color tokens defined in theme.css that a storyboard term may name.
+THEME_COLORS = ("--c1", "--c2", "--c3", "--c4", "--c5", "--good", "--bad")
 
 
 class StoryboardError(ValueError):
@@ -82,6 +84,13 @@ class Scene:
 
 
 @dataclass(frozen=True)
+class Term:
+    term: str
+    color: str
+    avoid: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class Storyboard:
     title: str
     tts: str
@@ -89,6 +98,7 @@ class Storyboard:
     rate: str
     fps: int
     scenes: list[Scene]
+    terms: tuple[Term, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -139,6 +149,40 @@ def _list(value: object, where: str) -> list:
     return value
 
 
+def _terms(value: object) -> tuple[Term, ...]:
+    if not isinstance(value, list):
+        raise StoryboardError("terms must be a list")
+    terms = []
+    for i, raw_term in enumerate(value):
+        where = f"terms[{i}]"
+        entry = _object(raw_term, where)
+        color = entry.get("color")
+        if color not in THEME_COLORS:
+            raise StoryboardError(f"{where}.color must be one of {', '.join(THEME_COLORS)}: got {color!r}")
+        avoid = entry.get("avoid", [])
+        if not isinstance(avoid, list) or not all(isinstance(word, str) and word.strip() for word in avoid):
+            raise StoryboardError(f"{where}.avoid must be a list of non-empty strings")
+        terms.append(Term(term=_string(entry, "term", where), color=color, avoid=tuple(word.strip() for word in avoid)))
+    return tuple(terms)
+
+
+def term_slips(storyboard: Storyboard) -> list[str]:
+    """Warnings for each beat whose narration uses a word that a term lists in avoid.
+
+    The match is whole-word and case-insensitive, so "Slot" matches "slot" but "slots" does not:
+    list every form to ban.
+    """
+    warnings = []
+    for term in storyboard.terms:
+        for word in term.avoid:
+            pattern = re.compile(rf"\b{re.escape(word)}\b", re.IGNORECASE)
+            for scene in storyboard.scenes:
+                for j, beat in enumerate(scene.beats):
+                    if pattern.search(beat.say):
+                        warnings.append(f"scene {scene.id!r} beat {j}: says {word!r}; use {term.term!r}")
+    return warnings
+
+
 def load_storyboard(path: Path, require_html: bool = True) -> Storyboard:
     """require_html=False is for --scaffold, which creates the missing scene files."""
     try:
@@ -186,7 +230,8 @@ def load_storyboard(path: Path, require_html: bool = True) -> Storyboard:
     title = data.get("title") or path.parent.name
     if not all(isinstance(value, str) for value in (voice, rate, title)):
         raise StoryboardError("title, voice and rate must be strings")
-    return Storyboard(title=title, tts=tts, voice=voice, rate=rate, fps=fps, scenes=scenes)
+    terms = _terms(data["terms"]) if "terms" in data else ()
+    return Storyboard(title=title, tts=tts, voice=voice, rate=rate, fps=fps, scenes=scenes, terms=terms)
 
 
 def select_scenes(storyboard: Storyboard, ids: list[str]) -> Storyboard:
@@ -897,6 +942,8 @@ def main() -> None:
         storyboard = load_storyboard(args.storyboard.resolve(), require_html=not args.scaffold)
     except (OSError, StoryboardError) as error:
         sys.exit(f"storyboard error: {error}")
+    for slip in term_slips(storyboard):
+        print(f"warning: {slip}", flush=True)
     if args.scaffold:
         try:
             scaffold(storyboard, root)
