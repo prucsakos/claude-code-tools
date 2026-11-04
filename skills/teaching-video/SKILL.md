@@ -53,12 +53,20 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 
 **Concept or mechanism.** Use these parts in this order. Each part is one or more scenes:
 1. **Hook**: the problem or question that the concept answers, in a concrete situation. At most 20 seconds.
-2. **Intuition**: the plain-words version first, with an everyday analogy and no jargon.
+2. **Intuition**: the plain-words version first, with an everyday analogy and no jargon. End it with one mapping beat: the screen pairs each analogy element with its domain term (for example `drawer → bucket`), each term in the color it keeps in later scenes. The domain terms enter through the analogy, so the Mechanism uses them without a new introduction.
 3. **Mechanism**: cause, then effect, one step per beat. Show a part before you name it, and name it when it is needed.
 4. **Worked example**: concrete values, walked through from start to end.
-5. **Pitfall**: the common misconception, or where the concept stops applying.
+5. **Pitfall**: the common misconception, or where the concept stops applying. If the video used an analogy, also say where the analogy stops working.
 6. **Recap**: at most three points, in the same words that the video used before.
 7. **Check question**: one question that makes the viewer apply the idea. Pause for 3 seconds (`"pause": 3`), then give the answer.
+
+**Audience level.** Choose the row from the intake audience. It sets the time per part; the part order stays.
+
+| Audience | Changes to the parts |
+|---|---|
+| Novice (no background; the default) | The full sequence. Keep the analogy, and refer back to it in the Mechanism |
+| Some background | Hook, then a short Intuition (the analogy and the mapping beat in one scene). More Mechanism beats and a second worked example |
+| Expert or student of the field | Skip the analogy and the mapping beat: the Intuition is one beat in domain terms. Lead with the Mechanism; the Pitfall covers edge cases and limits |
 
 **Procedure or tool tutorial.** Show the end result first, then the prerequisites, then the steps: one action per beat, and the state after each action. Then the most common error and its fix, then a recap. For software, use real screenshots in the scenes and highlight the control under discussion.
 
