@@ -54,7 +54,11 @@ The other pillars have their own researchers: {{OTHER_PILLARS}}. Send only ideas
 
 ## Search wide
 
-Think divergently before you send anything. For each target, first list many different directions, including unusual ones: another algorithm or data layout, removing or batching a whole step of work, parallelism, another library or tool; for a build target, a new workflow that makes a frequent task much faster or easier, or that removes repeated manual work for the product's users. Then send a mix of two scopes:
+Think divergently before you send anything. For each target, first list many different directions, including unusual ones:
+- For an optimize target, directions include another algorithm or data layout, removing or batching a whole step of work, parallelism, and another library or tool.
+- For a build target, directions include a new workflow that makes a frequent task much faster or easier, or that removes repeated manual work for the product's users.
+
+Then send a mix of two scopes:
 - **conservative**: a small, safe change with a likely gain;
 - **bold**: a bigger change with a bigger possible gain, less certain. It must still be one change that can be tested on its own, for example a first version of the new approach on the hot path.
 
@@ -73,15 +77,15 @@ Budget: {{T_RESEARCH}}. Deadline: **{{DEADLINE}}** (check it with `date +%H:%M:%
 ## How to work
 
 1. Load the SendMessage tool: ToolSearch with query `select:SendMessage`.
-2. For each optimize target, find where its metric is spent or lost: read the code, and profile or run its tools if it helps. Run each target's measurement at most twice, and run profilers with a timeout. Follow each target's Measurement line. For each build target, find what the users of the product miss: read the code, the docs, the README and open TODOs; for a UI target, look at the screens and the design system. You may search the web for known techniques.
-3. Each idea must belong to one target and be independent of the others, and be one coherent change that can be tested on its own. Size ideas by scope only, not by how long you expect them to take: the main agent splits an idea that runs out of time. If a build item has several such parts, send only its first increment that works on its own, and name the later increments under EVIDENCE. They come in a later round, after this one reaches MAIN. A gain that comes from the gaming lists does not count, and neither does one that weakens a check: edited or deleted tests, changed benchmark code, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, ignore lists, thresholds). New tests are fine. Build and tool configuration may change when the same work still runs.
+2. For each optimize target, find where its metric is spent or lost: read the code, and profile or run its tools if it helps. Run each target's measurement at most twice, and run profilers with a timeout. Follow each target's Measurement line. For each build target, find what the users of the product miss: read the code, the docs, the README and open TODOs. For a UI target, look at the screens and the design system. You may search the web for known techniques.
+3. Each idea must belong to one target and be independent of the others, and be one coherent change that can be tested on its own. Size ideas by scope only, not by how long you expect them to take: the main agent splits an idea that runs out of time. If a build item has several such parts, send only its first increment that works on its own, and name the later increments under EVIDENCE. They come in a later round, after this one reaches MAIN. A gain that comes from the gaming lists does not count. Neither does one that weakens a check: edited or deleted tests, changed benchmark code, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, ignore lists, thresholds). New tests are fine. Build and tool configuration may change when the same work still runs.
 4. Send the best idea of each target first, then the rest in order of expected gain or value, with both scopes among the first ideas. Send each idea as its own SendMessage with `to: "main"`, in exactly this format:
 
 ```
 IDEA: <short title>
 TARGET: <one of the targets above, as Pillar: Target>
 TECHNIQUE: <what to change or build, and where: files and functions>
-EXPECTED: <optimize: gain on the metric, e.g. "3–5× less wall time", "−40 % cost" or "42 → 20 lint errors"; build: who gains what, and how much, e.g. "monthly report: 1 click instead of 6 manual steps">
+EXPECTED: <optimize: gain on the metric, e.g. "3–5× less wall time", "−40 % cost" or "42 → 20 lint errors". Build: who gains what, and how much, e.g. "monthly report: 1 click instead of 6 manual steps">
 SCOPE: conservative | bold
 VALUE: <build only: high | medium | low, for the users of the product>
 ACCEPTANCE: <build only: the checks that show it works, one per line: what a new test asserts, what a screenshot must show>
