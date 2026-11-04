@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import dataclasses
 import hashlib
 import importlib
@@ -407,29 +408,62 @@ def launch_chromium(playwright):
         raise RenderError(f"cannot start Chromium ({error}); run: python -m playwright install chromium") from error
 
 
+def preview_key(timed_scene: TimedScene, fps: int, build: Path) -> str:
+    """Hash of everything that can change a scene's preview stills."""
+    digest = hashlib.sha256()
+    timing = [timed_scene.beat_offsets(), timed_scene.end - timed_scene.start, fps, WIDTH, HEIGHT, PREPARE_SCENE_JS]
+    digest.update(json.dumps(timing).encode("utf-8"))
+    digest.update(timed_scene.scene.html.read_bytes())
+    folder = timed_scene.scene.html.parent
+    # Other HTML files are other scenes; everything else (theme.css, images) may be used by this one.
+    for path in sorted(folder.rglob("*")):
+        if path.is_file() and path.suffix.lower() not in (".html", ".htm") and build not in path.parents:
+            digest.update(path.relative_to(folder).as_posix().encode("utf-8") + b"\0")
+            digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+def shoot_scene(player: ScenePlayer, timed_scene: TimedScene, fps: int, folder: Path) -> None:
+    player.load(timed_scene)
+    ends = timed_scene.beat_offsets()[1:] + [timed_scene.end - timed_scene.start]
+    for index, end in enumerate(ends):
+        # The last frame before the next beat shows everything this beat added.
+        player.seek(max(0.0, end - 1 / fps), None)
+        player.page.screenshot(path=str(folder / f"{index:02}.png"))
+
+
 def render_preview(timed_scenes: list[TimedScene], fps: int, build: Path) -> None:
     from playwright.sync_api import sync_playwright
 
     preview = build / "preview"
-    preview.mkdir(exist_ok=True)
+    cache = preview / "cache"
+    cache.mkdir(parents=True, exist_ok=True)
     for old in preview.glob("*.png"):
         old.unlink()
     still = 0
-    with sync_playwright() as playwright:
-        browser = launch_chromium(playwright)
-        try:
-            player = ScenePlayer(browser)
-            for timed_scene in timed_scenes:
-                player.load(timed_scene)
-                ends = timed_scene.beat_offsets()[1:] + [timed_scene.end - timed_scene.start]
-                for index, end in enumerate(ends):
-                    # The last frame before the next beat shows everything this beat added.
-                    player.seek(max(0.0, end - 1 / fps), None)
-                    still += 1
-                    player.page.screenshot(path=str(preview / f"{still:04}.png"))
-                    print(f"  {still:04}.png  {timed_scene.scene.id} beat {index}", flush=True)
-        finally:
-            browser.close()
+    with contextlib.ExitStack() as stack:
+        player = None  # Chromium starts only when a scene is not in the cache.
+        for timed_scene in timed_scenes:
+            scene_id = timed_scene.scene.id
+            folder = cache / f"{scene_id}-{preview_key(timed_scene, fps, build)}"
+            if folder.is_dir():
+                print(f"  {scene_id}: unchanged, reusing cached stills", flush=True)
+            else:
+                if player is None:
+                    playwright = stack.enter_context(sync_playwright())
+                    browser = launch_chromium(playwright)
+                    stack.callback(browser.close)
+                    player = ScenePlayer(browser)
+                # Shoot into a temporary folder so an interrupted run never leaves a partial cache entry.
+                partial = folder.with_name(folder.name + ".partial")
+                shutil.rmtree(partial, ignore_errors=True)
+                partial.mkdir()
+                shoot_scene(player, timed_scene, fps, partial)
+                partial.rename(folder)
+            for index in range(len(timed_scene.beats)):
+                still += 1
+                shutil.copyfile(folder / f"{index:02}.png", preview / f"{still:04}.png")
+                print(f"  {still:04}.png  {scene_id} beat {index}", flush=True)
     run_ffmpeg("-framerate", "1", "-i", str(preview / "%04d.png"),
                "-vf", f"scale=640:360,tile={PREVIEW_SHEET_TILES}:padding=8:margin=8:color=gray",
                str(preview / "sheet-%02d.png"))

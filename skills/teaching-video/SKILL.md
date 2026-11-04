@@ -139,7 +139,7 @@ Copy `theme.css` and `scene-template.html` from SKILL_DIR into `<project>/scenes
 python SKILL_DIR/make_video.py <project>/storyboard.json --preview
 ```
 
-This narrates every beat (cached in `build/tts/`, so later runs narrate only changed text), writes `build/timeline.json` with the start and end of each beat, and saves one still per beat to `build/preview/`: the last frame before the next beat, so it shows everything the beat added. Contact sheets `build/preview/sheet-NN.png` hold 9 stills each in storyboard order; the command prints which still is which beat.
+This narrates every beat (cached in `build/tts/`, so later runs narrate only changed text), writes `build/timeline.json` with the start and end of each beat, and saves one still per beat to `build/preview/`: the last frame before the next beat, so it shows everything the beat added. Contact sheets `build/preview/sheet-NN.png` hold 9 stills each in storyboard order; the command prints which still is which beat. Stills of a scene whose HTML, other files in its folder (such as `theme.css` and images) and timing did not change are reused from `build/preview/cache/`, so a preview after a fix re-shoots only the changed scenes.
 
 Look at every contact sheet. Check for text that overflows or is cut off, elements that overlap, text that is too small, an element that appears in the wrong beat, and empty frames. Warnings for JavaScript errors and files that did not load are printed with the scene id. Fix the scenes, and preview again until every still is correct.
 
