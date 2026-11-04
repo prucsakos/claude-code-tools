@@ -382,15 +382,18 @@ class ScenePlayer:
     def __init__(self, browser):
         self.page = browser.new_page(viewport={"width": WIDTH, "height": HEIGHT})
         self.scene_id = ""
+        self.warnings = 0  # warnings printed since the current scene was loaded
         self.page.on("pageerror", lambda error: self._warn(f"JS error: {error}"))
         self.page.on("console", lambda message: message.type == "error" and self._warn(f"console: {message.text}"))
         self.page.on("requestfailed", lambda request: self._warn(f"failed to load {request.url}"))
 
     def _warn(self, message: str) -> None:
+        self.warnings += 1
         print(f"  WARNING in scene {self.scene_id}: {message}", file=sys.stderr, flush=True)
 
     def load(self, timed_scene: TimedScene) -> None:
         self.scene_id = timed_scene.scene.id
+        self.warnings = 0
         self.page.goto(timed_scene.scene.html.as_uri(), wait_until="load")
         self.page.evaluate(PREPARE_SCENE_JS, timed_scene.beat_offsets())
 
@@ -446,6 +449,7 @@ def render_preview(timed_scenes: list[TimedScene], fps: int, build: Path) -> Non
         for timed_scene in timed_scenes:
             scene_id = timed_scene.scene.id
             folder = cache / f"{scene_id}-{preview_key(timed_scene, fps, build)}"
+            source = folder
             if folder.is_dir():
                 print(f"  {scene_id}: unchanged, reusing cached stills", flush=True)
             else:
@@ -459,11 +463,18 @@ def render_preview(timed_scenes: list[TimedScene], fps: int, build: Path) -> Non
                 shutil.rmtree(partial, ignore_errors=True)
                 partial.mkdir()
                 shoot_scene(player, timed_scene, fps, partial)
-                partial.rename(folder)
+                if player.warnings:
+                    # Not cached: the next preview must shoot it again and print its warnings again.
+                    source = partial
+                    print(f"  {scene_id}: not cached, it printed {player.warnings} warning(s)", flush=True)
+                else:
+                    partial.rename(folder)
             for index in range(len(timed_scene.beats)):
                 still += 1
-                shutil.copyfile(folder / f"{index:02}.png", preview / f"{still:04}.png")
+                shutil.copyfile(source / f"{index:02}.png", preview / f"{still:04}.png")
                 print(f"  {still:04}.png  {scene_id} beat {index}", flush=True)
+            if source != folder:
+                shutil.rmtree(source)
     run_ffmpeg("-framerate", "1", "-i", str(preview / "%04d.png"),
                "-vf", f"scale=640:360,tile={PREVIEW_SHEET_TILES}:padding=8:margin=8:color=gray",
                str(preview / "sheet-%02d.png"))
