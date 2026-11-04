@@ -28,7 +28,7 @@
 | `{{BEFORE}}` | UI item: `RUN_DIR/shots/Bk` of the current baseline; otherwise `none` |
 | `{{EVIDENCE_CMD}}` | Form input EVIDENCE_CMD |
 
-Fill every `{{…}}`, keep the section for the idea's kind (optimize or build) and the report fields of that kind, then send the text below the line as the Agent prompt.
+Keep the section for the idea's kind (optimize or build) and the report fields of that kind.
 
 ---
 

@@ -1,6 +1,6 @@
 # Researcher prompt template
 
-Fill every `{{…}}`, then send the text below the line as the Agent prompt. Fill `{{TARGETS}}` with one block per target of this agent's pillar. For an optimize target with the lock off:
+Fill `{{TARGETS}}` with one block per target of this agent's pillar. For an optimize target with the lock off:
 
 ```
 ### <Pillar>: <Target> (optimize): <one-line definition from pillars.md>

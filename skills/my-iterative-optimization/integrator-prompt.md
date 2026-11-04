@@ -10,7 +10,7 @@
 | `{{DEADLINE}}` | Start time + T_ITER × number of items, as HH:MM:SS |
 | `{{ITEMS}}` | Migrate: the accepted branches, ordered by measured gain (build items by score). Revert: the batch commits that made Bk worse (section 3, After a batch) |
 
-Fill every `{{…}}`, keep the section for the mode you need (migrate or revert), then send the text below the line as the Agent prompt.
+Keep the section for the mode you need (migrate or revert).
 
 ---
 

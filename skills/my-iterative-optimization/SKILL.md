@@ -16,7 +16,7 @@ You are the **orchestrator** of a run that works on one or more targets. An opti
 | Experimenter | N in total, divided evenly over the pillars | one fresh agent per idea | its own worktree and branch |
 | Integrator | 0–1 at a time | you decide a batch is ready (review mode: and the user approved it) | batch worktree, then fast-forwards MAIN |
 
-Files in this skill's directory: `pillars.md` (the pillars and their targets), `researcher-prompt.md`, `experimenter-prompt.md`, `integrator-prompt.md` (fill every `{{…}}` before you send one), and `measure.sh` (the only way anybody measures).
+Files in this skill's directory: `pillars.md` (the pillars and their targets), `researcher-prompt.md`, `experimenter-prompt.md`, `integrator-prompt.md`, and `measure.sh` (the only way anybody measures). For each of the three prompt files, fill every `{{…}}` and send the text below its `---` line as the Agent prompt.
 
 ## Pillars and targets
 
