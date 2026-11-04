@@ -55,7 +55,7 @@ Target: {{TARGET}} ({{KIND}}). Other selected targets: {{OTHER_TARGETS}}.
 
 ## Rules for every change
 
-Do not weaken a check. You may add new tests, but do not edit or delete existing tests, and do not change the benchmark code that the measurement runs, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, checker ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs. Do not game the result: none of these: {{GAMING}}. Do not knowingly make the other selected targets worse. If the idea turns out not to apply, report `STATUS: failed` with the reason. Do not substitute a different idea.
+Do not weaken a check. You may add new tests, but do not edit or delete existing tests. Do not change the benchmark code that the measurement runs, test inputs, or reference outputs. Do not change the rules the checks apply (lint and type-check rules, checker ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs. Do not game the result: none of these: {{GAMING}}. Do not knowingly make the other selected targets worse. If the idea turns out not to apply, report `STATUS: failed` with the reason. Do not substitute a different idea.
 
 ## Kind: optimize
 
