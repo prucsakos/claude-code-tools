@@ -41,8 +41,8 @@ Take every input that the request or the conversation gives. Read the given mate
 | Audience | A curious adult with no background in the topic |
 | Objective | After the video, the viewer can explain the concept in their own words, or do the procedure |
 | Length | 2–4 minutes (about 300–600 narration words). Over 8 minutes: propose a series of videos, one objective each |
-| Language | The language of the user's request |
-| Narration | `edge` with `en-US-AndrewNeural`, `hu-HU-NoemiNeural` for Hungarian; other voices: `python -m edge_tts --list-voices` |
+| Language | English for narration, on-screen text and captions, whatever language the request is written in. Use another language only when the user names it (for example "in Hungarian") |
+| Narration | `edge` with `en-US-AndrewNeural`; `hu-HU-NoemiNeural` only when the user names Hungarian; other voices: `python -m edge_tts --list-voices` |
 | Project folder | `./<topic-slug>-video/` in the current directory |
 
 **Privacy:** the `edge` backend sends the narration text to Microsoft's online speech service. When the material is confidential (internal code, customer data, unpublished work), use `sapi` (Windows voices, offline) or `none` (captions only, no voice), unless the user agrees to `edge`.
