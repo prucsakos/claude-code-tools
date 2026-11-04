@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Camera and focus</title>
+  <link rel="stylesheet" href="../../../theme.css">
+  <style>
+    .viewport { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+    /* The camera is a transform on the wrapper; transform-origin 0 0 makes translate and scale easy to aim. */
+    .camera {
+      position: absolute;
+      transform-origin: 0 0;
+      animation: zoom-to-middle 1.6s var(--ease) var(--b1) both;
+    }
+    @keyframes zoom-to-middle {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-1040px, -180px) scale(2.2); }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <h1>Camera and focus</h1>
+    <div class="viewport">
+      <svg class="camera" viewBox="0 0 1728 560" width="1728" height="560">
+        <g class="dim" style="--at: var(--b2)">
+          <rect x="0" y="180" width="420" height="200" rx="24" style="fill: var(--panel); stroke: var(--c1); stroke-width: 4"/>
+          <text x="210" y="295" text-anchor="middle" style="font-size: 40px">Parse</text>
+        </g>
+        <rect x="654" y="180" width="420" height="200" rx="24" style="fill: var(--panel); stroke: var(--c2); stroke-width: 4"/>
+        <text x="864" y="295" text-anchor="middle" style="font-size: 40px">Optimize</text>
+        <g class="dim" style="--at: var(--b2)">
+          <rect x="1308" y="180" width="420" height="200" rx="24" style="fill: var(--panel); stroke: var(--c3); stroke-width: 4"/>
+          <text x="1518" y="295" text-anchor="middle" style="font-size: 40px">Emit</text>
+          <path d="M 420 280 H 654 M 1074 280 H 1308" style="stroke: var(--muted); stroke-width: 6"/>
+        </g>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

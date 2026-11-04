@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Reveal and draw</title>
+  <link rel="stylesheet" href="../../../theme.css">
+</head>
+<body>
+  <main class="stage">
+    <h1 class="in rise" style="--at: var(--b0)">Stagger and draw</h1>
+    <div class="cols grow">
+      <ul class="points">
+        <li class="in rise" style="--at: calc(var(--b0) + 0 * .15s); --dur: 1s">Read the input</li>
+        <li class="in rise" style="--at: calc(var(--b0) + 1 * .15s); --dur: 1s">Transform it</li>
+        <li class="in rise" style="--at: calc(var(--b0) + 2 * .15s); --dur: 1s">Write the result</li>
+      </ul>
+      <svg viewBox="0 0 700 400" width="700" height="400">
+        <path class="draw" pathLength="1" d="M 40 360 C 200 360 240 60 660 40"
+              style="--at: var(--b1); --dur: 1.6s; stroke: var(--c1); stroke-width: 10; fill: none; stroke-linecap: round"/>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Motion and morph</title>
+  <link rel="stylesheet" href="../../../theme.css">
+  <style>
+    .packet {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--c2);
+      offset-path: path("M 0 300 C 200 0 500 0 700 300");
+      offset-rotate: 0deg;
+      animation: travel 2s var(--ease) var(--b0) both;
+    }
+    @keyframes travel { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+
+    .blob { fill: var(--c4); animation: morph 1.6s var(--ease) var(--b1) both; }
+    /* Both paths have the same commands (M, 4 C, Z), which Chromium needs to interpolate d. */
+    @keyframes morph {
+      from { d: path("M 100 0 C 200 0 200 0 200 100 C 200 200 200 200 100 200 C 0 200 0 200 0 100 C 0 0 0 0 100 0 Z"); }
+      to   { d: path("M 100 0 C 155 0 200 45 200 100 C 200 155 155 200 100 200 C 45 200 0 155 0 100 C 0 45 45 0 100 0 Z"); }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <h1 class="in rise" style="--at: var(--b0)">Motion path and morph</h1>
+    <div class="cols grow">
+      <div style="position: relative; width: 760px; height: 360px">
+        <svg viewBox="0 0 760 360" width="760" height="360" style="position: absolute; inset: 0">
+          <path d="M 24 324 C 224 24 524 24 724 324" style="stroke: var(--line); stroke-width: 6; fill: none; stroke-dasharray: 12 12"/>
+        </svg>
+        <div class="packet" style="left: 0; top: 0"></div>
+      </div>
+      <svg viewBox="0 0 200 200" width="360" height="360">
+        <path class="blob" d="M 100 0 C 200 0 200 0 200 100 C 200 200 200 200 100 200 C 0 200 0 200 0 100 C 0 0 0 0 100 0 Z"/>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>
