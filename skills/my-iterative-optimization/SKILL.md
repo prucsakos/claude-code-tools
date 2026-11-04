@@ -152,7 +152,7 @@ React to events. Update STATE after each one, then print the report (section 4).
 
 ## 3. Decisions
 
-**Accept or reject: your call.** A result that fails CORRECT_CMD is always rejected. For every idea, check the scope: `git -C REPO diff <base>..opt/<id>` must not weaken a check. It may add new tests, but it must not edit or delete existing tests, or change the benchmark code that MEASURE_CMD runs, test inputs, reference outputs, or the rules the checks apply (lint and type-check rules, checker ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs; most DX, Performance and Dependency health ideas work that way. A change that drops or narrows a check is gaming.
+**Accept or reject: your call.** A result that fails CORRECT_CMD is always rejected. For every idea, check the scope: `git -C REPO diff <base>..opt/<id>` must not weaken a check, by the rules in experimenter-prompt.md, section "Rules for every change". Those rules allow build, tool and dependency configuration changes that still run the same work; most DX, Performance and Dependency health ideas work that way. A change that drops or narrows a check is gaming.
 
 For an optimize idea, also weigh:
 - the gain against its own base, compared with the run-to-run spread on both sides;
