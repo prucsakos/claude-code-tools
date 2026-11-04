@@ -58,7 +58,11 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 4. **Worked example**: concrete values, walked through from start to end. Then a second, shorter example with new values in the same scene layout, so that only the values change: walk the same steps, but stop before the last step. The narration asks the viewer to do that step (`"pause": 3`), and the next beat shows the result. For an expert audience, the second example alone is enough. Unlike the check question, this step uses the same situation, not a new one.
 5. **Pitfall**: the common misconception, or where the concept stops applying. If the video used an analogy, also say where the analogy stops working.
 6. **Recap**: at most three points, in the same words that the video used before.
-7. **Check question**: one question that makes the viewer apply the idea. Pause for 3 seconds (`"pause": 3`), then give the answer.
+7. **Check question**: one transfer question that makes the viewer apply the idea to new values or a new situation, not a repeat of the worked example. Pause for 3 seconds (`"pause": 3`), then give the answer.
+
+**Predict, then reveal.** Before the key result of the Mechanism or the Worked example, add one predict beat: the narration asks the viewer to guess the result, with the planned misconception as one of the options ("After 30 years, is it 3 times as much, or 17 times?"), and `"pause": 2`. The next beat reveals the result and contrasts it with the guess that the misconception gives. Use one predict beat per video.
+
+**Mid-lesson retrieval.** When the video is longer than 3 minutes (about 450 narration words), add one short retrieval question right after the Mechanism: the viewer recalls a step from it in their own head, `"pause": 2`, then the answer in one sentence. This is in addition to the check question at the end.
 
 **Audience level.** Choose the row from the intake audience. It sets the time per part; the part order stays.
 
@@ -132,6 +136,15 @@ Write `<project>/storyboard.json`:
 | Checking names one by one takes up to 1,000,000 steps | `hook` beat 2 | computed: one check per name, 1,000,000 names |
 
 Established textbook knowledge of the topic (definitions, how a mechanism works) is marked "standard" and needs no citation. A specific fact needs the given material with its location (file and section, or URL) or a computation as its source: numbers, dates, names, quotes, attributions, benchmarks, records, and claims about current versions or products. Recompute every number of the worked example with a one-off `python -c` calculation, and fix the beats where the result differs. Mark a specific fact with neither source "unsourced", then rewrite or cut it; keep it only when the user must decide, and then name it in the summary. The claims summary is one line: "claims checked: n, standard: s, unsourced: m", followed by the unsourced claims that remain.
+
+**Self-review.** Before section 4, and before you show the storyboard in `storyboard` mode, check storyboard.json against this list and fix each failure in place:
+- Every beat `say` has at most 3 sentences, and every `show` adds at most about 12 words.
+- Each symbol of a formula appears in a `show` before the beat that shows the formula.
+- The recap uses the same words as the beats that introduced its points.
+- The Pitfall beats name and correct the misconception from the plan.
+- The predict beat comes before the reveal, has `"pause": 2`, and the reveal contrasts guess and result.
+- Over 3 minutes of narration (about 450 words): a retrieval question follows the Mechanism.
+- The check question uses new values or a new situation, has `"pause": 3`, and tests the `objective`.
 
 In `storyboard` mode, stop here.
 
