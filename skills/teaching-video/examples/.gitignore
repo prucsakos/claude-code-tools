@@ -1,0 +1,4 @@
+# Output that make_video.py writes next to each example storyboard.
+captions*.srt
+video*.mp4
+build/
