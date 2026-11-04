@@ -52,12 +52,12 @@ Take every input that the request or the conversation gives. Read the given mate
 Before the storyboard, decide and write into it: the objective (one sentence), the audience, the prerequisites the viewer needs, and the misconception the viewer most likely brings.
 
 **Concept or mechanism.** Use these parts in this order. Each part is one or more scenes:
-1. **Hook**: the problem or question that the concept answers, in a concrete situation. At most 20 seconds.
+1. **Hook**: the problem or question that the concept answers, in a concrete situation. At most 20 seconds. End it with one roadmap beat that names the two or three questions the video answers, in plain words; the screen shows them as a short list of 2–4 words per item.
 2. **Intuition**: the plain-words version first, with an everyday analogy and no jargon. End it with one mapping beat: the screen pairs each analogy element with its domain term (for example `drawer → bucket`), each term in the color it keeps in later scenes. The domain terms enter through the analogy, so the Mechanism uses them without a new introduction.
 3. **Mechanism**: cause, then effect, one step per beat. Show a part before you name it, and name it when it is needed.
 4. **Worked example**: concrete values, walked through from start to end. Then a second, shorter example with new values in the same scene layout, so that only the values change: walk the same steps, but stop before the last step. The narration asks the viewer to do that step (`"pause": 3`), and the next beat shows the result. For an expert audience, the second example alone is enough. Unlike the check question, this step uses the same situation, not a new one.
 5. **Pitfall**: the common misconception, or where the concept stops applying. If the video used an analogy, also say where the analogy stops working.
-6. **Recap**: at most three points, in the same words that the video used before.
+6. **Recap**: at most three points, in the same words that the video used before. Answer the roadmap questions in the same words and the same order.
 7. **Check question**: one transfer question that makes the viewer apply the idea to new values or a new situation, not a repeat of the worked example. Pause for 3 seconds (`"pause": 3`), then give the answer.
 
 **Predict, then reveal.** Before the key result of the Mechanism or the Worked example, add one predict beat: the narration asks the viewer to guess the result, with the planned misconception as one of the options ("After 30 years, is it 3 times as much, or 17 times?"), and `"pause": 2`. The next beat reveals the result and contrasts it with the guess that the misconception gives. Use one predict beat per video.
@@ -72,7 +72,7 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 | Some background | Hook, then a short Intuition (the analogy and the mapping beat in one scene). More Mechanism beats and a second worked example |
 | Expert or student of the field | Skip the analogy and the mapping beat: the Intuition is one beat in domain terms. Lead with the Mechanism; the Pitfall covers edge cases and limits |
 
-**Procedure or tool tutorial.** Show the end result first, then the prerequisites, then the steps: one action per beat, and the state after each action. Then a shorter second run with new values: the screen does the earlier steps, the narration names the last step and lets the viewer say its action (`"pause": 3`), then the screen does it. Then the most common error and its fix, then a recap. For software, use real screenshots in the scenes and highlight the control under discussion.
+**Procedure or tool tutorial.** Show the end result first, then the prerequisites, then the steps: one action per beat, and the state after each action. The roadmap is the list of steps, and each step scene opens with its number ("Step 2 of 4"). Then a shorter second run with new values: the screen does the earlier steps, the narration names the last step and lets the viewer say its action (`"pause": 3`), then the screen does it. Then the most common error and its fix, then a recap. For software, use real screenshots in the scenes and highlight the control under discussion.
 
 **Rules for every scene** (from research on multimedia learning):
 - One idea per scene, one change on screen per beat.
@@ -83,7 +83,7 @@ Before the storyboard, decide and write into it: the objective (one sentence), t
 - Use concrete values before abstract rules, and a formula only after the viewer has seen what each symbol stands for.
 - Use the same term for the same thing in narration, labels and captions. Give a concept the same color in every scene. Write each concept into the storyboard's `terms` list before the beats: narration, labels and captions use only its `term` spelling, never an `avoid` word, and every element of that concept uses its `color` token in every scene.
 
-**Narration.** Write for the ear: second person, sentences of 8–20 words, one to three sentences per beat, about 150 words per minute. Text-to-speech reads symbols and abbreviations literally, so write them as spoken words ("x squared", "for example", "seven"). The captions show the same text. The preview checks this (section 5, read-aloud warnings).
+**Narration.** Write for the ear: second person, sentences of 8–20 words, one to three sentences per beat, about 150 words per minute. In each scene after the hook, the first sentence links the scene to the previous one and adds no new term ("So the drawer number comes from the name. Now: what if two names get the same drawer?"). Text-to-speech reads symbols and abbreviations literally, so write them as spoken words ("x squared", "for example", "seven"). The captions show the same text. The preview checks this (section 5, read-aloud warnings).
 
 ## 3. Write the storyboard
 
