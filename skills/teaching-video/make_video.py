@@ -10,10 +10,13 @@ sync at any video length.
     python make_video.py STORYBOARD.json             # video.mp4 + captions.srt
     python make_video.py STORYBOARD.json --preview   # one still per beat only
     python make_video.py STORYBOARD.json --scaffold  # create missing scene files, then stop
+    python make_video.py STORYBOARD.json --scenes intro,recap   # shorter cut: video.cut.mp4
     python make_video.py --doctor [--language hu]    # which tools are installed
     python make_video.py --doctor --install          # install the missing required tools
 
-All output goes next to the storyboard: video.mp4, captions.srt and build/.
+All output goes next to the storyboard: video.mp4, captions.srt and build/. A cut
+(--scenes) writes video.cut.mp4, captions.cut.srt and build/*.cut.*, so the full
+video's files stay as they are.
 """
 
 from __future__ import annotations
@@ -181,6 +184,36 @@ def load_storyboard(path: Path, require_html: bool = True) -> Storyboard:
     if not all(isinstance(value, str) for value in (voice, rate, title)):
         raise StoryboardError("title, voice and rate must be strings")
     return Storyboard(title=title, tts=tts, voice=voice, rate=rate, fps=fps, scenes=scenes)
+
+
+def select_scenes(storyboard: Storyboard, ids: list[str]) -> Storyboard:
+    """A copy of the storyboard with only the named scenes, in storyboard order (not the order of ids)."""
+    valid = [scene.id for scene in storyboard.scenes]
+    if not ids:
+        raise StoryboardError(f"--scenes needs at least one scene id; the storyboard has: {', '.join(valid)}")
+    unknown = [scene_id for scene_id in ids if scene_id not in valid]
+    if unknown:
+        raise StoryboardError(f"unknown scene id {', '.join(map(repr, unknown))}; the storyboard has: {', '.join(valid)}")
+    return dataclasses.replace(storyboard, scenes=[scene for scene in storyboard.scenes if scene.id in ids])
+
+
+@dataclass(frozen=True)
+class OutputPaths:
+    """Output files relative to the project folder, with forward slashes, because ffmpeg runs there."""
+    video: str
+    captions: str
+    narration: str
+    timeline: str
+
+
+def output_paths(cut: bool) -> OutputPaths:
+    # A cut gets its own names, so rendering it does not overwrite the full video's files.
+    suffix = ".cut" if cut else ""
+    return OutputPaths(video=f"video{suffix}.mp4", captions=f"captions{suffix}.srt",
+                       narration=f"build/narration{suffix}.wav", timeline=f"build/timeline{suffix}.json")
+
+
+FULL_OUTPUTS = output_paths(cut=False)
 
 
 # ----------------------------------------------------------------- narration
@@ -488,23 +521,24 @@ def render_preview(timed_scenes: list[TimedScene], fps: int, build: Path) -> Non
     print(f"preview stills and contact sheets (9 beats each, in storyboard order): {preview}")
 
 
-def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: Path, burn_captions: bool) -> None:
+def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: Path, burn_captions: bool,
+                 outputs: OutputPaths = FULL_OUTPUTS) -> None:
     from playwright.sync_api import sync_playwright
 
     command = ["ffmpeg", "-v", "error", "-y",
                "-f", "image2pipe", "-c:v", "mjpeg", "-framerate", str(storyboard.fps), "-i", "-",
-               "-i", "build/narration.wav"]
+               "-i", outputs.narration]
     if burn_captions:
         # Relative path: the subtitles filter cannot parse Windows drive letters without heavy escaping.
-        command += ["-vf", f"subtitles=captions.srt:force_style='{CAPTION_STYLE}'", "-map", "0:v", "-map", "1:a"]
+        command += ["-vf", f"subtitles={outputs.captions}:force_style='{CAPTION_STYLE}'", "-map", "0:v", "-map", "1:a"]
     else:
-        command += ["-i", "captions.srt", "-map", "0:v", "-map", "1:a", "-map", "2:s", "-c:s", "mov_text"]
+        command += ["-i", outputs.captions, "-map", "0:v", "-map", "1:a", "-map", "2:s", "-c:s", "mov_text"]
     command += ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
                 # x264 defaults to ~1.5 frame threads per CPU, each holding its own 1080p frames; frames arrive
                 # at about real time, so 6 threads keep up with far less memory.
                 "-threads", "6",
                 "-c:a", "aac", "-b:a", "160k", "-metadata", f"title={storyboard.title}",
-                "-movflags", "+faststart", "video.mp4"]
+                "-movflags", "+faststart", outputs.video]
     log_path = root / "build" / "ffmpeg.log"
     with log_path.open("wb") as log:
         encoder = subprocess.Popen(command, cwd=root, stdin=subprocess.PIPE, stderr=log)
@@ -757,6 +791,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tts", choices=TTS_BACKENDS, help="override the storyboard's tts backend")
     parser.add_argument("--voice", help="override the storyboard's voice")
     parser.add_argument("--rate", help='override the storyboard\'s edge speaking rate, e.g. "-10%%"')
+    parser.add_argument("--scenes", metavar="IDS", type=lambda value: [part.strip() for part in value.split(",") if part.strip()],
+                        help="shorter cut: render only these comma-separated scene ids, in storyboard order, "
+                             "to video.cut.mp4 and captions.cut.srt (works with --preview)")
     args = parser.parse_args()
     if args.storyboard is None and not args.doctor:
         parser.error("the storyboard argument is required (or use --doctor)")
@@ -789,6 +826,12 @@ def main() -> None:
         storyboard = dataclasses.replace(storyboard, voice=args.voice)
     if args.rate:
         storyboard = dataclasses.replace(storyboard, rate=args.rate)
+    if args.scenes is not None:
+        try:
+            storyboard = select_scenes(storyboard, args.scenes)
+        except StoryboardError as error:
+            sys.exit(f"storyboard error: {error}")
+    outputs = output_paths(cut=args.scenes is not None)
     if shutil.which("ffmpeg") is None:
         sys.exit("ffmpeg is not on PATH (winget install Gyan.FFmpeg / brew install ffmpeg / apt install ffmpeg)")
     try:
@@ -802,21 +845,21 @@ def main() -> None:
     try:
         narrator = Narrator(storyboard.tts, storyboard.voice, storyboard.rate, build / "tts")
         timed_scenes, track = build_timeline(storyboard, narrator)
-        write_wav(build / "narration.wav", track)
+        write_wav(root / outputs.narration, track)
         all_beats = [beat for timed_scene in timed_scenes for beat in timed_scene.beats]
-        write_srt(root / "captions.srt", all_beats)
+        write_srt(root / outputs.captions, all_beats)
         timeline = [
             {"id": ts.scene.id, "start": round(ts.start, 3), "end": round(ts.end, 3),
              "beats": [{"start": round(b.start, 3), "end": round(b.end, 3), "say": b.text} for b in ts.beats]}
             for ts in timed_scenes
         ]
-        (build / "timeline.json").write_text(json.dumps(timeline, indent=2, ensure_ascii=False), encoding="utf-8")
+        (root / outputs.timeline).write_text(json.dumps(timeline, indent=2, ensure_ascii=False), encoding="utf-8")
         duration = timed_scenes[-1].end
         if args.preview:
             render_preview(timed_scenes, storyboard.fps, build)
         else:
-            render_video(timed_scenes, storyboard, root, args.burn_captions or storyboard.tts == "none")
-            print(f"video: {root / 'video.mp4'} ({duration:.1f} s, {len(all_beats)} beats, {len(timed_scenes)} scenes)")
+            render_video(timed_scenes, storyboard, root, args.burn_captions or storyboard.tts == "none", outputs)
+            print(f"video: {root / outputs.video} ({duration:.1f} s, {len(all_beats)} beats, {len(timed_scenes)} scenes)")
     except RenderError as error:
         sys.exit(f"error: {error}")
 

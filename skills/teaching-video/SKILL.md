@@ -165,7 +165,7 @@ Look at every contact sheet. Check for text that overflows or is cut off, elemen
 python SKILL_DIR/make_video.py <project>/storyboard.json [--burn-captions]
 ```
 
-Run it with `run_in_background: true`: the first run takes about 30–40 seconds per minute of video (narration included), longer with much animation. It writes `<project>/video.mp4` (H.264, AAC and captions as a subtitle track) and `<project>/captions.srt`. `--burn-captions` draws the captions into the picture; with `tts: none` they are always burned in. `--tts`, `--voice` and `--rate` override the storyboard, for example to render the same storyboard with a different voice.
+Run it with `run_in_background: true`: the first run takes about 30–40 seconds per minute of video (narration included), longer with much animation. It writes `<project>/video.mp4` (H.264, AAC and captions as a subtitle track) and `<project>/captions.srt`. `--burn-captions` draws the captions into the picture; with `tts: none` they are always burned in. `--tts`, `--voice` and `--rate` override the storyboard, for example to render the same storyboard with a different voice. `--scenes intro,recap` renders only those scene ids (comma-separated; the cut keeps storyboard order, not the order you list) to `<project>/video.cut.mp4` and `<project>/captions.cut.srt`, timed from 0, so the full `video.mp4` stays; narration comes from the cache. With `--preview` it writes stills of only those scenes. An unknown id stops with the list of valid ids.
 
 Then check the file:
 - `ffprobe -v error -show_entries stream=codec_type,duration -of compact <project>/video.mp4`: the video and audio durations agree within 0.1 s.
@@ -173,4 +173,4 @@ Then check the file:
 
 ## 7. Deliver
 
-Report: the path of `video.mp4`, its length, one line per scene, the narration backend and voice (for `edge`, that the narration text went to Microsoft's speech service), the claims summary from section 3, and the defaults you assumed. Offer what is cheap to do next: a different voice or language (change the `say` texts and render again), burned-in captions, or a shorter cut.
+Report: the path of `video.mp4`, its length, one line per scene, the narration backend and voice (for `edge`, that the narration text went to Microsoft's speech service), the claims summary from section 3, and the defaults you assumed. Offer what is cheap to do next: a different voice or language (change the `say` texts and render again), burned-in captions, or a shorter cut (for "just the part about X" or a teaser: `--scenes id1,id2`, see section 6).
