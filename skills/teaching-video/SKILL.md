@@ -19,7 +19,7 @@ In the commands below, `python` means `python3` on macOS and Linux, and `python`
 A first argument `storyboard` or `full` picks the mode.
 
 - `full` (default): storyboard, scenes, a rendered and checked video.
-- `storyboard`: stop after section 3 and show the storyboard as a table (scene, narration, visuals). This is the same split as the `--video storyboard|full` option of `/explain`.
+- `storyboard`: stop after section 3 and show the storyboard as a table (scene, narration, visuals), then the claims summary from "Check the facts". This is the same split as the `--video storyboard|full` option of `/explain`.
 
 ## Requirements
 
@@ -116,8 +116,20 @@ Write `<project>/storyboard.json`:
 | beat `say` | The narration. It is also the caption |
 | beat `show` | What the screen adds in this beat. It is for you and for storyboard mode; the renderer ignores it |
 | beat `pause` | Seconds of silence after the beat (0.35) |
+| `sources` | Optional list of strings: the material the claims come from, such as `"notes.md, section 2"` or a URL |
 
-`objective` and `audience` are for you; the renderer ignores them. In `storyboard` mode, stop here.
+`objective`, `audience` and `sources` are for you; the renderer ignores them.
+
+**Check the facts** (both modes). Before you build scenes, list every factual claim, number and formula in the beats' `say` and `show` as a table in `<project>/claims.md`:
+
+| Claim | Beat | Source |
+|---|---|---|
+| Checking names one by one takes up to 1,000,000 steps | `hook` beat 2 | computed: one check per name, 1,000,000 names |
+| Most languages build their dictionaries on hash maps | `intuition` beat 1 | unsourced |
+
+The source is the given material with its location (file and section, or URL), a computation, or general knowledge marked "unsourced". Recompute every number of the worked example with a one-off `python -c` calculation, and fix the beats where the result differs. Rewrite or cut a claim that is neither in the material nor computable; keep it only when the user must decide, and then name it in the summary. The claims summary is one line: "claims checked: n, unsourced: m", followed by the unsourced claims that remain.
+
+In `storyboard` mode, stop here.
 
 ## 4. Build the scenes
 
@@ -157,4 +169,4 @@ Then check the file:
 
 ## 7. Deliver
 
-Report: the path of `video.mp4`, its length, one line per scene, the narration backend and voice (for `edge`, that the narration text went to Microsoft's speech service), and the defaults you assumed. Offer what is cheap to do next: a different voice or language (change the `say` texts and render again), burned-in captions, or a shorter cut.
+Report: the path of `video.mp4`, its length, one line per scene, the narration backend and voice (for `edge`, that the narration text went to Microsoft's speech service), the claims summary from section 3, and the defaults you assumed. Offer what is cheap to do next: a different voice or language (change the `say` texts and render again), burned-in captions, or a shorter cut.
