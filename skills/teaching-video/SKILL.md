@@ -121,7 +121,7 @@ Write `<project>/storyboard.json`:
 
 ## 4. Build the scenes
 
-Copy `theme.css` and `scene-template.html` from SKILL_DIR into `<project>/scenes/`, and make one HTML file per scene from the template. The renderer loads each scene as a 1920×1080 page and drives it by time:
+First run `python SKILL_DIR/make_video.py <project>/storyboard.json --scaffold`. It copies `theme.css` next to the scene files and creates every missing scene file with the scene id as heading and one `in rise` block per beat, wired to that beat with `--at: var(--bN)` and holding the beat's `show` text (or its `say` text when `show` is missing). It never overwrites a file that exists. Then edit each generated scene into its real layout; `scene-template.html` in SKILL_DIR shows more of the classes below. The renderer loads each scene as a 1920×1080 page and drives it by time:
 
 - **Beat timing.** The renderer sets `--b0`, `--b1`, … on `:root` to the start time of each beat of the scene. To reveal an element when beat 2 starts, give it an animation class and `style="--at: var(--b2)"`. Offsets work: `--at: calc(var(--b2) + .8s)`. `--dur` sets the length (default `.6s`).
 - **Animation classes** (in `theme.css`): `in` (fade in), `in rise`, `in pop`, `in wipe`, `draw` (draws an SVG shape that has `pathLength="1"`), `mark` (highlights a phrase), `out` (fades out), `dim` (fades to 25%). An element takes one of these; nest elements to combine two. `rise` and `pop` move the element, so use them on block or inline-block elements.

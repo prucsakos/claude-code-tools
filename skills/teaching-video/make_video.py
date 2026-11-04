@@ -9,6 +9,7 @@ sync at any video length.
 
     python make_video.py STORYBOARD.json             # video.mp4 + captions.srt
     python make_video.py STORYBOARD.json --preview   # one still per beat only
+    python make_video.py STORYBOARD.json --scaffold  # create missing scene files, then stop
     python make_video.py --doctor [--language hu]    # which tools are installed
     python make_video.py --doctor --install          # install the missing required tools
 
@@ -22,6 +23,7 @@ import asyncio
 import contextlib
 import dataclasses
 import hashlib
+import html
 import importlib
 import json
 import math
@@ -61,6 +63,7 @@ class RenderError(RuntimeError):
 class Beat:
     say: str
     pause: float
+    show: str = ""
 
 
 @dataclass(frozen=True)
@@ -130,7 +133,8 @@ def _list(value: object, where: str) -> list:
     return value
 
 
-def load_storyboard(path: Path) -> Storyboard:
+def load_storyboard(path: Path, require_html: bool = True) -> Storyboard:
+    """require_html=False is for --scaffold, which creates the missing scene files."""
     try:
         data = _object(json.loads(path.read_text(encoding="utf-8")), "storyboard")
     except json.JSONDecodeError as error:
@@ -151,13 +155,16 @@ def load_storyboard(path: Path) -> Storyboard:
         if any(existing.id == scene_id for existing in scenes):
             raise StoryboardError(f"{where}.id {scene_id!r} is used twice")
         html = (path.parent / _string(scene, "html", where)).resolve()
-        if not html.is_file():
+        if require_html and not html.is_file():
             raise StoryboardError(f"{where}.html: file not found: {html}")
         beats = []
         for j, raw_beat in enumerate(_list(scene.get("beats"), f"{where}.beats")):
             beat_where = f"{where}.beats[{j}]"
             beat = _object(raw_beat, beat_where)
-            beats.append(Beat(say=_string(beat, "say", beat_where), pause=_seconds(beat, "pause", 0.35, beat_where)))
+            # "show" is optional notes for the author; the renderer never needed it, so a non-string is ignored, not an error.
+            show = beat.get("show")
+            beats.append(Beat(say=_string(beat, "say", beat_where), pause=_seconds(beat, "pause", 0.35, beat_where),
+                              show=show.strip() if isinstance(show, str) else ""))
         scenes.append(
             Scene(
                 id=scene_id,
@@ -531,6 +538,51 @@ def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: P
             raise RenderError(f"ffmpeg failed:\n{log_path.read_text(errors='replace')}")
 
 
+# ------------------------------------------------------------------ scaffold
+
+SCAFFOLD_PAGE = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{title}</title>
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <!-- Beat N of this scene starts at var(--bN). Scene contract: SKILL.md, "4. Build the scenes". -->
+  <main class="stage">
+    <h1 class="in rise" style="--at: var(--b0)">{title}</h1>
+{blocks}
+  </main>
+</body>
+</html>
+"""
+
+
+def scaffold_scene(scene: Scene) -> str:
+    """One revealed block per beat, holding the beat's "show" text (or its narration when "show" is missing)."""
+    blocks = "\n".join(
+        f'    <p class="in rise" style="--at: var(--b{index})">{html.escape(beat.show or beat.say)}</p>'
+        for index, beat in enumerate(scene.beats)
+    )
+    return SCAFFOLD_PAGE.format(title=html.escape(scene.id), blocks=blocks)
+
+
+def scaffold(storyboard: Storyboard) -> None:
+    """Create every missing scene file and theme.css next to it. Existing files are never overwritten."""
+    theme = Path(__file__).resolve().parent / "theme.css"
+    for scene in storyboard.scenes:
+        scene.html.parent.mkdir(parents=True, exist_ok=True)
+        theme_copy = scene.html.parent / "theme.css"
+        if not theme_copy.exists():
+            shutil.copyfile(theme, theme_copy)
+            print(f"created {theme_copy}")
+        if scene.html.exists():
+            print(f"skipped {scene.id}: {scene.html} exists")
+        else:
+            scene.html.write_text(scaffold_scene(scene), encoding="utf-8")
+            print(f"created {scene.id}: {scene.html}")
+
+
 # ---------------------------------------------------------------------- main
 
 FFMPEG_INSTALL = "winget install Gyan.FFmpeg / brew install ffmpeg / apt install ffmpeg"
@@ -695,6 +747,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--language", default="en", help="with --doctor: language code whose edge voices are counted (default en)")
     parser.add_argument("--install", action="store_true", help="with --doctor: install the missing required tools, then check again")
     parser.add_argument("--preview", action="store_true", help="write one still per beat and contact sheets, no video")
+    parser.add_argument("--scaffold", action="store_true", help="create missing scene HTML files and theme.css from the storyboard, then stop")
     parser.add_argument("--burn-captions", action="store_true", help="burn captions into the picture (always on with tts none)")
     parser.add_argument("--tts", choices=TTS_BACKENDS, help="override the storyboard's tts backend")
     parser.add_argument("--voice", help="override the storyboard's voice")
@@ -713,9 +766,15 @@ def main() -> None:
         sys.exit(run_doctor(args.language, args.install))
     root = args.storyboard.resolve().parent
     try:
-        storyboard = load_storyboard(args.storyboard.resolve())
+        storyboard = load_storyboard(args.storyboard.resolve(), require_html=not args.scaffold)
     except (OSError, StoryboardError) as error:
         sys.exit(f"storyboard error: {error}")
+    if args.scaffold:
+        try:
+            scaffold(storyboard)
+        except OSError as error:
+            sys.exit(f"scaffold error: {error}")
+        return
     if args.tts and args.tts != storyboard.tts:
         # The storyboard's voice belongs to its own backend.
         storyboard = dataclasses.replace(storyboard, tts=args.tts, voice=DEFAULT_VOICE[args.tts])
