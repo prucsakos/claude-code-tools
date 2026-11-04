@@ -167,10 +167,18 @@ python SKILL_DIR/make_video.py <project>/storyboard.json [--burn-captions]
 
 Run it with `run_in_background: true`: the first run takes about 30–40 seconds per minute of video (narration included), longer with much animation. It writes `<project>/video.mp4` (H.264, AAC and captions as a subtitle track) and `<project>/captions.srt`. `--burn-captions` draws the captions into the picture; with `tts: none` they are always burned in. `--tts`, `--voice` and `--rate` override the storyboard, for example to render the same storyboard with a different voice. `--scenes intro,recap` renders only those scene ids (comma-separated; the cut keeps storyboard order, not the order you list) to `<project>/video.cut.mp4` and `<project>/captions.cut.srt`, timed from 0, so the full `video.mp4` stays; narration comes from the cache. With `--preview` it writes stills of only those scenes. An unknown id stops with the list of valid ids.
 
+Language version: write `<project>/storyboard.<lang>.json`, a narration overlay with one translated text per beat, and add `--translation <project>/storyboard.<lang>.json`:
+
+```json
+{"language": "hu", "voice": "hu-HU-NoemiNeural", "say": {"hook": ["Képzelj el egy telefonkönyvet egymillió névvel.", "A nevek egyenkénti átnézése egymillió lépés is lehet."]}}
+```
+
+`language` (letters and hyphens, such as `hu` or `pt-BR`) names the outputs: `video.hu.mp4`, `captions.hu.srt`, `build/narration.hu.wav` and `build/timeline.hu.json` (with `--scenes`: `video.hu.cut.mp4` and so on), so the original video stays. `voice` is optional (default: the storyboard's). `say` lists every scene id with exactly as many texts as the scene has beats. Only the narration and captions change: the on-screen text in the scene HTML stays in the original language.
+
 Then check the file:
 - `ffprobe -v error -show_entries stream=codec_type,duration -of compact <project>/video.mp4`: the video and audio durations agree within 0.1 s.
 - Extract frames in the middle of two or three animations (times from `build/timeline.json`) and look at them: `ffmpeg -v error -ss <seconds> -i video.mp4 -frames:v 1 frame.png`.
 
 ## 7. Deliver
 
-Report: the path of `video.mp4`, its length, one line per scene, the narration backend and voice (for `edge`, that the narration text went to Microsoft's speech service), the claims summary from section 3, and the defaults you assumed. Offer what is cheap to do next: a different voice or language (change the `say` texts and render again), burned-in captions, or a shorter cut (for "just the part about X" or a teaser: `--scenes id1,id2`, see section 6).
+Report: the path of `video.mp4`, its length, one line per scene, the narration backend and voice (for `edge`, that the narration text went to Microsoft's speech service), the claims summary from section 3, and the defaults you assumed. Offer what is cheap to do next: a different voice (`--voice`), a version in another language (a narration overlay with `--translation`, see section 6; the on-screen text stays in the original language), burned-in captions, or a shorter cut (for "just the part about X" or a teaser: `--scenes id1,id2`, see section 6).

@@ -11,12 +11,14 @@ sync at any video length.
     python make_video.py STORYBOARD.json --preview   # one still per beat only
     python make_video.py STORYBOARD.json --scaffold  # create missing scene files, then stop
     python make_video.py STORYBOARD.json --scenes intro,recap   # shorter cut: video.cut.mp4
+    python make_video.py STORYBOARD.json --translation storyboard.hu.json   # language version: video.hu.mp4
     python make_video.py --doctor [--language hu]    # which tools are installed
     python make_video.py --doctor --install          # install the missing required tools
 
 All output goes next to the storyboard: video.mp4, captions.srt and build/. A cut
-(--scenes) writes video.cut.mp4, captions.cut.srt and build/*.cut.*, so the full
-video's files stay as they are.
+(--scenes) writes video.cut.mp4, captions.cut.srt and build/*.cut.*, and a language
+version (--translation) writes video.<lang>.mp4 and the like, so the full video's files
+stay as they are.
 """
 
 from __future__ import annotations
@@ -206,14 +208,47 @@ class OutputPaths:
     timeline: str
 
 
-def output_paths(cut: bool) -> OutputPaths:
-    # A cut gets its own names, so rendering it does not overwrite the full video's files.
-    suffix = ".cut" if cut else ""
+def output_paths(cut: bool, language: str | None = None) -> OutputPaths:
+    # A language version and a cut get their own names, so rendering them does not overwrite the full video's files.
+    suffix = (f".{language}" if language else "") + (".cut" if cut else "")
     return OutputPaths(video=f"video{suffix}.mp4", captions=f"captions{suffix}.srt",
                        narration=f"build/narration{suffix}.wav", timeline=f"build/timeline{suffix}.json")
 
 
 FULL_OUTPUTS = output_paths(cut=False)
+
+
+def load_translation(path: Path, storyboard: Storyboard) -> tuple[str, Storyboard]:
+    """Reads a narration overlay {"language", "voice", "say": {scene id: [beat texts]}} and returns
+    its language code and a copy of the storyboard with those texts and that voice. Scene HTML is untouched."""
+    try:
+        data = _object(json.loads(path.read_text(encoding="utf-8")), "translation")
+    except json.JSONDecodeError as error:
+        raise StoryboardError(f"translation: invalid JSON: {error}") from error
+    language = data.get("language")
+    # The code becomes part of the output file names, so it may hold only letters and hyphens.
+    if not isinstance(language, str) or not re.fullmatch(r"[A-Za-z]{2,3}(-[A-Za-z]{2,8})*", language):
+        raise StoryboardError(f"translation.language must be a code such as hu or pt-BR: got {language!r}")
+    voice = _string(data, "voice", "translation") if "voice" in data else storyboard.voice
+    say = _object(data.get("say"), "translation.say")
+    scene_ids = [scene.id for scene in storyboard.scenes]
+    for scene_id in say:
+        if scene_id not in scene_ids:
+            raise StoryboardError(f"translation.say: unknown scene id {scene_id!r}")
+    scenes = []
+    for scene in storyboard.scenes:
+        where = f"translation.say.{scene.id}"
+        if scene.id not in say:
+            raise StoryboardError(f"{where} is missing")
+        texts = _list(say[scene.id], where)
+        if len(texts) != len(scene.beats):
+            raise StoryboardError(f"{where} has {len(texts)} texts but the scene has {len(scene.beats)} beats")
+        for index, text in enumerate(texts):
+            if not isinstance(text, str) or not text.strip():
+                raise StoryboardError(f"{where}[{index}] must be a non-empty string")
+        beats = [dataclasses.replace(beat, say=text) for beat, text in zip(scene.beats, texts)]
+        scenes.append(dataclasses.replace(scene, beats=beats))
+    return language, dataclasses.replace(storyboard, voice=voice, scenes=scenes)
 
 
 # ----------------------------------------------------------------- narration
@@ -794,6 +829,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--scenes", metavar="IDS", type=lambda value: [part.strip() for part in value.split(",") if part.strip()],
                         help="shorter cut: render only these comma-separated scene ids, in storyboard order, "
                              "to video.cut.mp4 and captions.cut.srt (works with --preview)")
+    parser.add_argument("--translation", type=Path, metavar="OVERLAY",
+                        help='render a language version from a narration overlay JSON {"language": "hu", "voice": "hu-HU-NoemiNeural", '
+                             '"say": {"<scene id>": ["beat 1 text", ...]}}; writes video.<language>.mp4, captions.<language>.srt '
+                             'and build/narration|timeline.<language>.*; the scenes\' on-screen text stays unchanged')
     args = parser.parse_args()
     if args.storyboard is None and not args.doctor:
         parser.error("the storyboard argument is required (or use --doctor)")
@@ -819,6 +858,12 @@ def main() -> None:
         except OSError as error:
             sys.exit(f"scaffold error: {error}")
         return
+    language = None
+    if args.translation:
+        try:
+            language, storyboard = load_translation(args.translation.resolve(), storyboard)
+        except (OSError, StoryboardError) as error:
+            sys.exit(f"translation error: {error}")
     if args.tts and args.tts != storyboard.tts:
         # The storyboard's voice belongs to its own backend.
         storyboard = dataclasses.replace(storyboard, tts=args.tts, voice=DEFAULT_VOICE[args.tts])
@@ -831,7 +876,7 @@ def main() -> None:
             storyboard = select_scenes(storyboard, args.scenes)
         except StoryboardError as error:
             sys.exit(f"storyboard error: {error}")
-    outputs = output_paths(cut=args.scenes is not None)
+    outputs = output_paths(cut=args.scenes is not None, language=language)
     if shutil.which("ffmpeg") is None:
         sys.exit("ffmpeg is not on PATH (winget install Gyan.FFmpeg / brew install ffmpeg / apt install ffmpeg)")
     try:
