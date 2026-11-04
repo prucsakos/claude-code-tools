@@ -399,7 +399,10 @@ class ScenePlayer:
 
 def launch_chromium(playwright):
     try:
-        return playwright.chromium.launch()
+        # One renderer process and no background services: the render opens a single page at a time,
+        # so extra Chromium processes only add resident memory.
+        return playwright.chromium.launch(args=["--renderer-process-limit=1", "--disable-extensions",
+                                                "--disable-background-networking", "--disable-component-update"])
     except Exception as error:  # Playwright raises its generic Error when the browser is missing
         raise RenderError(f"cannot start Chromium ({error}); run: python -m playwright install chromium") from error
 
@@ -445,6 +448,9 @@ def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: P
     else:
         command += ["-i", "captions.srt", "-map", "0:v", "-map", "1:a", "-map", "2:s", "-c:s", "mov_text"]
     command += ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
+                # x264 defaults to ~1.5 frame threads per CPU, each holding its own 1080p frames; frames arrive
+                # at about real time, so 6 threads keep up with far less memory.
+                "-threads", "6",
                 "-c:a", "aac", "-b:a", "160k", "-metadata", f"title={storyboard.title}",
                 "-movflags", "+faststart", "video.mp4"]
     log_path = root / "build" / "ffmpeg.log"
