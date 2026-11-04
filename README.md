@@ -38,6 +38,7 @@ cp -R skills/explain ~/.codex/skills/
 | [`explain`](skills/explain/) | Codex skill: version of `/explain` |
 | [`explain-simple`](skills/explain-simple/) | Codex skill: version of `/explain-simple` |
 | [`my-iterative-optimization`](skills/my-iterative-optimization/) | Skill: improve a project with parallel experiments |
+| [`teaching-video`](skills/teaching-video/) | Skill: make a narrated teaching or tutorial video |
 | [`preference-tracker`](plugins/preference-tracker/) | Plugin: record taste notes to a private repo |
 | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT prompt: version of `/full-code-audit` |
 | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | MCP: connect an AI client to Blender |
@@ -142,6 +143,28 @@ Then use it inside Claude Code:
 /my-iterative-optimization high auto "Make the build faster"   # profile and mode skip their form rows
 /my-iterative-optimization low review "Improve Code hygiene"
 /my-iterative-optimization review "Make it faster and add a CSV export of reports"   # an optimize and a build target
+```
+
+### `teaching-video` (Claude Code)
+
+Claude Code skill: turns a topic or study material (notes, a chapter, a paper, code) into a short MP4 that teaches it. Claude plans the lesson (hook, intuition, mechanism, worked example, pitfall, recap, check question), writes the narration and a storyboard, and builds one animated HTML scene per step. `make_video.py` narrates each beat with text-to-speech, seeks the scenes frame by frame in headless Chromium so the picture follows the narration, and encodes video, voice and captions with ffmpeg. Narration backends: `edge` (online Microsoft neural voices, including Hungarian; the narration text goes to Microsoft), `sapi` (Windows voices, offline) and `none` (captions only). The video is in English unless you name another language. Mode `storyboard` stops after the storyboard.
+
+**Requires**
+
+- Python 3.9+ (`python3` on macOS and Linux, `python` or `py -3` on Windows), `ffmpeg` and `ffprobe` on your PATH
+- `python -m pip install playwright edge-tts`, then `python -m playwright install chromium`
+- `python skills/teaching-video/make_video.py --doctor` checks all of these and prints the install command for each missing tool; add `--install` to run those commands and check again
+
+```bash
+cp -R skills/teaching-video ~/.claude/skills/
+```
+
+Then use it inside Claude Code:
+
+```
+/teaching-video "How a hash map finds a value"
+/teaching-video storyboard "Bayes' theorem for doctors reading test results"
+/teaching-video "Explain docs/architecture.md to new team members, in Hungarian"   # internal material: no online voice unless you allow it
 ```
 
 ## Plugin: preference-tracker

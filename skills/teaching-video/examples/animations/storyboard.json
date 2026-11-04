@@ -1,0 +1,42 @@
+{
+  "title": "Animation techniques for teaching videos",
+  "objective": "Show every technique of animations.md rendered by make_video.py.",
+  "audience": "Authors of teaching videos",
+  "tts": "none",
+  "fps": 30,
+  "scenes": [
+    {
+      "id": "reveal-draw",
+      "html": "scenes/01-reveal-draw.html",
+      "beats": [
+        {"say": "Three steps appear one after another.", "show": "staggered list"},
+        {"say": "A path draws itself from start to end.", "show": "SVG curve draws"}
+      ]
+    },
+    {
+      "id": "motion-morph",
+      "html": "scenes/02-motion-morph.html",
+      "beats": [
+        {"say": "A packet travels along the route.", "show": "dot moves along a path"},
+        {"say": "A square turns into a circle.", "show": "shape morph"}
+      ]
+    },
+    {
+      "id": "counter-sim",
+      "html": "scenes/03-counter-sim.html",
+      "beats": [
+        {"say": "The counter climbs to one thousand.", "show": "number counts up"},
+        {"say": "A pendulum swings, computed from time.", "show": "canvas pendulum"}
+      ]
+    },
+    {
+      "id": "camera-focus",
+      "html": "scenes/04-camera-focus.html",
+      "beats": [
+        {"say": "Here is the whole pipeline.", "show": "large diagram"},
+        {"say": "The camera zooms in on the middle stage.", "show": "pan and zoom"},
+        {"say": "The other stages fade back.", "show": "dim the rest"}
+      ]
+    }
+  ]
+}

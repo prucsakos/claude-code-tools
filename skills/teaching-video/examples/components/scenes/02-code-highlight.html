@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Code line highlight</title>
+  <link rel="stylesheet" href="../../../theme.css">
+</head>
+<body>
+  <main class="stage">
+    <h1 class="in rise" style="--at: var(--b0)">Reading a CSV file</h1>
+    <pre class="code lines"><span class="line">def read_rows(path):</span>
+<span class="line hl" style="--at: var(--b0); --until: var(--b1)">    with open(path) as f:</span>
+<span class="line hl" style="--at: var(--b1); --until: var(--b2)">        for line in f:</span>
+<span class="line hl" style="--at: var(--b2)">            yield line.split(",")</span></pre>
+  </main>
+</body>
+</html>

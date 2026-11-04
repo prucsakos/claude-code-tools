@@ -1,0 +1,207 @@
+---
+name: teaching-video
+description: Use when the user wants a teaching, tutorial or explainer video that explains a concept, a mechanism, a procedure or any study material (notes, a chapter, a paper, code), or only the storyboard for one. Plans the lesson, writes the narration and the storyboard, builds animated HTML scenes, and renders them into an MP4 with text-to-speech narration and captions (Playwright and ffmpeg). Claude Code skill.
+---
+
+# Teaching Video
+
+You turn material into a short narrated video that teaches it. The lesson design decides whether the video teaches anything, so spend most of the effort on sections 2 and 3. The renderer handles timing and sync.
+
+SKILL_DIR is this skill's directory. Its files:
+- `make_video.py`: renders a storyboard into the video.
+
+In the commands below, `python` means `python3` on macOS and Linux, and `python` or `py -3` on Windows (there `python3` can be the Microsoft Store stub).
+- `theme.css`: shared look and beat animations for all scenes.
+- `scene-template.html`: the starting point for a scene.
+
+## Modes
+
+A first argument `storyboard` or `full` picks the mode.
+
+- `full` (default): storyboard, scenes, a rendered and checked video.
+- `storyboard`: stop after section 3 and show the storyboard as a table (scene, narration, visuals), then the claims summary from "Check the facts". This is the same split as the `--video storyboard|full` option of `/explain`.
+
+## Requirements
+
+Check them once, before section 4, with `python SKILL_DIR/make_video.py --doctor` (add `--language hu` to count the voices of the narration language). It prints one line per tool: Python, ffmpeg, ffprobe, Playwright and whether Chromium launches, edge-tts and its voices, Windows SAPI voices, and optional tools (manim, LaTeX, ImageMagick, Inkscape, mmdc, node). It exits non-zero when a required tool is missing and prints the install command for each one. When it reports a missing tool, run `python SKILL_DIR/make_video.py --doctor --install`: it prints and runs the install command for each missing tool (pip for Playwright and edge-tts, Playwright for Chromium, winget, brew or apt-get for ffmpeg), stops if one fails, then checks again and exits 0 only when every required tool is present. After a package manager installs ffmpeg, a new shell may be needed before it is on PATH. The usual commands are:
+
+```
+python -m pip install playwright edge-tts
+python -m playwright install chromium
+```
+
+ffmpeg comes from the OS package manager: `winget install Gyan.FFmpeg`, `brew install ffmpeg` or `apt install ffmpeg`.
+
+## 1. Intake
+
+Take every input that the request or the conversation gives. Read the given material (files, URLs, code) completely before planning. Ask a question only when there is no topic or material at all. Use these defaults for the rest and list them in the final summary:
+
+| Input | Default |
+|---|---|
+| Audience | A curious adult with no background in the topic |
+| Objective | After the video, the viewer can explain the concept in their own words, or do the procedure |
+| Length | 2–4 minutes (about 300–600 narration words). Over 8 minutes: propose a series of videos, one objective each |
+| Language | English for narration, on-screen text and captions, whatever language the request is written in. Use another language only when the user names it (for example "in Hungarian") |
+| Narration | `edge` with `en-US-AndrewNeural`; `hu-HU-NoemiNeural` only when the user names Hungarian; other voices: `python -m edge_tts --list-voices` |
+| Project folder | `./<topic-slug>-video/` in the current directory |
+
+**Privacy:** the `edge` backend sends the narration text to Microsoft's online speech service. When the material is confidential (internal code, customer data, unpublished work), use `sapi` (Windows voices, offline) or `none` (captions only, no voice), unless the user agrees to `edge`.
+
+## 2. Plan the lesson
+
+Before the storyboard, decide and write into it: the objective (one sentence), the audience, the prerequisites the viewer needs, and the misconception the viewer most likely brings.
+
+**Concept or mechanism.** Use these parts in this order. Each part is one or more scenes:
+1. **Hook**: the problem or question that the concept answers, in a concrete situation. At most 20 seconds. End it with one roadmap beat that names the two or three questions the video answers, in plain words; the screen shows them as a short list of 2–4 words per item.
+2. **Intuition**: the plain-words version first, with an everyday analogy and no jargon. End it with one mapping beat: the screen pairs each analogy element with its domain term (for example `drawer → bucket`), each term in the color it keeps in later scenes. The domain terms enter through the analogy, so the Mechanism uses them without a new introduction.
+3. **Mechanism**: cause, then effect, one step per beat. Show a part before you name it, and name it when it is needed.
+4. **Worked example**: concrete values, walked through from start to end. Then a second, shorter example with new values in the same scene layout, so that only the values change: walk the same steps, but stop before the last step. The narration asks the viewer to do that step (`"pause": 3`), and the next beat shows the result. For an expert audience, the second example alone is enough. Unlike the check question, this step uses the same situation, not a new one.
+5. **Pitfall**: the common misconception, or where the concept stops applying. If the video used an analogy, also say where the analogy stops working. Show the boundary with at least one matched pair, in one or two beats: an example and a near non-example that differ in only the one feature that decides membership (for a hash map: a lookup by key finds the value in one step; a search by value still scans every bucket). Put them side by side, label the example in `--good` and the non-example in `--bad`, and let the narration name the deciding feature. Build the non-example from the misconception in the plan, so the viewer sees that belief fail.
+6. **Recap**: at most three points, in the same words that the video used before. Answer the roadmap questions in the same words and the same order.
+7. **Check question**: one transfer question that makes the viewer apply the idea to new values or a new situation, not a repeat of the worked example. Pause for 3 seconds (`"pause": 3`), then give the answer.
+
+**Predict, then reveal.** Before the key result of the Mechanism or the Worked example, add one predict beat: the narration asks the viewer to guess the result, with the planned misconception as one of the options ("After 30 years, is it 3 times as much, or 17 times?"), and `"pause": 2`. The next beat reveals the result and contrasts it with the guess that the misconception gives. Use one predict beat per video.
+
+**Mid-lesson retrieval.** When the video is longer than 3 minutes (about 450 narration words), add one short retrieval question right after the Mechanism: the viewer recalls a step from it in their own head, `"pause": 2`, then the answer in one sentence. This is in addition to the check question at the end.
+
+**Audience level.** Choose the row from the intake audience. It sets the time per part; the part order stays.
+
+| Audience | Changes to the parts |
+|---|---|
+| Novice (no background; the default) | The full sequence. Keep the analogy, and refer back to it in the Mechanism |
+| Some background | Hook, then a short Intuition (the analogy and the mapping beat in one scene). More Mechanism beats and a second worked example |
+| Expert or student of the field | Skip the analogy and the mapping beat: the Intuition is one beat in domain terms. Lead with the Mechanism; the Pitfall covers edge cases and limits |
+
+**Procedure or tool tutorial.** Show the end result first, then the prerequisites, then the steps: one action per beat, and the state after each action. The roadmap is the list of steps, and each step scene opens with its number ("Step 2 of 4"). Then a shorter second run with new values: the screen does the earlier steps, the narration names the last step and lets the viewer say its action (`"pause": 3`), then the screen does it. Then the most common error and its fix, shown as a pair side by side: the correct action in `--good` and a near-wrong action in `--bad` that differs in one detail, which the narration names. Then a recap. For software, use real screenshots in the scenes and highlight the control under discussion.
+
+**Rules for every scene** (from research on multimedia learning):
+- One idea per scene, one change on screen per beat.
+- The narration explains and the screen shows. Do not put narration sentences on screen. The screen holds labels, key terms, numbers and diagrams: at most about 12 words added per beat.
+- Show a thing in the same beat that names it, and highlight the part that the narration is about.
+- Put labels next to what they label, not in a legend.
+- Cut what the objective does not need: decorative images, background music, side topics.
+- Use concrete values before abstract rules, and a formula only after the viewer has seen what each symbol stands for.
+- Use the same term for the same thing in narration, labels and captions. Give a concept the same color in every scene. Write each concept into the storyboard's `terms` list before the beats: narration, labels and captions use only its `term` spelling, never an `avoid` word, and every element of that concept uses its `color` token in every scene.
+
+**Narration.** Write for the ear: second person, sentences of 8–20 words, one to three sentences per beat, about 150 words per minute. In each scene after the hook, the first sentence links the scene to the previous one and adds no new term ("So the drawer number comes from the name. Now: what if two names get the same drawer?"). Text-to-speech reads symbols and abbreviations literally, so write them as spoken words ("x squared", "for example", "seven"). The captions show the same text. The preview checks this (section 5, read-aloud warnings).
+
+## 3. Write the storyboard
+
+Write `<project>/storyboard.json`:
+
+```json
+{
+  "title": "How a hash map finds a value",
+  "objective": "The viewer can explain why a hash map finds a value in one step.",
+  "audience": "Beginner programmer",
+  "tts": "edge",
+  "voice": "en-US-AndrewNeural",
+  "fps": 30,
+  "terms": [
+    {"term": "bucket", "color": "--c1", "avoid": ["slot", "slots", "bin", "bins"]}
+  ],
+  "scenes": [
+    {
+      "id": "hook",
+      "html": "scenes/01-hook.html",
+      "beats": [
+        {"say": "Imagine a phone book with a million names, and you need one of them.", "show": "1,000,000 names"},
+        {"say": "Checking the names one by one could take a million steps.", "show": "'up to 1,000,000 steps', highlighted", "pause": 1}
+      ]
+    }
+  ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `tts` | `edge` (online neural voices), `sapi` (Windows voices, offline) or `none` (no voice: a beat lasts as long as reading its caption takes, and captions are burned in) |
+| `voice` | edge: a short name such as `en-US-AndrewNeural`. sapi: an installed Windows voice such as `Microsoft Zira Desktop` (often English only); empty is the system default |
+| `rate` | edge only: speaking rate such as `"-10%"`. Default `"+0%"` |
+| `fps` | 24, 25, 30 (default) or 60 |
+| `terms` | Optional glossary, one entry per concept: `term` (the one spelling to use), `color` (its theme token: `--c1` to `--c5`, `--good` or `--bad`) and `avoid` (synonyms not to use). Every run warns with the scene id and beat index when a beat's `say` contains an `avoid` word. The match is whole-word and case-insensitive, so "Slot" matches `slot` but "slots" does not: list each form, such as `slot` and `slots` |
+| scene `title` | Chapter title of the scene in `video.mp4` and `chapters.txt`, for example "Why lookups are slow". Default: the scene `id` |
+| scene `lead`, `tail` | Seconds of silence before the first beat (0.4) and after the last beat (0.8) |
+| beat `say` | The narration. It is also the caption |
+| beat `show` | What the screen adds in this beat. It is for you and for storyboard mode; the renderer ignores it |
+| beat `pause` | Seconds of silence after the beat (0.35) |
+| `sources` | Optional list of strings: the material the claims come from, such as `"notes.md, section 2"` or a URL |
+
+`objective`, `audience` and `sources` are for you; the renderer ignores them.
+
+**Check the facts** (both modes). Before you build scenes, list every factual claim, number and formula in the beats' `say` and `show` as a table in `<project>/claims.md`:
+
+| Claim | Beat | Source |
+|---|---|---|
+| A one-by-one search looks at each name in turn | `hook` beat 2 | standard |
+| Checking names one by one takes up to 1,000,000 steps | `hook` beat 2 | computed: one check per name, 1,000,000 names |
+
+Established textbook knowledge of the topic (definitions, how a mechanism works) is marked "standard" and needs no citation. A specific fact needs the given material with its location (file and section, or URL) or a computation as its source: numbers, dates, names, quotes, attributions, benchmarks, records, and claims about current versions or products. Recompute every number of the worked example with a one-off `python -c` calculation, and fix the beats where the result differs. Mark a specific fact with neither source "unsourced", then rewrite or cut it; keep it only when the user must decide, and then name it in the summary. The claims summary is one line: "claims checked: n, standard: s, unsourced: m", followed by the unsourced claims that remain.
+
+**Self-review.** Before section 4, and before you show the storyboard in `storyboard` mode, check storyboard.json against this list and fix each failure in place:
+- Every beat `say` has at most 3 sentences, and every `show` adds at most about 12 words.
+- Each symbol of a formula appears in a `show` before the beat that shows the formula.
+- The recap uses the same words as the beats that introduced its points.
+- The Pitfall beats name and correct the misconception from the plan.
+- The predict beat comes before the reveal, has `"pause": 2`, and the reveal contrasts guess and result.
+- Over 3 minutes of narration (about 450 words): a retrieval question follows the Mechanism.
+- The check question uses new values or a new situation, has `"pause": 3`, and tests the `objective`.
+
+In `storyboard` mode, stop here.
+
+## 4. Build the scenes
+
+First run `python SKILL_DIR/make_video.py <project>/storyboard.json --scaffold`. It copies `theme.css` next to the scene files and creates every missing scene file with the scene id as heading and one `in rise` block per beat, wired to that beat with `--at: var(--bN)` and holding the beat's `show` text (or its `say` text when `show` is missing). It never overwrites a file that exists. Then edit each generated scene into its real layout; `scene-template.html` in SKILL_DIR shows more of the classes below. The renderer loads each scene as a 1920×1080 page and drives it by time:
+
+- **Beat timing.** The renderer sets `--b0`, `--b1`, … on `:root` to the start time of each beat of the scene. To reveal an element when beat 2 starts, give it an animation class and `style="--at: var(--b2)"`. Offsets work: `--at: calc(var(--b2) + .8s)`. `--dur` sets the length (default `.6s`).
+- **Animation classes** (in `theme.css`): `in` (fade in), `in rise`, `in pop`, `in wipe`, `draw` (draws an SVG shape that has `pathLength="1"`), `mark` (highlights a phrase), `out` (fades out), `dim` (fades to 25%). An element takes one of these; nest elements to combine two. `rise` and `pop` move the element, so use them on block or inline-block elements.
+- **Teaching components** (in `theme.css`, rendered by `examples/components/`). Each part becomes active at `--at` and settles at `--until`; set `--until` to the beat where the next part takes over.
+  - Procedure steps: `<ol class="steps"><li style="--at: var(--b0); --until: var(--b1)">Read the file</li><li style="--at: var(--b1)">Parse it</li></ol>`. The active step gets an accent bar and full opacity; done steps turn muted.
+  - Code walkthrough: `<pre class="code lines"><span class="line">def f():</span>` then, on the next source line, `<span class="line hl" style="--at: var(--b1); --until: var(--b2)">    return 1</span></pre>`. One span per line, numbered; an `hl` line gets a highlight band, and a later `hl` line takes the focus.
+  - Pitfall comparison (misconception vs correct, before vs after): `<div class="compare"><div class="side bad" style="--at: var(--b0)"><p class="label">Misconception</p><p>…</p></div><div class="side good" style="--at: var(--b1)"><p class="label">Correct</p><p>…</p></div></div>`. Each side rises in at its `--at`.
+- **Own animations.** CSS keyframe animations work: `animation: spin 2s linear var(--b3) both`. Do not use CSS transitions, `setTimeout` or `requestAnimationFrame`. The renderer pauses every animation and seeks it to each frame time, so motion that follows the wall clock does not render.
+- **Motion computed in JavaScript** (canvas, simulations, plots, counters): define `window.renderAt = (t, beats) => { … }`. `t` is the seconds since the scene start and `beats` holds the beat start times. Draw the frame for `t` as a pure function of `t`, and return `false` when the frame did not change, so that the renderer can reuse the previous screenshot.
+- **Techniques.** `animations.md` in SKILL_DIR is a catalog of techniques that work with this model (stagger, path drawing, motion paths, morphing, counters, simulations, camera moves, focus by dimming), each with a snippet, when it helps teaching and its caveats. `examples/animations/` renders all of them. Its section 9 shows adapters that drive GSAP, anime.js and Lottie from `renderAt` (a paused timeline seeked to `t`); `examples/libraries/` renders them.
+- **Async setup** (fonts are handled; Mermaid, image decoding): assign a Promise to `window.sceneReady`. The first frame waits for it.
+- **Loading.** Scenes open from `file://`. Classic `<script src>`, `<img>`, CSS and https URLs load; `fetch()` of local files and local ES-module imports fail. Put local data inline in the scene.
+- **Layout.** Keep content inside the `.stage` padding: a 96 px margin and 180 px at the bottom, where captions go. Sizes: titles 80 px, body text 44 px or more, labels 32 px or more, code 34 px with at most 15 lines. Build the picture up over the beats; remove or dim earlier parts only when they distract.
+- **Continuity.** When a scene continues the diagram or example of the scene before it, start it from that scene's end state: copy the previous scene's final markup without its animation classes (an entrance class with `--at: 0s` would still fade it in at the cut; write a dimmed part as `opacity: .25` inline), keep every position, size and color the same, and animate only what the new scene adds. The viewer then sees one diagram that grows, and does not have to scan a rebuilt frame after the cut. Change the layout only when the topic changes, and then make a clear cut, for example a one-beat title scene.
+- **Content.** Draw diagrams as inline SVG, so that each part can appear on its own beat. Render math with KaTeX (`https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/`). Put local images next to the scene file.
+
+## 5. Preview and fix
+
+```
+python SKILL_DIR/make_video.py <project>/storyboard.json --preview
+```
+
+This narrates every beat (cached in `build/tts/`, so later runs narrate only changed text), writes `build/timeline.json` with the start and end of each beat, and saves one still per beat to `build/preview/`: the last frame before the next beat, so it shows everything the beat added. Contact sheets `build/preview/sheet-NN.png` hold 9 stills each in storyboard order; the command prints which still is which beat. Stills of a scene whose HTML, other files in its folder (such as `theme.css` and images) and timing did not change are reused from `build/preview/cache/`, so a preview after a fix re-shoots only the changed scenes.
+
+Look at every contact sheet. Check for text that overflows or is cut off, elements that overlap, text that is too small, an element that appears in the wrong beat, and empty frames. Warnings for JavaScript errors and files that did not load are printed with the scene id. For each pair of continuing scenes, also compare the last still of scene N with the first still of scene N+1 (after a render, the frame at the start of scene N+1 in `build/timeline.json`: `ffmpeg -v error -ss <seconds> -i video.mp4 -frames:v 1 frame.png`). The two must be identical except for what scene N+1 adds; a diagram that jumps, resizes or changes color at the cut is a bug. Fix the scenes, and preview again until every still is correct.
+
+Fix each `terms` warning by rewording that beat with the `term` spelling. Then check the colors: for each term, search the scene files for its labels and shapes (for example `grep -n bucket scenes/*.html`) and confirm that each one uses that term's color (class `c1` or `var(--c1)`), and that no other concept uses that color. On the contact sheets, the concept has the same color in every still.
+
+Read the narration aloud too: the command prints one `read-aloud: <scene id> beat <index>` warning per problem a listener would hear, measured from the beat text and its spoken duration in `build/timeline.json`. It flags a beat faster than 4 or slower than 2 words per second (not with `"tts": "none"`, which has no voice to measure), a sentence over 20 words, a parenthesis or a slash, digits and symbols the voice reads literally ("O(n)", "1e6", "x^2", "->", "e.g."), capitals read letter by letter, and two beats in a row that start with the same word. Rewrite each flagged beat for the ear, then preview again; the narration is cached, so only the changed beats are spoken again. A warning that does not apply (an abbreviation that is said letter by letter, such as "CPU") can stay.
+
+## 6. Render and check
+
+```
+python SKILL_DIR/make_video.py <project>/storyboard.json [--burn-captions]
+```
+
+Run it with `run_in_background: true`: the first run takes about 30–40 seconds per minute of video (narration included), longer with much animation. It writes `<project>/video.mp4` (H.264, AAC, captions as a subtitle track and one chapter per scene, so viewers can jump to a part in any player), `<project>/captions.srt` and `<project>/chapters.txt` (one `m:ss Title` line per scene, to paste into a YouTube description). `--burn-captions` draws the captions into the picture; with `tts: none` they are always burned in. `--tts`, `--voice` and `--rate` override the storyboard, for example to render the same storyboard with a different voice. `--scenes intro,recap` renders only those scene ids (comma-separated; the cut keeps storyboard order, not the order you list) to `<project>/video.cut.mp4`, `<project>/captions.cut.srt` and `<project>/chapters.cut.txt`, timed from 0, so the full `video.mp4` stays; narration comes from the cache. With `--preview` it writes stills of only those scenes. An unknown id stops with the list of valid ids. `--handout` (with a render or with `--preview`) also writes `<project>/handout.html`: the title, then per scene its last frame (`build/handout/<id>.png`), its start time and its narration.
+
+Language version: write `<project>/storyboard.<lang>.json`, a narration overlay with one translated text per beat, and add `--translation <project>/storyboard.<lang>.json`:
+
+```json
+{"language": "hu", "voice": "hu-HU-NoemiNeural", "say": {"hook": ["Képzelj el egy telefonkönyvet egymillió névvel.", "A nevek egyenkénti átnézése egymillió lépés is lehet."]}}
+```
+
+`language` (letters and hyphens, such as `hu` or `pt-BR`) names the outputs: `video.hu.mp4`, `captions.hu.srt`, `chapters.hu.txt`, `build/narration.hu.wav` and `build/timeline.hu.json` (with `--scenes`: `video.hu.cut.mp4` and so on), so the original video stays. `voice` is optional (default: the storyboard's). `say` lists every scene id with exactly as many texts as the scene has beats. Only the narration and captions change: the on-screen text in the scene HTML stays in the original language.
+
+Then check the file:
+- `ffprobe -v error -show_entries stream=codec_type,duration -of compact <project>/video.mp4`: the video and audio durations agree within 0.1 s.
+- Extract frames in the middle of two or three animations (times from `build/timeline.json`) and look at them: `ffmpeg -v error -ss <seconds> -i video.mp4 -frames:v 1 frame.png`.
+
+## 7. Deliver
+
+Report: the path of `video.mp4`, its length, one line per scene (the contents of `chapters.txt`), the narration backend and voice (for `edge`, that the narration text went to Microsoft's speech service), the claims summary from section 3, and the defaults you assumed. Offer what is cheap to do next: a different voice (`--voice`), a version in another language (a narration overlay with `--translation`, see section 6; the on-screen text stays in the original language), burned-in captions, or a shorter cut (for "just the part about X" or a teaser: `--scenes id1,id2`, see section 6). Optional deliverable for study material: `handout.html` from `--handout`, a review sheet (script and key frames) to reread or print without rewatching; deliver it together with its `build/handout/` folder.
