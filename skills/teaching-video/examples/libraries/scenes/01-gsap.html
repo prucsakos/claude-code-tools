@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GSAP</title>
+  <link rel="stylesheet" href="../../../theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <style>
+    .track { position: relative; flex: 1; }
+    .box { position: absolute; left: 0; top: 120px; width: 160px; height: 160px; border-radius: 16px; background: var(--c1); }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <h1 class="in rise" style="--at: var(--b0)">GSAP timeline</h1>
+    <div class="track"><div class="box" id="box"></div></div>
+  </main>
+  <script>
+    const box = document.getElementById("box");
+    let tl = null;
+    let shownTime = null;
+
+    // The beat times are known only in renderAt, so the paused timeline is built on the first call.
+    const buildTimeline = (beats) => gsap.timeline({ paused: true })
+      .to(box, { x: 1200, duration: 1.2, ease: "power2.out" }, beats[0])
+      .to(box, { rotation: 180, backgroundColor: "#f72585", duration: 1.2, ease: "power2.inOut" }, beats[1]);
+
+    window.renderAt = (t, beats) => {
+      tl ??= buildTimeline(beats);
+      const time = Math.min(t, tl.duration());
+      if (time === shownTime) return false;
+      shownTime = time;
+      tl.seek(time);
+    };
+  </script>
+</body>
+</html>

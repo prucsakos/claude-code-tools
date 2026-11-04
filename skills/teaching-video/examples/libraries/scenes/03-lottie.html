@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lottie</title>
+  <link rel="stylesheet" href="../../../theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
+  <style>
+    #player { flex: 1; min-height: 0; }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <h1 class="in rise" style="--at: var(--b0)">Lottie segments</h1>
+    <div id="player"></div>
+  </main>
+  <script>
+    // Inline animationData, because fetch() of a local JSON file fails from file://.
+    // Frames 0-60: the square slides right. Frames 60-120: it spins and grows.
+    const ease = { i: { x: [0.4], y: [1] }, o: { x: [0.6], y: [0] } };
+    const animationData = {
+      v: "5.7.4", fr: 30, ip: 0, op: 120, w: 1600, h: 600, layers: [{
+        ty: 4, ind: 1, ip: 0, op: 120, st: 0, sr: 1,
+        ks: {
+          o: { a: 0, k: 100 },
+          a: { a: 0, k: [0, 0, 0] },
+          p: { a: 1, k: [{ t: 0, s: [150, 300, 0], ...ease }, { t: 60, s: [1300, 300, 0] }] },
+          r: { a: 1, k: [{ t: 60, s: [0], ...ease }, { t: 120, s: [270] }] },
+          s: { a: 1, k: [{ t: 60, s: [100, 100, 100], ...ease }, { t: 120, s: [160, 160, 100] }] },
+        },
+        shapes: [{ ty: "gr", it: [
+          { ty: "rc", p: { a: 0, k: [0, 0] }, s: { a: 0, k: [180, 180] }, r: { a: 0, k: 20 } },
+          { ty: "fl", c: { a: 0, k: [0.97, 0.15, 0.52, 1] }, o: { a: 0, k: 100 } },
+          { ty: "tr", p: { a: 0, k: [0, 0] }, a: { a: 0, k: [0, 0] }, s: { a: 0, k: [100, 100] }, r: { a: 0, k: 0 }, o: { a: 0, k: 100 } },
+        ] }],
+      }],
+    };
+    const anim = lottie.loadAnimation({
+      container: document.getElementById("player"), renderer: "svg", loop: false, autoplay: false, animationData,
+    });
+    window.sceneReady = new Promise((resolve) => {
+      if (anim.isLoaded) resolve();
+      else anim.addEventListener("DOMLoaded", resolve);
+    });
+
+    const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+    let shownFrame = null;
+
+    window.renderAt = (t, beats) => {
+      // Each beat plays its own 60-frame segment, so the motion starts when the narration names it.
+      // Frame 120 equals op, where the layer has already ended, so the last segment stops at 119.
+      const frame = t < beats[1]
+        ? clamp((t - beats[0]) * 30, 0, 60)
+        : 60 + clamp((t - beats[1]) * 30, 0, 59);
+      if (frame === shownFrame) return false;
+      shownFrame = frame;
+      anim.goToAndStop(frame, true);
+    };
+  </script>
+</body>
+</html>

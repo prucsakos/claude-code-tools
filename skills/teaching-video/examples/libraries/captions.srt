@@ -1,0 +1,25 @@
+1
+00:00:00,400 --> 00:00:04,000
+A GSAP timeline moves the box to the
+right.
+
+2
+00:00:04,350 --> 00:00:06,750
+Then it turns and changes color.
+
+3
+00:00:08,300 --> 00:00:11,100
+An anime.js timeline lifts the first bar.
+
+4
+00:00:11,450 --> 00:00:13,850
+Then the second bar grows higher.
+
+5
+00:00:15,400 --> 00:00:18,200
+A Lottie animation moves the square
+across.
+
+6
+00:00:18,550 --> 00:00:20,950
+Its second segment spins the square.

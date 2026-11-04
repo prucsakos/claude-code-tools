@@ -1,0 +1,33 @@
+{
+  "title": "Animation libraries driven by renderAt",
+  "objective": "Show GSAP, anime.js and Lottie seeked frame by frame by make_video.py.",
+  "audience": "Authors of teaching videos",
+  "tts": "none",
+  "fps": 30,
+  "scenes": [
+    {
+      "id": "gsap",
+      "html": "scenes/01-gsap.html",
+      "beats": [
+        {"say": "A GSAP timeline moves the box to the right.", "show": "box slides"},
+        {"say": "Then it turns and changes color.", "show": "box rotates"}
+      ]
+    },
+    {
+      "id": "anime",
+      "html": "scenes/02-anime.html",
+      "beats": [
+        {"say": "An anime.js timeline lifts the first bar.", "show": "bar grows"},
+        {"say": "Then the second bar grows higher.", "show": "second bar grows"}
+      ]
+    },
+    {
+      "id": "lottie",
+      "html": "scenes/03-lottie.html",
+      "beats": [
+        {"say": "A Lottie animation moves the square across.", "show": "square slides"},
+        {"say": "Its second segment spins the square.", "show": "square spins"}
+      ]
+    }
+  ]
+}

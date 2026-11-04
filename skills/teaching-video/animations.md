@@ -117,3 +117,63 @@ When it helps: the narration talks about one part of a full picture. Dimming the
 ```
 
 Caveats: `dim` fades to 25% and stays there; to bring a part back, wrap it in another element with an `in` animation on a later beat, because an element takes one animation class. Dim groups of parts rather than every shape on its own.
+
+## 9. Animation libraries: GSAP, anime.js, Lottie
+
+When it helps: a motion is already easy to write in a library, or a designer delivers a Lottie file. Libraries play on the wall clock by default, which the renderer does not capture; each can be paused and seeked, so a small adapter in `renderAt` makes every frame exact. Build the timeline on the first `renderAt` call, because the beat times arrive in its `beats` argument. The demo `examples/libraries/` renders all three.
+
+GSAP, a paused timeline:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+  let tl = null, shownTime = null;
+  window.renderAt = (t, beats) => {
+    tl ??= gsap.timeline({ paused: true })
+      .to(box, { x: 1200, duration: 1.2 }, beats[0])
+      .to(box, { rotation: 180, duration: 1.2 }, beats[1]);
+    const time = Math.min(t, tl.duration());
+    if (time === shownTime) return false;
+    shownTime = time;
+    tl.seek(time);
+  };
+</script>
+```
+
+anime.js, `autoplay: false` and times in milliseconds:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+<script>
+  let tl = null, shownMs = null;
+  window.renderAt = (t, beats) => {
+    tl ??= anime.timeline({ autoplay: false, duration: 1200 })
+      .add({ targets: "#first", scaleY: [0.05, 0.5] }, beats[0] * 1000)
+      .add({ targets: "#second", scaleY: [0.05, 1] }, beats[1] * 1000);
+    const ms = Math.min(t * 1000, tl.duration);
+    if (ms === shownMs) return false;
+    shownMs = ms;
+    tl.seek(ms);
+  };
+</script>
+```
+
+Lottie (lottie-web), inline `animationData` and `sceneReady` for the async load:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
+<script>
+  const animationData = { /* the Lottie JSON, pasted inline */ };
+  const anim = lottie.loadAnimation({ container: player, renderer: "svg", loop: false, autoplay: false, animationData });
+  window.sceneReady = new Promise((resolve) => anim.isLoaded ? resolve() : anim.addEventListener("DOMLoaded", resolve));
+  let shownFrame = null;
+  window.renderAt = (t, beats) => {
+    const frame = Math.min(anim.totalFrames - 1, Math.max(0, (t - beats[0]) * 30));
+    if (frame === shownFrame) return false;
+    shownFrame = frame;
+    anim.goToAndStop(frame, true);  // or goToAndStop(ms, false) for a time in milliseconds
+  };
+</script>
+```
+
+Caveats: never let a library play (`play()`, `autoplay: true`, GSAP tweens outside a paused timeline): wall-clock playback does not render and differs between runs. Keep the `renderAt` return value honest: return `false` only when the seek position is the same as in the previous call, and clamp the position to the timeline length so that static holds reuse the screenshot. Pin the CDN version; the scene needs the network when it renders, and a failed load prints a warning. `fetch()` of a local file fails from `file://`, so paste Lottie JSON inline. A Lottie frame equal to `op` is past the last layer frame and shows nothing; stop at `op - 1`.

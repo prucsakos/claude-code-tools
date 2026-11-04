@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>anime.js</title>
+  <link rel="stylesheet" href="../../../theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+  <style>
+    .chart { position: relative; flex: 1; display: flex; align-items: flex-end; gap: 80px; padding-left: 200px; }
+    .bar { width: 200px; height: 600px; transform-origin: bottom; transform: scaleY(0.05); border-radius: 12px 12px 0 0; }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <h1 class="in rise" style="--at: var(--b0)">anime.js timeline</h1>
+    <div class="chart">
+      <div class="bar" id="first" style="background: var(--c2)"></div>
+      <div class="bar" id="second" style="background: var(--c4)"></div>
+    </div>
+  </main>
+  <script>
+    let tl = null;
+    let shownMs = null;
+
+    // autoplay: false keeps anime.js off the wall clock; the offsets are the beat times in milliseconds.
+    const buildTimeline = (beats) => anime.timeline({ autoplay: false, easing: "easeOutCubic", duration: 1200 })
+      .add({ targets: "#first", scaleY: [0.05, 0.5] }, beats[0] * 1000)
+      .add({ targets: "#second", scaleY: [0.05, 1] }, beats[1] * 1000);
+
+    window.renderAt = (t, beats) => {
+      tl ??= buildTimeline(beats);
+      const ms = Math.min(t * 1000, tl.duration);
+      if (ms === shownMs) return false;
+      shownMs = ms;
+      tl.seek(ms);
+    };
+  </script>
+</body>
+</html>
