@@ -546,7 +546,13 @@ async (beats) => {
     if (n >= beats.length) console.error(`var(--b${n}) is used, but this scene has only ${beats.length} beats`);
   }
   beats.forEach((t, i) => document.documentElement.style.setProperty(`--b${i}`, `${t}s`));
+  // document.fonts.ready resolves at once if layout has not yet requested any web font, so fonts and images
+  // would then arrive during the frame loop and early frames would show fallback or invisible text.
+  // Force layout and wait one frame first, so that the font loads are pending when it is read.
+  document.body.getBoundingClientRect();
+  await new Promise(requestAnimationFrame);
   await document.fonts.ready;
+  await Promise.all([...document.images].map((image) => image.decode().catch(() => {})));
   if (window.sceneReady) await window.sceneReady;
   // Every animation is paused and seeked to the frame time. Returns whether the frame can differ from the
   // previous one, so that static holds reuse the last screenshot.
