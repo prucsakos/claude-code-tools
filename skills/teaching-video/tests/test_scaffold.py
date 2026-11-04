@@ -58,6 +58,27 @@ class ScaffoldTest(unittest.TestCase):
         self.assertEqual(edited.read_bytes(), b"<p>hand edited</p>\n")
         self.assertIn("skipped intro", result.stdout)
 
+    def assert_rejected(self, bad_html: str, outside: Path):
+        data = json.loads(self.storyboard.read_text(encoding="utf-8"))
+        data["scenes"][1]["html"] = bad_html
+        self.storyboard.write_text(json.dumps(data), encoding="utf-8")
+        result = run_scaffold(self.storyboard)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("storyboard error", result.stderr)
+        # The valid first scene is not written either: all scenes are checked before any write.
+        self.assertFalse(self.scenes.exists())
+        self.assertFalse(outside.exists())
+
+    def test_rejects_path_outside_folder(self):
+        project = self.root / "project"
+        project.mkdir()
+        self.storyboard = self.storyboard.replace(project / "storyboard.json")
+        self.scenes = project / "scenes"
+        self.assert_rejected("../escaped.html", self.root / "escaped.html")
+
+    def test_rejects_non_html_file(self):
+        self.assert_rejected("scenes/notes.txt", self.scenes / "notes.txt")
+
     def test_missing_scene_still_fails_without_scaffold(self):
         with self.assertRaises(make_video.StoryboardError):
             make_video.load_storyboard(self.storyboard)

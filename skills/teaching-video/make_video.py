@@ -154,9 +154,9 @@ def load_storyboard(path: Path, require_html: bool = True) -> Storyboard:
         scene_id = _string(scene, "id", where)
         if any(existing.id == scene_id for existing in scenes):
             raise StoryboardError(f"{where}.id {scene_id!r} is used twice")
-        html = (path.parent / _string(scene, "html", where)).resolve()
-        if require_html and not html.is_file():
-            raise StoryboardError(f"{where}.html: file not found: {html}")
+        html_path = (path.parent / _string(scene, "html", where)).resolve()
+        if require_html and not html_path.is_file():
+            raise StoryboardError(f"{where}.html: file not found: {html_path}")
         beats = []
         for j, raw_beat in enumerate(_list(scene.get("beats"), f"{where}.beats")):
             beat_where = f"{where}.beats[{j}]"
@@ -168,7 +168,7 @@ def load_storyboard(path: Path, require_html: bool = True) -> Storyboard:
         scenes.append(
             Scene(
                 id=scene_id,
-                html=html,
+                html=html_path,
                 beats=beats,
                 lead=_seconds(scene, "lead", 0.4, where),
                 tail=_seconds(scene, "tail", 0.8, where),
@@ -567,8 +567,13 @@ def scaffold_scene(scene: Scene) -> str:
     return SCAFFOLD_PAGE.format(title=html.escape(scene.id), blocks=blocks)
 
 
-def scaffold(storyboard: Storyboard) -> None:
+def scaffold(storyboard: Storyboard, root: Path) -> None:
     """Create every missing scene file and theme.css next to it. Existing files are never overwritten."""
+    # Scaffolding writes files, so a storyboard must not point it outside its own folder or at a non-HTML file.
+    # Every scene is checked before anything is written.
+    for scene in storyboard.scenes:
+        if not scene.html.is_relative_to(root) or scene.html.suffix.lower() not in (".html", ".htm"):
+            raise StoryboardError(f"scene {scene.id}: html must be an .html or .htm file inside {root}: got {scene.html}")
     theme = Path(__file__).resolve().parent / "theme.css"
     for scene in storyboard.scenes:
         scene.html.parent.mkdir(parents=True, exist_ok=True)
@@ -771,7 +776,9 @@ def main() -> None:
         sys.exit(f"storyboard error: {error}")
     if args.scaffold:
         try:
-            scaffold(storyboard)
+            scaffold(storyboard, root)
+        except StoryboardError as error:
+            sys.exit(f"storyboard error: {error}")
         except OSError as error:
             sys.exit(f"scaffold error: {error}")
         return
