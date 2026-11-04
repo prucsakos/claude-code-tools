@@ -25,6 +25,19 @@ For a build target:
 - Gaming that does not count: <the pillar's gaming list and the build gaming list from pillars.md>
 ```
 
+| Placeholder | Filled from |
+|---|---|
+| `{{PILLAR}}` | This researcher's pillar |
+| `{{OTHER_PILLARS}}` | The other pillars that have a researcher, or `none` |
+| `{{WT}}` | `RUN_DIR/wt/researcher-<pillar>` (setup step 3) |
+| `{{MAIN}}` | Form input MAIN |
+| `{{GOAL}}` | Form input Goal |
+| `{{STATE}}` | `RUN_DIR/state.md` (setup step 2) |
+| `{{TARGETS}}` | One block per target of the pillar, in the formats above |
+| `{{K}}` | 2 × the pillar's experimenters |
+| `{{T_RESEARCH}}` | Profile value T_RESEARCH |
+| `{{DEADLINE}}` | Start time + T_RESEARCH, as HH:MM:SS |
+
 ---
 
 You are the researcher for the {{PILLAR}} pillar in a parallel optimization run. Find the changes that will help your pillar's targets below the most, and send each one to the orchestrator **as soon as you have it**. Experimenters start on your first idea while you look for the next one.

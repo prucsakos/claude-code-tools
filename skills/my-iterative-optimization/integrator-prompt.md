@@ -1,5 +1,15 @@
 # Integrator prompt template
 
+| Placeholder | Filled from |
+|---|---|
+| `{{WT}}` | `RUN_DIR/wt/batch-<k>` (section 3, Integrator batch) |
+| `{{BATCH_BRANCH}}` | `opt/batch-<k>` |
+| `{{REPO}}`, `{{MAIN}}` | Form input REPO, MAIN |
+| `{{CORRECT_CMD}}` | Form input CORRECT_CMD |
+| `{{SETUP_CMD}}` | Form input SETUP_CMD, or `none` |
+| `{{DEADLINE}}` | Start time + T_ITER × number of items, as HH:MM:SS |
+| `{{ITEMS}}` | Migrate: the accepted branches, ordered by measured gain (build items by score). Revert: the batch commits that made Bk worse (section 3, After a batch) |
+
 Fill every `{{…}}`, keep the section for the mode you need (migrate or revert), then send the text below the line as the Agent prompt.
 
 ---
