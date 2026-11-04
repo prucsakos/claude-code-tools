@@ -1,0 +1,35 @@
+{
+  "title": "Teaching components for teaching videos",
+  "objective": "Show the step list, code line highlight and compare card of theme.css rendered by make_video.py.",
+  "audience": "Authors of teaching videos",
+  "tts": "none",
+  "fps": 30,
+  "scenes": [
+    {
+      "id": "steps",
+      "html": "scenes/01-steps.html",
+      "beats": [
+        {"say": "First, read the input file.", "show": "step 1 active"},
+        {"say": "Then parse every line into a record.", "show": "step 1 done, step 2 active"},
+        {"say": "Finally, write the records to the database.", "show": "step 2 done, step 3 active"}
+      ]
+    },
+    {
+      "id": "code-highlight",
+      "html": "scenes/02-code-highlight.html",
+      "beats": [
+        {"say": "The function opens the file.", "show": "line 2 highlighted"},
+        {"say": "The loop reads one line at a time.", "show": "highlight moves to line 3"},
+        {"say": "Each line is split at the commas.", "show": "highlight moves to line 4"}
+      ]
+    },
+    {
+      "id": "compare",
+      "html": "scenes/03-compare.html",
+      "beats": [
+        {"say": "A common belief is that more threads always make a program faster.", "show": "misconception side"},
+        {"say": "In fact, threads only help while there is free work for each of them.", "show": "correct side"}
+      ]
+    }
+  ]
+}
