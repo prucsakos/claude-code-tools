@@ -32,11 +32,13 @@ import html
 import importlib
 import json
 import math
+import queue
 import re
 import shutil
 import subprocess
 import sys
 import textwrap
+import threading
 import time
 import wave
 from dataclasses import dataclass
@@ -746,6 +748,44 @@ def write_ffmetadata(path: Path, timed_scenes: list[TimedScene]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
+class FrameWriter:
+    """Writes frames to the encoder pipe from a thread, so capture keeps going while x264 is busy."""
+
+    def __init__(self, pipe) -> None:
+        self.pipe = pipe
+        # 64 JPEG frames of 1080p are a few MB; the bound keeps memory flat if capture outruns x264.
+        self.frames: queue.Queue[bytes | None] = queue.Queue(maxsize=64)
+        self.error: OSError | None = None
+        self.thread = threading.Thread(target=self._run, name="ffmpeg-writer", daemon=True)
+        self.thread.start()
+
+    def _run(self) -> None:
+        while (frame := self.frames.get()) is not None:
+            if self.error is not None:
+                continue  # keep draining so put() never blocks on a dead encoder
+            try:
+                self.pipe.write(frame)
+            except OSError as error:
+                self.error = error
+
+    def _raise_if_failed(self) -> None:
+        if self.error is not None:
+            raise BrokenPipeError(f"encoder pipe closed: {self.error}") from self.error
+
+    def write(self, frame: bytes) -> None:
+        self._raise_if_failed()
+        self.frames.put(frame)
+
+    def stop(self) -> None:
+        if self.thread.is_alive():
+            self.frames.put(None)
+            self.thread.join()
+
+    def finish(self) -> None:
+        self.stop()
+        self._raise_if_failed()
+
+
 def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: Path, burn_captions: bool,
                  outputs: OutputPaths = FULL_OUTPUTS) -> None:
     from playwright.sync_api import sync_playwright
@@ -768,6 +808,7 @@ def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: P
     log_path = root / "build" / "ffmpeg.log"
     with log_path.open("wb") as log:
         encoder = subprocess.Popen(command, cwd=root, stdin=subprocess.PIPE, stderr=log)
+        writer = FrameWriter(encoder.stdin)
         try:
             with sync_playwright() as playwright:
                 browser = launch_chromium(playwright)
@@ -782,16 +823,18 @@ def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: P
                             if player.seek(t, prev) or not frame:
                                 frame = player.page.screenshot(type="jpeg", quality=95)
                                 captured += 1
-                            encoder.stdin.write(frame)
+                            writer.write(frame)
                             prev = t
                         print(f"rendered {number}/{len(timed_scenes)} {timed_scene.scene.id}: "
                               f"{last - first} frames, {captured} captured", flush=True)
                 finally:
                     browser.close()
+            writer.finish()
         except BrokenPipeError as error:
             encoder.wait()
             raise RenderError(f"ffmpeg stopped early:\n{log_path.read_text(errors='replace')}") from error
         finally:
+            writer.stop()
             if not encoder.stdin.closed:
                 encoder.stdin.close()
         if encoder.wait() != 0:
