@@ -40,6 +40,7 @@ import textwrap
 import time
 import wave
 from dataclasses import dataclass
+from html import escape
 from pathlib import Path
 
 SAMPLE_RATE = 24_000
@@ -556,6 +557,51 @@ def render_preview(timed_scenes: list[TimedScene], fps: int, build: Path) -> Non
     print(f"preview stills and contact sheets (9 beats each, in storyboard order): {preview}")
 
 
+HANDOUT_CSS = """
+body { font-family: system-ui, sans-serif; max-width: 48rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #111; }
+section { break-inside: avoid; margin-bottom: 2rem; }
+img { width: 100%; border: 1px solid #ccc; }
+.start { color: #555; font-size: 0.9rem; }
+"""
+
+
+def render_handout_stills(timed_scenes: list[TimedScene], fps: int, build: Path) -> None:
+    from playwright.sync_api import sync_playwright
+
+    stills = build / "handout"
+    stills.mkdir(exist_ok=True)
+    with sync_playwright() as playwright:
+        browser = launch_chromium(playwright)
+        try:
+            player = ScenePlayer(browser)
+            for timed_scene in timed_scenes:
+                player.load(timed_scene)
+                # The last frame of the scene shows everything its beats added.
+                player.seek(max(0.0, timed_scene.end - timed_scene.start - 1 / fps), None)
+                player.page.screenshot(path=str(stills / f"{timed_scene.scene.id}.png"))
+        finally:
+            browser.close()
+
+
+def write_handout(path: Path, title: str, timed_scenes: list[TimedScene]) -> None:
+    """Write study notes: per scene its last still (from build/handout/), start time and narration."""
+    sections = []
+    for timed_scene in timed_scenes:
+        scene_id = escape(timed_scene.scene.id)
+        minutes, seconds = divmod(int(timed_scene.start), 60)
+        paragraphs = "\n".join(f"<p>{escape(beat.text)}</p>" for beat in timed_scene.beats)
+        sections.append(
+            f'<section>\n<img src="build/handout/{scene_id}.png" alt="{scene_id}">\n'
+            f'<p class="start">{minutes}:{seconds:02}</p>\n{paragraphs}\n</section>'
+        )
+    body = "\n".join(sections)
+    path.write_text(
+        f'<!doctype html>\n<html><head><meta charset="utf-8"><title>{escape(title)}</title>\n'
+        f"<style>{HANDOUT_CSS}</style></head>\n<body>\n<h1>{escape(title)}</h1>\n{body}\n</body></html>\n",
+        encoding="utf-8",
+    )
+
+
 def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: Path, burn_captions: bool,
                  outputs: OutputPaths = FULL_OUTPUTS) -> None:
     from playwright.sync_api import sync_playwright
@@ -822,6 +868,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--install", action="store_true", help="with --doctor: install the missing required tools, then check again")
     parser.add_argument("--preview", action="store_true", help="write one still per beat and contact sheets, no video")
     parser.add_argument("--scaffold", action="store_true", help="create missing scene HTML files and theme.css from the storyboard, then stop")
+    parser.add_argument("--handout", action="store_true", help="also write handout.html: one still and the narration per scene")
     parser.add_argument("--burn-captions", action="store_true", help="burn captions into the picture (always on with tts none)")
     parser.add_argument("--tts", choices=TTS_BACKENDS, help="override the storyboard's tts backend")
     parser.add_argument("--voice", help="override the storyboard's voice")
@@ -905,6 +952,10 @@ def main() -> None:
         else:
             render_video(timed_scenes, storyboard, root, args.burn_captions or storyboard.tts == "none", outputs)
             print(f"video: {root / outputs.video} ({duration:.1f} s, {len(all_beats)} beats, {len(timed_scenes)} scenes)")
+        if args.handout:
+            render_handout_stills(timed_scenes, storyboard.fps, build)
+            write_handout(root / "handout.html", storyboard.title, timed_scenes)
+            print(f"handout: {root / 'handout.html'}")
     except RenderError as error:
         sys.exit(f"error: {error}")
 
