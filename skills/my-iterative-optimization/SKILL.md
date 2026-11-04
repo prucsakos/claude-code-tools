@@ -233,7 +233,7 @@ On stop: TaskStop every running agent and timer. In auto mode, if accepted ideas
 | Testing only safe, small ideas | Researchers send both conservative and bold ideas, and a pillar keeps a bold one testing whenever one is queued. |
 | Accepting a gain that came from a weaker check | Weakened lint, type-check or audit rules, ignore lists, suppression comments, lowered thresholds and removed tests are gaming: reject. Build config changes that keep the same work are fine. |
 | Letting an experimenter set its own acceptance criteria | Fix them before dispatch, from the researcher or the user's list. The experimenter reports against them. |
-| A CORRECT_CMD that freezes what a build target changes | Check only the behavior that must stay the same, and run the whole test suite. |
+| A CORRECT_CMD that freezes what a build target changes | Follow the CORRECT_CMD row in section 1. |
 | Measuring only the item's own target after a batch | Measure every optimize target into Bk. A regression on any of them starts the revert path. |
 | Waiting in a sleep loop for agents | End the turn; notifications wake you. |
 | An experimenter's base comes from somewhere else | Lock on: the Bk runs you give it, measured under the same lock. Lock off: its own base runs in its own worktree, with the same command. |

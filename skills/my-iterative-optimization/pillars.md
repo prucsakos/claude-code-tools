@@ -1,6 +1,6 @@
 # Pillars and targets
 
-A pillar is an area of the project to work on. A target is one concrete goal inside a pillar, and each selected target becomes a track. The "Improves" text is the option description in the pillar question, and "Group" is the question the pillar appears in. Each target's bold name is its option label in the target question, and the text after it is the option description.
+The "Improves" text is the option description in the pillar question, and "Group" is the question the pillar appears in. Each target's bold name is its option label in the target question, and the text after it is the option description.
 
 Every target has a kind. An **optimize** target (the default) improves a metric, so it needs a proxy that a command can measure; a tool the repo lacks can run from a harness under `RUN_DIR/harness/`. A **build** target, marked *(build)*, adds something new and is accepted on acceptance criteria with evidence: new tests, and screenshots for UI. If a selected target has no measurable proxy, or a build target cannot show its evidence, drop it and give the reason in the setup form.
 
@@ -29,4 +29,4 @@ Outdated-package counts and external link checks read the network, so a new rele
 
 A pillar or target the user names under "Other" (for example Cost, Reliability, or "CSV export of reports") follows the same rules: write a one-line definition, its kind, a measurable proxy (optimize) or acceptance criteria (build), and its gaming list yourself.
 
-Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: pipe the tool's JSON output into a counter that prints the count last and exits 0.
+Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: the MEASURE_CMD row in SKILL.md section 1 says how to count them.
