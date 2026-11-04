@@ -2,3 +2,5 @@
 captions*.srt
 video*.mp4
 build/
+chapters*.txt
+handout*.html

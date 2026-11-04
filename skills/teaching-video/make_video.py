@@ -261,6 +261,8 @@ class OutputPaths:
     timeline: str
     chapters: str
     chapters_meta: str
+    handout: str
+    handout_stills: str
 
 
 def output_paths(cut: bool, language: str | None = None) -> OutputPaths:
@@ -268,7 +270,8 @@ def output_paths(cut: bool, language: str | None = None) -> OutputPaths:
     suffix = (f".{language}" if language else "") + (".cut" if cut else "")
     return OutputPaths(video=f"video{suffix}.mp4", captions=f"captions{suffix}.srt",
                        narration=f"build/narration{suffix}.wav", timeline=f"build/timeline{suffix}.json",
-                       chapters=f"chapters{suffix}.txt", chapters_meta=f"build/chapters{suffix}.ffmeta")
+                       chapters=f"chapters{suffix}.txt", chapters_meta=f"build/chapters{suffix}.ffmeta",
+                       handout=f"handout{suffix}.html", handout_stills=f"build/handout{suffix}")
 
 
 FULL_OUTPUTS = output_paths(cut=False)
@@ -675,10 +678,9 @@ img { width: 100%; border: 1px solid #ccc; }
 """
 
 
-def render_handout_stills(timed_scenes: list[TimedScene], fps: int, build: Path) -> None:
+def render_handout_stills(timed_scenes: list[TimedScene], fps: int, stills: Path) -> None:
     from playwright.sync_api import sync_playwright
 
-    stills = build / "handout"
     stills.mkdir(exist_ok=True)
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
@@ -693,15 +695,16 @@ def render_handout_stills(timed_scenes: list[TimedScene], fps: int, build: Path)
             browser.close()
 
 
-def write_handout(path: Path, title: str, timed_scenes: list[TimedScene]) -> None:
-    """Write study notes: per scene its last still (from build/handout/), start time and narration."""
+def write_handout(path: Path, title: str, timed_scenes: list[TimedScene],
+                  stills: str = FULL_OUTPUTS.handout_stills) -> None:
+    """Write study notes: per scene its last still (from the stills folder, relative to path), start time and narration."""
     sections = []
     for timed_scene in timed_scenes:
         scene_id = escape(timed_scene.scene.id)
         minutes, seconds = divmod(int(timed_scene.start), 60)
         paragraphs = "\n".join(f"<p>{escape(beat.text)}</p>" for beat in timed_scene.beats)
         sections.append(
-            f'<section>\n<img src="build/handout/{scene_id}.png" alt="{scene_id}">\n'
+            f'<section>\n<img src="{stills}/{scene_id}.png" alt="{scene_id}">\n'
             f'<p class="start">{minutes}:{seconds:02}</p>\n{paragraphs}\n</section>'
         )
     body = "\n".join(sections)
@@ -1095,9 +1098,9 @@ def main() -> None:
             render_video(timed_scenes, storyboard, root, args.burn_captions or storyboard.tts == "none", outputs)
             print(f"video: {root / outputs.video} ({duration:.1f} s, {len(all_beats)} beats, {len(timed_scenes)} scenes)")
         if args.handout:
-            render_handout_stills(timed_scenes, storyboard.fps, build)
-            write_handout(root / "handout.html", storyboard.title, timed_scenes)
-            print(f"handout: {root / 'handout.html'}")
+            render_handout_stills(timed_scenes, storyboard.fps, root / outputs.handout_stills)
+            write_handout(root / outputs.handout, storyboard.title, timed_scenes, outputs.handout_stills)
+            print(f"handout: {root / outputs.handout}")
     except RenderError as error:
         sys.exit(f"error: {error}")
 
