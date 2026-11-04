@@ -388,7 +388,7 @@ class ScenePlayer:
 
     def load(self, timed_scene: TimedScene) -> None:
         self.scene_id = timed_scene.scene.id
-        self.page.goto(timed_scene.scene.html.as_uri(), wait_until="networkidle")
+        self.page.goto(timed_scene.scene.html.as_uri(), wait_until="load")
         self.page.evaluate(PREPARE_SCENE_JS, timed_scene.beat_offsets())
 
     def seek(self, t: float, prev: float | None) -> bool:
