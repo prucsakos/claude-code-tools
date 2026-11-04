@@ -15,8 +15,8 @@ sync at any video length.
     python make_video.py --doctor [--language hu]    # which tools are installed
     python make_video.py --doctor --install          # install the missing required tools
 
-All output goes next to the storyboard: video.mp4, captions.srt and build/. A cut
-(--scenes) writes video.cut.mp4, captions.cut.srt and build/*.cut.*, and a language
+All output goes next to the storyboard: video.mp4, captions.srt, chapters.txt and build/.
+A cut (--scenes) writes video.cut.mp4, captions.cut.srt, chapters.cut.txt and build/*.cut.*, and a language
 version (--translation) writes video.<lang>.mp4 and the like, so the full video's files
 stay as they are.
 """
@@ -81,6 +81,12 @@ class Scene:
     beats: list[Beat]
     lead: float
     tail: float
+    title: str = ""  # optional; empty means the chapter is named after the id
+
+    @property
+    def chapter_title(self) -> str:
+        """The scene's chapter title in video.mp4 and chapters.txt."""
+        return self.title or self.id
 
 
 @dataclass(frozen=True)
@@ -222,6 +228,7 @@ def load_storyboard(path: Path, require_html: bool = True) -> Storyboard:
                 beats=beats,
                 lead=_seconds(scene, "lead", 0.4, where),
                 tail=_seconds(scene, "tail", 0.8, where),
+                title=_string(scene, "title", where) if "title" in scene else "",
             )
         )
 
@@ -252,13 +259,16 @@ class OutputPaths:
     captions: str
     narration: str
     timeline: str
+    chapters: str
+    chapters_meta: str
 
 
 def output_paths(cut: bool, language: str | None = None) -> OutputPaths:
     # A language version and a cut get their own names, so rendering them does not overwrite the full video's files.
     suffix = (f".{language}" if language else "") + (".cut" if cut else "")
     return OutputPaths(video=f"video{suffix}.mp4", captions=f"captions{suffix}.srt",
-                       narration=f"build/narration{suffix}.wav", timeline=f"build/timeline{suffix}.json")
+                       narration=f"build/narration{suffix}.wav", timeline=f"build/timeline{suffix}.json",
+                       chapters=f"chapters{suffix}.txt", chapters_meta=f"build/chapters{suffix}.ffmeta")
 
 
 FULL_OUTPUTS = output_paths(cut=False)
@@ -702,23 +712,49 @@ def write_handout(path: Path, title: str, timed_scenes: list[TimedScene]) -> Non
     )
 
 
+def chapter_time(seconds: float) -> str:
+    """A YouTube chapter timestamp: m:ss, or h:mm:ss from one hour on."""
+    hours, rest = divmod(int(seconds), 3600)
+    minutes, secs = divmod(rest, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes}:{secs:02d}"
+
+
+def chapters_text(timed_scenes: list[TimedScene]) -> str:
+    """One `m:ss Title` line per scene, ready to paste into a YouTube description."""
+    return "".join(f"{chapter_time(ts.start)} {ts.scene.chapter_title}\n" for ts in timed_scenes)
+
+
+def write_ffmetadata(path: Path, timed_scenes: list[TimedScene]) -> None:
+    """Write one chapter per scene in ffmpeg's metadata format, for the encode to mux into video.mp4."""
+    lines = [";FFMETADATA1"]
+    for ts in timed_scenes:
+        # These characters are syntax in the metadata format and need a backslash.
+        title = "".join("\\" + char if char in "=;#\\\n" else char for char in ts.scene.chapter_title)
+        lines += ["[CHAPTER]", "TIMEBASE=1/1000", f"START={round(ts.start * 1000)}",
+                  f"END={round(ts.end * 1000)}", f"title={title}"]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+
 def render_video(timed_scenes: list[TimedScene], storyboard: Storyboard, root: Path, burn_captions: bool,
                  outputs: OutputPaths = FULL_OUTPUTS) -> None:
     from playwright.sync_api import sync_playwright
 
     command = ["ffmpeg", "-v", "error", "-y",
                "-f", "image2pipe", "-c:v", "mjpeg", "-framerate", str(storyboard.fps), "-i", "-",
-               "-i", outputs.narration]
+               "-i", outputs.narration,
+               "-f", "ffmetadata", "-i", outputs.chapters_meta]
     if burn_captions:
         # Relative path: the subtitles filter cannot parse Windows drive letters without heavy escaping.
         command += ["-vf", f"subtitles={outputs.captions}:force_style='{CAPTION_STYLE}'", "-map", "0:v", "-map", "1:a"]
     else:
-        command += ["-i", outputs.captions, "-map", "0:v", "-map", "1:a", "-map", "2:s", "-c:s", "mov_text"]
+        command += ["-i", outputs.captions, "-map", "0:v", "-map", "1:a", "-map", "3:s", "-c:s", "mov_text"]
     command += ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
                 # x264 defaults to ~1.5 frame threads per CPU, each holding its own 1080p frames; frames arrive
                 # at about real time, so 6 threads keep up with far less memory.
                 "-threads", "6",
-                "-c:a", "aac", "-b:a", "160k", "-metadata", f"title={storyboard.title}",
+                "-c:a", "aac", "-b:a", "160k", "-map_chapters", "2", "-metadata", f"title={storyboard.title}",
                 "-movflags", "+faststart", outputs.video]
     log_path = root / "build" / "ffmpeg.log"
     with log_path.open("wb") as log:
@@ -1054,6 +1090,8 @@ def main() -> None:
         if args.preview:
             render_preview(timed_scenes, storyboard.fps, build)
         else:
+            write_ffmetadata(root / outputs.chapters_meta, timed_scenes)
+            (root / outputs.chapters).write_text(chapters_text(timed_scenes), encoding="utf-8")
             render_video(timed_scenes, storyboard, root, args.burn_captions or storyboard.tts == "none", outputs)
             print(f"video: {root / outputs.video} ({duration:.1f} s, {len(all_beats)} beats, {len(timed_scenes)} scenes)")
         if args.handout:
