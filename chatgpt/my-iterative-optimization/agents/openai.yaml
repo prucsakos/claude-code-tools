@@ -1,0 +1,4 @@
+interface:
+  display_name: "Iterative Optimization (ChatGPT fork)"
+  short_description: "Measure, test and integrate iterative improvements"
+  default_prompt: "Use $my-iterative-optimization to improve this git project through measured experiments and verified increments."

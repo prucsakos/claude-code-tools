@@ -41,6 +41,7 @@ cp -R skills/explain ~/.codex/skills/
 | [`teaching-video`](skills/teaching-video/) | Skill: make a narrated teaching or tutorial video |
 | [`preference-tracker`](plugins/preference-tracker/) | Plugin: record taste notes to a private repo |
 | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT prompt: version of `/full-code-audit` |
+| [`my-iterative-optimization` (ChatGPT fork)](chatgpt/my-iterative-optimization/) | ChatGPT skill: independently maintained fork of the Claude Code original |
 | [BlenderMCP](https://github.com/ahujasid/blender-mcp) | MCP: connect an AI client to Blender |
 
 ## Commands
@@ -236,9 +237,17 @@ Example: after installing, work in Claude Code as usual. When you correct Claude
 
 ## ChatGPT
 
+### `my-iterative-optimization` — fork
+
+[`chatgpt/my-iterative-optimization/`](chatgpt/my-iterative-optimization/) is a **ChatGPT fork, not the original** [`Claude Code skill`](skills/my-iterative-optimization/). The source revision and port differences are recorded in [FORK.md](chatgpt/my-iterative-optimization/FORK.md). The original remains unchanged.
+
+This is a complete skill directory with `SKILL.md`, role/workflow references, OpenAI UI metadata and a Python measurement helper. Provide the whole directory's files to ChatGPT's skill editor or `@skill-creator`; supported installation options depend on your account and surface (see the [OpenAI skill guide](https://learn.chatgpt.com/docs/build-skills)). Invoke the installed skill as `@my-iterative-optimization`. The same folder can be installed as a Codex skill and invoked as `$my-iterative-optimization`.
+
+Execution requires a writable git checkout, git, Python 3.9+, a shell and the project's dependencies. Delegation uses the host's available worker tools and respects its limits; otherwise experiments run sequentially. Without executable repository access it produces a plan/patch and identifies unverified checks. It never assumes unattended work continues after a chat ends. See [usage and examples](chatgpt/my-iterative-optimization/FORK.md#using-this-fork).
+
 ### `full-code-audit`
 
-ChatGPT/custom-GPT version of the full-code-audit command. Files under `chatgpt/` are plain prompt text, not an installable format. Use one of:
+ChatGPT/custom-GPT version of the full-code-audit command. [`chatgpt/full-code-audit.md`](chatgpt/full-code-audit.md) is plain prompt text, not an installable skill. Use one of:
 
 - **Custom GPT:** paste the file's content into the GPT's *Instructions* field.
 - **One-off chat:** paste the prompt, replace `{{TARGET}}` with what you're auditing (or drop that line and paste/upload the code right after the prompt).
@@ -273,7 +282,7 @@ commands/        # Slash commands (markdown files, one per command)
 mcps/            # MCP server configurations and docs
 plugins/         # Claude Code plugins (one folder per plugin)
 skills/          # Reusable skills, Codex unless noted (one self-contained folder per skill)
-chatgpt/         # ChatGPT/custom-GPT prompt versions of select tools
+chatgpt/         # ChatGPT prompts and complete skill forks (see each tool's docs)
 ```
 
 ## Contributing
