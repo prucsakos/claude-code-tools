@@ -39,8 +39,8 @@ For a judged target:
 | `{{PILLAR}}` | This researcher's pillar |
 | `{{OTHER_PILLARS}}` | The other pillars that have a researcher, or `none` |
 | `{{WT}}` | `RUN_DIR/wt/researcher-<pillar>` (setup step 3) |
-| `{{MAIN}}` | Form input MAIN |
-| `{{GOAL}}` | Form input Goal |
+| `{{MAIN}}` | Plan input MAIN |
+| `{{GOAL}}` | Plan input Goal |
 | `{{STATE}}` | `RUN_DIR/state.md` (setup step 2) |
 | `{{TARGETS}}` | One block per target of the pillar, in the formats above |
 | `{{K}}` | 2 × the pillar's experimenters |

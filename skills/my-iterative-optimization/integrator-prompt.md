@@ -4,9 +4,9 @@
 |---|---|
 | `{{WT}}` | `RUN_DIR/wt/batch-<k>` (section 3, Integrator batch) |
 | `{{BATCH_BRANCH}}` | `opt/batch-<k>` |
-| `{{REPO}}`, `{{MAIN}}` | Form input REPO, MAIN |
-| `{{CORRECT_CMD}}` | Form input CORRECT_CMD |
-| `{{SETUP_CMD}}` | Form input SETUP_CMD, or `none` |
+| `{{REPO}}`, `{{MAIN}}` | Plan input REPO, MAIN |
+| `{{CORRECT_CMD}}` | Plan input CORRECT_CMD |
+| `{{SETUP_CMD}}` | Plan input SETUP_CMD, or `none` |
 | `{{DEADLINE}}` | Start time + T_ITER × number of items, as HH:MM:SS |
 | `{{ITEMS}}` | One line per item. Migrate: `<id> opt/<id> <sha>`, where `<sha>` is the item's commit on its branch, for the accepted items, ordered by measured gain (build items by score). Revert: `<id> <sha>`, where `<sha>` is the item's commit in MAIN, for the batch commits that made Bk worse (section 3, After a batch) |
 

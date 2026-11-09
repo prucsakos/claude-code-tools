@@ -10,24 +10,24 @@
 | `{{WT}}` | `RUN_DIR/wt/<id>` (section 2, Dispatch an experimenter) |
 | `{{BRANCH}}` | `opt/<id>` |
 | `{{BASE_SHA}}` | The base SHA recorded in STATE at dispatch |
-| `{{REPO}}` | Form input REPO |
-| `{{T_TEST}}`, `{{T_ITER}}` | Form input T_TEST;T_ITER |
+| `{{REPO}}` | Plan input REPO |
+| `{{T_TEST}}`, `{{T_ITER}}` | Plan input T_TEST;T_ITER |
 | `{{T_TEST_SECONDS}}` | T_TEST in seconds |
 | `{{DEADLINE}}` | Dispatch time + T_ITER, as HH:MM:SS |
-| `{{METRIC}}` | Form input Metric of the target: name, unit, direction |
+| `{{METRIC}}` | Plan input Metric of the target: name, unit, direction |
 | `{{MEASURE_SH}}` | Absolute path of `measure.sh` in this skill's directory |
 | `{{R}}` | Runs per side of the target (setup step 4) |
 | `{{MODE}}` | The target's mode: `time` or `stdout` |
 | `{{LOCK}}` | The target's LOCK (setup step 2); for a UI build item, `RUN_DIR/measure.lock` |
-| `{{MEASURE_CMD}}` | Form input MEASURE_CMD of the target, each `'` written as `'\''` |
+| `{{MEASURE_CMD}}` | Plan input MEASURE_CMD of the target, each `'` written as `'\''` |
 | `{{BASE_VALUES}}` | Lock on: the target's runs of the current Bk; lock off: `none` |
-| `{{CORRECT_CMD}}` | Form input CORRECT_CMD |
+| `{{CORRECT_CMD}}` | Plan input CORRECT_CMD |
 | `{{GAMING}}` | Section 2, Dispatch an experimenter |
 | `{{ACCEPTANCE}}` | The idea's acceptance criteria, from STATE |
 | `{{RUBRIC}}` | The idea's rubric criteria, from STATE |
 | `{{SHOTS}}` | UI item: `RUN_DIR/shots/<id>`; otherwise `none` |
 | `{{BEFORE}}` | UI item: `RUN_DIR/shots/Bk` of the current baseline; otherwise `none` |
-| `{{EVIDENCE_CMD}}` | Form input EVIDENCE_CMD |
+| `{{EVIDENCE_CMD}}` | Plan input EVIDENCE_CMD |
 
 Keep the section for the idea's kind (optimize, build or judged) and the report fields of that kind.
 
