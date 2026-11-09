@@ -182,6 +182,8 @@ For a judged idea, also weigh:
 - gaming: the GAMING list of the idea's target, and evidence that does not match the diff;
 - the other targets, as for an optimize idea.
 
+**Side effects and direction.** Before you accept any result, check its diff against the run's Goal and the constraints recorded in STATE, such as the idea's scope and the orchestration hierarchy. A result that meets its gain or its criteria is not accepted as is when it also (a) changes behavior or files that the Goal does not ask for, or (b) moves against a recorded constraint. If the in-scope part can stand alone, mark the idea `rejected: side effect <one line>` and queue a `narrowed` retest with the same score: the same idea, limited to its in-scope part, with one added acceptance criterion `does not <the side effect>`. If the in-scope part cannot be separated from the side effect, reject the idea.
+
 Record the reason in one line. Remove worktrees with `git -C REPO worktree remove --force <dir>`, because measurement output leaves untracked files. Accepted: remove the worktree and keep the branch. Rejected or failed: remove the worktree and delete the branch.
 
 **Overlapping ideas:** if two accepted ideas change the same code for the same gain, for example two fixes of one hot loop, put only one of them in the batch. Choose the one with the larger measured gain; for build items, the one with the higher score. Mark the other `superseded by #<id>` and delete its branch.
@@ -227,7 +229,7 @@ Main: B0 → B2  ·  2 batches · 6 accepted · 3 rejected · 10 testing · rese
 - Print one Main line per target, with its pillar's current experimenters (and the confirmed share, when a rebalance changed it), and one baseline-table column per optimize target. A build target's Main line counts its items in MAIN against its cap or its list.
 - Est. vs B0 = (its base's gain vs B0 on the item's target) × the item's ratio. It is an estimate until the item is in MAIN; after that, the baseline table holds the measured value. Build items show `—`.
 - When a lower-is-better value reaches 0, the ratio is undefined: show the absolute change (42 → 0) instead.
-- Statuses: queued → testing → accepted / rejected (reason) / timeout → migrating → in MAIN (Bk) / skipped (reason) / superseded by #id / retest.
+- Statuses: queued → testing → accepted / rejected (reason) / timeout → migrating → in MAIN (Bk) / skipped (reason) / superseded by #id / retest / narrowed.
 - For each optimize target with the lock off, add one line: its absolute values were measured under parallel load, and its ratios are the more reliable figure.
 - In review mode, a batch that waits for the user shows on the Main line as `batch <k>: awaiting approval`.
 
@@ -263,3 +265,4 @@ On stop: TaskStop every running agent and timer. In auto mode, if accepted ideas
 | Asking the user something mid-run in auto mode | Auto never waits for the user: decide, report, and go on. |
 | Asking for batch approval with AskUserQuestion | It blocks the event loop. Post the proposal as a message, end the turn, and keep handling events. |
 | Queuing an idea that another pillar's researcher already sent | Drop ideas that repeat a queued one: Performance and DX can both find the same build-config change. |
+| Accepting a creative result with a side effect because the gain is large | Queue a narrowed retest of its in-scope part (section 3, Side effects and direction). Never migrate the side effect. |
