@@ -56,9 +56,9 @@ First take a short look at the repo, so that you can propose the commands.
 
 The tool adds "Other", where the user can name a custom pillar. In "Other" or in the arguments, the user may define a pillar from scratch: its name, a one-line definition, its kind (optimize, build or judged), a metric with its MEASURE_CMD, acceptance criteria or a rubric, and the gaming to reject. Write every part the user leaves out yourself, and show it in the form, where the user can change it. If no pillar is left (none selected, or the form drops every target), use Performance: Speed and say why in the form. If AskUserQuestion is not available, put the pillar list into the form as its first input.
 
-**Targets.** Then ask which targets the run works on: one AskUserQuestion call with one `multiSelect` question per selected pillar that has two or more targets, at most four. Header: the pillar's name, at most 12 characters ("Deps", "Docs"). Question: "Which <pillar> targets should the run work on?" Options: the pillar's targets from `pillars.md`, with their text as the description. In "Other" the user can describe a target of their own, such as "startup time of the CLI" or "CSV export of reports". Skip a pillar whose targets the arguments already name, and a pillar with one target. With more than four pillars left, ask about the first four in group order and propose targets for the rest in the form. If AskUserQuestion is not available, put the targets into the form.
+**Targets.** Do not ask a second question for them. Propose each selected pillar's targets yourself, in the Targets row of the form. From the short repo look and `pillars.md`, propose the targets that the repo can measure, build or judge, each with its reason, and list the pillar's other targets from `pillars.md` as alternatives in the same row: `Quality: **Types** (proposed: tsconfig.json found) · also: Tests, Coverage`. Use the targets that the arguments name as given. The user swaps or adds a target by naming it in the form answer. There the user may also name a target of their own, such as "startup time of the CLI" or "CSV export of reports". A pillar defined from scratch gets its targets the same way: propose them from its definition, and the user names others in the form answer.
 
-**Profile and run mode.** Take them from the arguments when they are given, e.g. `high auto "make the build faster"`. Otherwise they are the first two rows of the form. They never go into the pillar or target questions.
+**Profile and run mode.** Take them from the arguments when they are given, e.g. `high auto "make the build faster"`. Otherwise they are the first two rows of the form. They never go into the pillar question.
 
 | Profile | N | T_RESEARCH |
 |---|---|---|
@@ -254,7 +254,7 @@ On stop: TaskStop every running agent and timer. In auto mode, if accepted ideas
 
 | Mistake | Fix |
 |---|---|
-| Asking setup questions over several turns | Use at most four rounds. Ask the pillar question only when the arguments name no pillar and no metric. Ask the target question only for pillars with two or more targets that the arguments do not name. Then send one form with defaults for what the answer leaves open, and then the confirmation table, again after each change. |
+| Asking setup questions over several turns | Use at most three rounds. Ask the pillar question only when the arguments name no pillar and no metric. Do not ask a target question: propose the targets in the form. Then send one form with defaults for what the answer leaves open, and then the confirmation table, again after each change. |
 | Changing anything on disk before the user confirmed | No RUN_DIR, worktree or measurement until the confirmation table gets `ok`. |
 | Comparing ideas of different targets by their raw gains | Seconds and lint errors do not compare. When a free slot serves another pillar, choose by score (relative gain or value, × confidence). |
 | Lending experimenters to a pillar with a locked or UI build target | Its share sets R and the lock budget. Lend only to the other pillars. |
