@@ -178,7 +178,7 @@ For an optimize idea, also weigh:
 - the other targets: a diff that you expect to make another selected target worse needs a gain that outweighs it.
 
 For a build idea, also weigh:
-- every acceptance criterion: its evidence must show that it is met (new tests that exercise it; for a UI item, look at the before and after screenshots). In auto mode, accept only when every criterion has evidence;
+- every acceptance criterion: its evidence must show that it is met (new tests that exercise it; for a UI item, look at the before and after screenshots); a criterion whose evidence cannot be re-checked (no test name, screenshot path or file:line) has no evidence. In auto mode, accept only when every criterion has evidence;
 - the diff does what the idea says and no more, fits the existing architecture and design system, and leaves the existing behavior unchanged;
 - gaming: the build gaming list in `pillars.md`;
 - the other targets, as for an optimize idea.
