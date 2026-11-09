@@ -85,7 +85,7 @@ Screenshots: `{{SHOTS}}`. If it is not `none`, the screenshots of your base are 
 1. **Build** the smallest complete version of the idea that meets every criterion. Follow the existing architecture and design system. Add tests that exercise the new behavior; make the feature reachable by its users (route, command or menu entry). Keep the existing behavior unchanged.
 2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`, then your new tests. If they fail and the fix is quick, fix it; otherwise report the failure.
 3. **Commit** (see Commit). Your new tests go into the commit.
-4. **Check:** if there are screenshots, capture them and compare them with `{{BEFORE}}`. Then re-read each criterion and check it against the committed diff (`git -C {{WT}} show HEAD`), the test output and the screenshots, not against your memory of the edit. For each criterion, name evidence the orchestrator can re-check: a test name with its output line, a screenshot path, or a `file:line` quote from the commit.
+4. **Check:** if there are screenshots, capture them and compare them with `{{BEFORE}}`. Then re-read each criterion and check it against the committed diff (`git -C {{WT}} show HEAD`), the test output and the screenshots, not against your memory of the edit. For each criterion, name evidence the orchestrator can re-check: a test name with its output line, a screenshot path, or a `file:line` quote from the commit. Report the evidence only; do not state whether a criterion is met.
 
 ## Kind: judged
 
@@ -120,7 +120,7 @@ CORRECTNESS: pass | fail (<detail>) | not run
 BASE_RUNS: <optimize: values, unit; say "given" if you did not measure them>
 CANDIDATE_RUNS: <optimize: values, unit>
 RATIO: <optimize: improvement factor; >1 means better: base/candidate when lower is better, candidate/base when higher is better; if a lower-is-better candidate is 0, write "n/a (<base> → 0)">
-ACCEPTANCE: <build: one line per criterion: pass | fail — test name and output line, screenshot path, or file:line quote>
+ACCEPTANCE: <build: one line per criterion: the criterion, then its evidence: test name and output line, screenshot path, or file:line quote; no verdict>
 TESTS_ADDED: <build: test names, or none>
 SCREENSHOTS: <build: path of your screenshots, or none>
 RUBRIC_EVIDENCE: <judged: one line per criterion: the criterion, then before → after evidence; no verdict>
