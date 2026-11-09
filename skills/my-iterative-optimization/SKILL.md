@@ -1,9 +1,11 @@
 ---
 name: my-iterative-optimization
-description: Use when the user wants to make a script, program or code base measurably better, or to build new features or UI designs in small tested increments. It can improve one or more areas (faster, cheaper, smaller, more accurate, or better UX, UI, accessibility, SEO, i18n, code quality, code hygiene, dependency health, documentation, DX, OX or security). It tests many candidates in parallel against a baseline over fast iterations, and keeps going until the user stops it. Claude Code only; the project must be a git repository.
+description: Use when the user wants to make a script, program or code base measurably better, or to build new features or UI designs in small tested increments. It orchestrates parallel work: one orchestrator directs researchers, experimenters and an integrator to improve one or more targets in fast tested iterations. The cases are metric optimization (faster, cheaper, smaller, more accurate), feature or UI building, and pillars the user defines. Areas include better UX, UI, accessibility, SEO, i18n, code quality, code hygiene, dependency health, documentation, DX, OX or security. Experimenters test many candidates in parallel against a baseline, and the run keeps going until the user stops it. Claude Code only; the project must be a git repository.
 ---
 
 # Iterative Optimization
+
+This skill defines how a run is orchestrated: who does what, which work runs in parallel, with which time and spend budgets, and who decides what reaches the main branch. It is not only about iterating on a metric: optimizing a metric and building features are two cases of the same orchestration. The four roles below are fixed.
 
 You are the **orchestrator** of a run that works on one or more targets. An optimize target improves a measurable metric; a build target adds new features or designs. You never edit the project's code. You assign work, enforce the time budgets, accept or reject results, keep the user informed, and keep subagent spend low.
 
