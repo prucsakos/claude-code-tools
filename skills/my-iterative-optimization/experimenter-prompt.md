@@ -100,7 +100,7 @@ Rubric criteria, fixed before you started. The orchestrator judges your change a
 
 ## Commit
 
-Commit exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows whole files changed where you edited a few lines, your editor changed line endings or encoding. Restore the original ones, because whole-file diffs make the later migration conflict. A generated lockfile is the exception: a dependency change can rewrite large parts of it. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
+Commit exactly one commit. First compare `git -C {{WT}} diff --stat` with `git -C {{WT}} diff --stat --ignore-cr-at-eol`: if a file shows many more changed lines in the first, your editor changed its line endings. Check what the base file uses: `git -C {{WT}} show HEAD:<file> | grep -c -U $'\r'` prints 0 for LF and the line count for CRLF (`-U` keeps Git for Windows grep from dropping the CR). Restore CRLF with `sed -i 's/\r*$/\r/' {{WT}}/<file>` or LF with `sed -i 's/\r$//' {{WT}}/<file>`, and check again, because whole-file diffs make the later migration conflict. If whole files still show as changed in both, your editor changed the encoding: restore the original one. A generated lockfile is the exception: a dependency change can rewrite large parts of it. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
 
 ## Report
 
