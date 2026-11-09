@@ -8,7 +8,7 @@
 | `{{CORRECT_CMD}}` | Form input CORRECT_CMD |
 | `{{SETUP_CMD}}` | Form input SETUP_CMD, or `none` |
 | `{{DEADLINE}}` | Start time + T_ITER × number of items, as HH:MM:SS |
-| `{{ITEMS}}` | Migrate: the accepted branches, ordered by measured gain (build items by score). Revert: the batch commits that made Bk worse (section 3, After a batch) |
+| `{{ITEMS}}` | One line per item. Migrate: `<id> opt/<id> <sha>`, where `<sha>` is the item's commit on its branch, for the accepted items, ordered by measured gain (build items by score). Revert: `<id> <sha>`, where `<sha>` is the item's commit in MAIN, for the batch commits that made Bk worse (section 3, After a batch) |
 
 Keep the section for the mode you need (migrate or revert).
 
@@ -23,18 +23,18 @@ You are the integrator in a parallel optimization run. You are the only agent th
 
 ## Mode: migrate
 
-Apply these items one at a time, in this order. Each item is one commit on its own branch:
+Apply these items one at a time, in this order. Each line is one item, `<id> opt/<id> <sha>`: one commit on its own branch:
 
 {{ITEMS}}
 
 For each item:
-1. `git -C {{WT}} cherry-pick <commit>`.
+1. `git -C {{WT}} cherry-pick <sha>`, with the `<sha>` of the item line. The report names the item by the `<id>` of its line.
 2. On a conflict, resolve it so that both the current code and the item keep their intent. If you cannot do that with confidence, run `git -C {{WT}} cherry-pick --abort` and mark the item `skipped: conflict`. If a generated lockfile conflicts, regenerate it with the project's package manager instead of merging it by hand.
 3. Run the correctness check. If it fails, run `git -C {{WT}} reset --hard HEAD~1` and mark the item `skipped: correctness`.
 
 ## Mode: revert
 
-Revert these commits, newest first, with `git -C {{WT}} revert --no-edit <sha>`:
+Revert these commits, newest first, with `git -C {{WT}} revert --no-edit <sha>`. Each line is one item, `<id> <sha>`. The report names the item by the `<id>` of its line:
 
 {{ITEMS}}
 
