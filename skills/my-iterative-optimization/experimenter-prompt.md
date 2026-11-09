@@ -24,6 +24,7 @@
 | `{{CORRECT_CMD}}` | Plan input CORRECT_CMD |
 | `{{GAMING}}` | Section 2, Dispatch an experimenter |
 | `{{ACCEPTANCE}}` | The idea's acceptance criteria, from STATE |
+| `{{EVIDENCE_FORM}}` | The build target's evidence form, from the plan |
 | `{{RUBRIC}}` | The idea's rubric criteria, from STATE |
 | `{{SHOTS}}` | UI item: `RUN_DIR/shots/<id>`; otherwise `none` |
 | `{{BEFORE}}` | UI item: `RUN_DIR/shots/Bk` of the current baseline; otherwise `none` |
@@ -80,11 +81,13 @@ Acceptance criteria, fixed before you started; report on each one:
 
 {{ACCEPTANCE}}
 
+Evidence form: {{EVIDENCE_FORM}}.
+
 Screenshots: `{{SHOTS}}`. If it is not `none`, the screenshots of your base are in `{{BEFORE}}`, and you capture yours once, only with `bash {{MEASURE_SH}} {{WT}} 1 {{T_TEST_SECONDS}} stdout {{LOCK}} '{{EVIDENCE_CMD}} {{SHOTS}}'`. It prints the number of screenshots, or `TIMEOUT` / `FAIL <code>`.
 
-1. **Build** the smallest complete version of the idea that meets every criterion. Follow the existing architecture and design system. Add tests that exercise the new behavior; make the feature reachable by its users (route, command or menu entry). Keep the existing behavior unchanged.
-2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`, then your new tests. If they fail and the fix is quick, fix it; otherwise report the failure.
-3. **Commit** (see Commit). Your new tests go into the commit.
+1. **Build** the smallest complete version of the idea that meets every criterion. Follow the existing architecture and design system. When the evidence form includes tests, add tests that exercise the new behavior; otherwise add no test files and produce the evidence the form names. Make the feature reachable by its users (route, command or menu entry). Keep the existing behavior unchanged.
+2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`, then your new tests, if you added any. If they fail and the fix is quick, fix it; otherwise report the failure.
+3. **Commit** (see Commit). Your new tests, if any, go into the commit.
 4. **Check:** if there are screenshots, capture them and compare them with `{{BEFORE}}`. Then re-read each criterion and check it against the committed diff (`git -C {{WT}} show HEAD`), the test output and the screenshots, not against your memory of the edit. For each criterion, name evidence the orchestrator can re-check: a test name with its output line, a screenshot path, or a `file:line` quote from the commit. Report the evidence only; do not state whether a criterion is met.
 
 ## Kind: judged

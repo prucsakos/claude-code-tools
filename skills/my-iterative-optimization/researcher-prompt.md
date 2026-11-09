@@ -21,6 +21,7 @@ For a build target:
 ### <Pillar>: <Target> (build): <what it adds, from pillars.md>
 - Items in MAIN so far: <titles, or none>. Items left before the cap: <number>.
 - Increments still to come: <from STATE, or none>
+- Evidence: <the target's evidence form from the plan>
 - Screens: <for a UI target, at most once: `bash <MEASURE_SH> <WT> 1 <T_TEST_SECONDS> stdout <RUN_DIR>/measure.lock '<EVIDENCE_CMD> <RUN_DIR>/shots/researcher-<pillar>'`; otherwise none>
 - Gaming that does not count: <the pillar's gaming list and the build gaming list from pillars.md>
 ```
@@ -101,7 +102,7 @@ EXPECTED: <optimize: gain on the metric, e.g. "3–5× less wall time", "−40 %
 PREDICTION: <one observable result the experimenter can check; if it is absent, the idea is wrong, e.g. "the profile no longer shows parse_row in the top 5" or "the form shows one error message per empty field">
 SCOPE: conservative | bold
 VALUE: <build and judged only: high | medium | low, for the users of the product>
-ACCEPTANCE: <build only: the checks that show it works, one per line: what a new test asserts, what a screenshot must show>
+ACCEPTANCE: <build only: the checks that show it works, one per line, in the target's Evidence form: what a new test asserts, what a screenshot must show, or what a `file:line` quote must say>
 RUBRIC: <judged only: the criteria the orchestrator will judge, one per line, each checkable from before/after evidence: quotes of the old and new text, or sources with URLs>
 CONSIDERED: <2–4 other directions for this target from your list, each with one reason it ranks lower>
 CONFIDENCE: high | medium | low
