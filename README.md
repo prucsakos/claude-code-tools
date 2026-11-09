@@ -37,7 +37,7 @@ cp -R skills/explain ~/.codex/skills/
 | [`/my-code-simplify`](commands/my-code-simplify.md) | Command: simplify current changes, keep behavior |
 | [`explain`](skills/explain/) | Codex skill: version of `/explain` |
 | [`explain-simple`](skills/explain-simple/) | Codex skill: version of `/explain-simple` |
-| [`my-iterative-optimization`](skills/my-iterative-optimization/) | Skill: improve a project with parallel experiments |
+| [`my-iterative-optimization`](skills/my-iterative-optimization/) | Skill: orchestrate parallel researchers, experimenters and an integrator to improve a project |
 | [`teaching-video`](skills/teaching-video/) | Skill: make a narrated teaching or tutorial video |
 | [`preference-tracker`](plugins/preference-tracker/) | Plugin: record taste notes to a private repo |
 | [`full-code-audit`](chatgpt/full-code-audit.md) | ChatGPT prompt: version of `/full-code-audit` |
@@ -125,7 +125,7 @@ Then invoke it as `$explain` (or `$explain-simple`) in Codex.
 
 ### `my-iterative-optimization` (Claude Code)
 
-Claude Code skill: work on the targets you pick inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch.
+Claude Code skill that orchestrates parallel work on a project: one orchestrator directs researchers, experimenters and an integrator, with fixed roles and time budgets, to improve the targets you pick. Optimizing a metric and building features are cases of it. Pick targets inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria; judged targets (e.g. the wording of a thesis, research or web fact-finding) have no metric and no tests, so each idea is accepted on a rubric fixed before dispatch, and the orchestrator judges it from before/after evidence. You may also define your own pillars and targets, of any of the three kinds. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch.
 
 It is a Claude Code skill, so copy it into your Claude Code skills directory. These commands replace an earlier install of this skill only and leave your other skills alone:
 
@@ -139,11 +139,14 @@ Then use it inside Claude Code:
 
 ```
 /my-iterative-optimization "Make scripts/build_report.py faster without changing its output"
-/my-iterative-optimization "Improve this project"   # offers the pillars, then their targets, as a multiple choice
+/my-iterative-optimization "Improve this project"   # offers the pillars as a multiple choice, then proposes targets
 /my-iterative-optimization "Improve DX and Quality"
-/my-iterative-optimization high auto "Make the build faster"   # profile and mode skip their form rows
+/my-iterative-optimization high auto "Make the build faster"   # profile and mode are not proposed in the plan
 /my-iterative-optimization low review "Improve Code hygiene"
 /my-iterative-optimization review "Make it faster and add a CSV export of reports"   # an optimize and a build target
+/my-iterative-optimization "Improve the wording of my thesis in thesis/"   # a judged target, accepted on a rubric
+/my-iterative-optimization "Find more sources for the open questions in research/notes.md"   # judged: research discovery
+/my-iterative-optimization "Fact-check the claims in facts.md on the web"   # judged, or optimize on verified-claim count
 ```
 
 ### `teaching-video` (Claude Code)

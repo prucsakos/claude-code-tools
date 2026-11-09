@@ -4,31 +4,33 @@
 |---|---|
 | `{{ID}}` | The idea's id in STATE |
 | `{{TARGET}}` | The idea's target, as `<Pillar>: <Target>` |
-| `{{KIND}}` | The target's kind: `optimize` or `build` |
+| `{{KIND}}` | The target's kind: `optimize`, `build` or `judged` |
 | `{{OTHER_TARGETS}}` | The other selected targets, or `none` |
-| `{{IDEA}}` | The idea's technique and expected change, from STATE |
+| `{{IDEA}}` | The idea's technique, expected change and prediction, from STATE |
 | `{{WT}}` | `RUN_DIR/wt/<id>` (section 2, Dispatch an experimenter) |
 | `{{BRANCH}}` | `opt/<id>` |
 | `{{BASE_SHA}}` | The base SHA recorded in STATE at dispatch |
-| `{{REPO}}` | Form input REPO |
-| `{{T_TEST}}`, `{{T_ITER}}` | Form input T_TEST;T_ITER |
+| `{{REPO}}` | Plan input REPO |
+| `{{T_TEST}}`, `{{T_ITER}}` | Plan input T_TEST;T_ITER |
 | `{{T_TEST_SECONDS}}` | T_TEST in seconds |
 | `{{DEADLINE}}` | Dispatch time + T_ITER, as HH:MM:SS |
-| `{{METRIC}}` | Form input Metric of the target: name, unit, direction |
+| `{{METRIC}}` | Plan input Metric of the target: name, unit, direction |
 | `{{MEASURE_SH}}` | Absolute path of `measure.sh` in this skill's directory |
 | `{{R}}` | Runs per side of the target (setup step 4) |
 | `{{MODE}}` | The target's mode: `time` or `stdout` |
 | `{{LOCK}}` | The target's LOCK (setup step 2); for a UI build item, `RUN_DIR/measure.lock` |
-| `{{MEASURE_CMD}}` | Form input MEASURE_CMD of the target, each `'` written as `'\''` |
+| `{{MEASURE_CMD}}` | Plan input MEASURE_CMD of the target, each `'` written as `'\''` |
 | `{{BASE_VALUES}}` | Lock on: the target's runs of the current Bk; lock off: `none` |
-| `{{CORRECT_CMD}}` | Form input CORRECT_CMD |
+| `{{CORRECT_CMD}}` | Plan input CORRECT_CMD |
 | `{{GAMING}}` | Section 2, Dispatch an experimenter |
 | `{{ACCEPTANCE}}` | The idea's acceptance criteria, from STATE |
+| `{{EVIDENCE_FORM}}` | The build target's evidence form, from the plan |
+| `{{RUBRIC}}` | The idea's rubric criteria, from STATE |
 | `{{SHOTS}}` | UI item: `RUN_DIR/shots/<id>`; otherwise `none` |
 | `{{BEFORE}}` | UI item: `RUN_DIR/shots/Bk` of the current baseline; otherwise `none` |
-| `{{EVIDENCE_CMD}}` | Form input EVIDENCE_CMD |
+| `{{EVIDENCE_CMD}}` | Plan input EVIDENCE_CMD |
 
-Keep the section for the idea's kind (optimize or build) and the report fields of that kind.
+Keep the section for the idea's kind (optimize, build or judged) and the report fields of that kind.
 
 ---
 
@@ -79,20 +81,33 @@ Acceptance criteria, fixed before you started; report on each one:
 
 {{ACCEPTANCE}}
 
+Evidence form: {{EVIDENCE_FORM}}.
+
 Screenshots: `{{SHOTS}}`. If it is not `none`, the screenshots of your base are in `{{BEFORE}}`, and you capture yours once, only with `bash {{MEASURE_SH}} {{WT}} 1 {{T_TEST_SECONDS}} stdout {{LOCK}} '{{EVIDENCE_CMD}} {{SHOTS}}'`. It prints the number of screenshots, or `TIMEOUT` / `FAIL <code>`.
 
-1. **Build** the smallest complete version of the idea that meets every criterion. Follow the existing architecture and design system. Add tests that exercise the new behavior; make the feature reachable by its users (route, command or menu entry). Keep the existing behavior unchanged.
-2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`, then your new tests. If they fail and the fix is quick, fix it; otherwise report the failure.
-3. **Commit** (see Commit). Your new tests go into the commit.
-4. **Screenshots:** if there are screenshots, capture them and compare them with `{{BEFORE}}`. Check each criterion against the tests and screenshots.
+1. **Build** the smallest complete version of the idea that meets every criterion. Follow the existing architecture and design system. When the evidence form includes tests, add tests that exercise the new behavior; otherwise add no test files and produce the evidence the form names. Make the feature reachable by its users (route, command or menu entry). Keep the existing behavior unchanged.
+2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`, then your new tests, if you added any. If they fail and the fix is quick, fix it; otherwise report the failure.
+3. **Commit** (see Commit). Your new tests, if any, go into the commit.
+4. **Check:** if there are screenshots, capture them and compare them with `{{BEFORE}}`. Then re-read each criterion and check it against the committed diff (`git -C {{WT}} show HEAD`), the test output and the screenshots, not against your memory of the edit. For each criterion, name evidence the orchestrator can re-check: a test name with its output line, a screenshot path, or a `file:line` quote from the commit. Report the evidence only; do not state whether a criterion is met.
+
+## Kind: judged
+
+Rubric criteria, fixed before you started. The orchestrator judges your change against each one:
+
+{{RUBRIC}}
+
+1. **Change** the work with the smallest complete version of the idea. Follow the existing structure and style. Keep the existing behavior unchanged.
+2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise report the failure.
+3. **Commit** (see Commit).
+4. **Evidence:** for each rubric criterion, collect before/after evidence from the committed diff (`git -C {{WT}} show HEAD`): quotes of the old and new text with `file:line`, and for each source you used, its URL and the passage you quote from it. Report the evidence only. Never state whether a criterion is met: the orchestrator judges that, not you.
 
 ## Commit
 
-Commit exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows whole files changed where you edited a few lines, your editor changed line endings or encoding. Restore the original ones, because whole-file diffs make the later migration conflict. A generated lockfile is the exception: a dependency change can rewrite large parts of it. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
+Commit exactly one commit. First compare `git -C {{WT}} diff --stat` with `git -C {{WT}} diff --stat --ignore-cr-at-eol`: if a file shows many more changed lines in the first, your editor changed its line endings. Check what the base file uses: `git -C {{WT}} show HEAD:<file> | grep -c -U $'\r'` prints 0 for LF and the line count for CRLF (`-U` keeps Git for Windows grep from dropping the CR). Restore CRLF with `sed -i 's/\r*$/\r/' {{WT}}/<file>` or LF with `sed -i 's/\r$//' {{WT}}/<file>`, and check again, because whole-file diffs make the later migration conflict. If whole files still show as changed in both, your editor changed the encoding: restore the original one. A generated lockfile is the exception: a dependency change can rewrite large parts of it. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
 
 ## Report
 
-End with exactly this block and nothing after it. Leave out the fields of the other kind.
+End with exactly this block and nothing after it. Leave out the fields of the other kinds.
 
 ```
 ITEM: {{ID}}
@@ -101,13 +116,18 @@ BRANCH: {{BRANCH}}
 BASE: {{BASE_SHA}}
 COMMIT: <sha, or none>
 CHANGE: <one sentence>
+PREDICTION: held | failed | not checked — <what you saw>
 FILES: <changed files>
+SIDE_EFFECTS: <each file, public interface, default, dependency or behavior the commit changes beyond what the idea names, with why; or none>
 CORRECTNESS: pass | fail (<detail>) | not run
 BASE_RUNS: <optimize: values, unit; say "given" if you did not measure them>
 CANDIDATE_RUNS: <optimize: values, unit>
 RATIO: <optimize: improvement factor; >1 means better: base/candidate when lower is better, candidate/base when higher is better; if a lower-is-better candidate is 0, write "n/a (<base> → 0)">
-ACCEPTANCE: <build: one line per criterion: pass | fail — the test or screenshot that shows it>
+ACCEPTANCE: <build: one line per criterion: the criterion, then its evidence: test name and output line, screenshot path, or file:line quote; no verdict>
 TESTS_ADDED: <build: test names, or none>
 SCREENSHOTS: <build: path of your screenshots, or none>
+RUBRIC_EVIDENCE: <judged: one line per criterion: the criterion, then before → after evidence; no verdict>
+SOURCES: <judged: URL and quoted passage of each source you used, or none>
+NOT_CHECKED: <claims in CHANGE or ACCEPTANCE you did not verify, cases you did not run, or none>
 NOTES: <risks, side effects, what you could not finish>
 ```
