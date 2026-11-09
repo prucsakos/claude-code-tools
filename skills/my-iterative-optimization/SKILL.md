@@ -42,6 +42,7 @@ Each selected target is a **track**. An optimize track has its own metric, MEASU
 - Bash tool: 120 s default timeout, 600 s maximum in the foreground. Run longer measurements with `run_in_background: true`.
 - A subagent that waits on its own background command produces an interim notification ("waiting on its own background work"). It has not finished: act only on a notification whose result holds the report block.
 - Never `cd` into a worktree in your own shell; use `git -C <dir>` or a `( cd <dir> && … )` subshell. On Windows a directory that is a shell's working directory cannot be removed.
+- Run the skill's commands (measure.sh, the timer, `( cd … )` subshells, `'\''` quoting) in the Bash tool, never in PowerShell. On Windows the Bash tool is Git Bash. Do not start `bash` from PowerShell or Python there: it may be WSL's bash, which does not see Windows drive paths like `A:/`. The skill's `.gitattributes` keeps `*.sh` at LF line endings, because bash rejects a CRLF measure.sh with a syntax error.
 
 ## 1. Setup: pillars, targets, one form, then confirmation
 

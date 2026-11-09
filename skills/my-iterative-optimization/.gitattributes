@@ -1,0 +1,2 @@
+# bash rejects CRLF scripts with a syntax error, so keep measure.sh at LF on Windows checkouts.
+*.sh text eol=lf
