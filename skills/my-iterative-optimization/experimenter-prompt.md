@@ -4,7 +4,7 @@
 |---|---|
 | `{{ID}}` | The idea's id in STATE |
 | `{{TARGET}}` | The idea's target, as `<Pillar>: <Target>` |
-| `{{KIND}}` | The target's kind: `optimize` or `build` |
+| `{{KIND}}` | The target's kind: `optimize`, `build` or `judged` |
 | `{{OTHER_TARGETS}}` | The other selected targets, or `none` |
 | `{{IDEA}}` | The idea's technique and expected change, from STATE |
 | `{{WT}}` | `RUN_DIR/wt/<id>` (section 2, Dispatch an experimenter) |
@@ -24,11 +24,12 @@
 | `{{CORRECT_CMD}}` | Form input CORRECT_CMD |
 | `{{GAMING}}` | Section 2, Dispatch an experimenter |
 | `{{ACCEPTANCE}}` | The idea's acceptance criteria, from STATE |
+| `{{RUBRIC}}` | The idea's rubric criteria, from STATE |
 | `{{SHOTS}}` | UI item: `RUN_DIR/shots/<id>`; otherwise `none` |
 | `{{BEFORE}}` | UI item: `RUN_DIR/shots/Bk` of the current baseline; otherwise `none` |
 | `{{EVIDENCE_CMD}}` | Form input EVIDENCE_CMD |
 
-Keep the section for the idea's kind (optimize or build) and the report fields of that kind.
+Keep the section for the idea's kind (optimize, build or judged) and the report fields of that kind.
 
 ---
 
@@ -86,6 +87,17 @@ Screenshots: `{{SHOTS}}`. If it is not `none`, the screenshots of your base are 
 3. **Commit** (see Commit). Your new tests go into the commit.
 4. **Screenshots:** if there are screenshots, capture them and compare them with `{{BEFORE}}`. Check each criterion against the tests and screenshots.
 
+## Kind: judged
+
+Rubric criteria, fixed before you started. The orchestrator judges your change against each one:
+
+{{RUBRIC}}
+
+1. **Change** the work with the smallest complete version of the idea. Follow the existing structure and style. Keep the existing behavior unchanged.
+2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise report the failure.
+3. **Commit** (see Commit).
+4. **Evidence:** for each rubric criterion, collect before/after evidence from the committed diff (`git -C {{WT}} show HEAD`): quotes of the old and new text with `file:line`, and for each source you used, its URL and the passage you quote from it. Report the evidence only. Never state whether a criterion is met: the orchestrator judges that, not you.
+
 ## Commit
 
 Commit exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows whole files changed where you edited a few lines, your editor changed line endings or encoding. Restore the original ones, because whole-file diffs make the later migration conflict. A generated lockfile is the exception: a dependency change can rewrite large parts of it. Stage only the files you changed for the idea; `git -C {{WT}} status --porcelain` shows measurement output, caches and other generated files, which stay out of the commit. Then: `git -C {{WT}} add <files> && git -C {{WT}} commit -m "opt({{ID}}): <one-line change>"`.
@@ -109,5 +121,7 @@ RATIO: <optimize: improvement factor; >1 means better: base/candidate when lower
 ACCEPTANCE: <build: one line per criterion: pass | fail — the test or screenshot that shows it>
 TESTS_ADDED: <build: test names, or none>
 SCREENSHOTS: <build: path of your screenshots, or none>
+RUBRIC_EVIDENCE: <judged: one line per criterion: the criterion, then before → after evidence; no verdict>
+SOURCES: <judged: URL and quoted passage of each source you used, or none>
 NOTES: <risks, side effects, what you could not finish>
 ```

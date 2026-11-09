@@ -25,6 +25,15 @@ For a build target:
 - Gaming that does not count: <the pillar's gaming list and the build gaming list from pillars.md>
 ```
 
+For a judged target:
+
+```
+### <Pillar>: <Target> (judged): <what it improves, from pillars.md>
+- Rubric criteria fixed so far: <from STATE, or none>
+- Items in MAIN so far: <titles, or none>. Items left before the cap: <number>.
+- Gaming that does not count: <the pillar's gaming list from pillars.md, plus evidence that does not match the change>
+```
+
 | Placeholder | Filled from |
 |---|---|
 | `{{PILLAR}}` | This researcher's pillar |
@@ -87,8 +96,9 @@ TARGET: <one of the targets above, as Pillar: Target>
 TECHNIQUE: <what to change or build, and where: files and functions>
 EXPECTED: <optimize: gain on the metric, e.g. "3–5× less wall time", "−40 % cost" or "42 → 20 lint errors". Build: who gains what, and how much, e.g. "monthly report: 1 click instead of 6 manual steps">
 SCOPE: conservative | bold
-VALUE: <build only: high | medium | low, for the users of the product>
+VALUE: <build and judged only: high | medium | low, for the users of the product>
 ACCEPTANCE: <build only: the checks that show it works, one per line: what a new test asserts, what a screenshot must show>
+RUBRIC: <judged only: the criteria the orchestrator will judge, one per line, each checkable from before/after evidence: quotes of the old and new text, or sources with URLs>
 CONFIDENCE: high | medium | low
 EVIDENCE: <profile numbers, measurements, tool output, docs, or reasoning>
 ```

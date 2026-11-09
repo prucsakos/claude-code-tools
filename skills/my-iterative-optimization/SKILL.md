@@ -140,6 +140,7 @@ React to events. Update STATE after each one, then print the report (section 4).
 2. Spawn an agent with `experimenter-prompt.md`, filled with the values of the idea's target, and keep the section of its kind. Include the deadline as a clock time. GAMING = the gaming list of the target's pillar from `pillars.md`, plus the gaming its metric invites (for LCP: shrinking or removing the largest element). For a build idea, add the build gaming list. OTHER_TARGETS = the other selected targets, or `none`.
    - Optimize: with the lock on, BASE_VALUES = the target's runs of the current Bk; with it off, `none`. If MEASURE_CMD contains single quotes, write each as `'\''`.
    - Build: ACCEPTANCE = the idea's acceptance criteria. For a UI item, SHOTS = `RUN_DIR/shots/<id>`, BEFORE = the screenshots of the current baseline (`RUN_DIR/shots/Bk`) and LOCK = `RUN_DIR/measure.lock`; otherwise SHOTS and BEFORE = `none`.
+   - Judged: RUBRIC = the idea's rubric criteria.
 3. Start its timer for T_ITER. Record the agentId, timer ID, base SHA and dispatch time in STATE.
 
 **Start a researcher** for a pillar when all of these hold:
