@@ -144,6 +144,9 @@ Then use it inside Claude Code:
 /my-iterative-optimization high auto "Make the build faster"   # profile and mode skip their form rows
 /my-iterative-optimization low review "Improve Code hygiene"
 /my-iterative-optimization review "Make it faster and add a CSV export of reports"   # an optimize and a build target
+/my-iterative-optimization "Improve the wording of my thesis in thesis/"   # a judged target, accepted on a rubric
+/my-iterative-optimization "Find more sources for the open questions in research/notes.md"   # judged: research discovery
+/my-iterative-optimization "Fact-check the claims in facts.md on the web"   # judged, or optimize on verified-claim count
 ```
 
 ### `teaching-video` (Claude Code)
