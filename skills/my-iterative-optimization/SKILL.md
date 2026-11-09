@@ -162,7 +162,7 @@ A pillar whose targets all come from the user's list has no researcher.
 
 ## 3. Decisions
 
-**Accept or reject: your call.** A result that fails CORRECT_CMD is always rejected. For every idea, check the scope: `git -C REPO diff <base>..opt/<id>` must not weaken a check, by the rules in experimenter-prompt.md, section "Rules for every change". Those rules allow build, tool and dependency configuration changes that still run the same work; most DX, Performance and Dependency health ideas work that way. A change that drops or narrows a check is gaming.
+**Accept or reject: your call.** A result that fails CORRECT_CMD is always rejected. For every idea, check the scope: `git -C REPO diff <base>..opt/<id>` must not weaken a check, by the rules in experimenter-prompt.md, section "Rules for every change". Those rules allow build, tool and dependency configuration changes that still run the same work; most DX, Performance and Dependency health ideas work that way. A change that drops or narrows a check is gaming. Then compare `git -C REPO diff --stat <base>..opt/<id>` with the files the idea's TECHNIQUE names, and read the diff for changes outside the idea. A changed file or behavior outside the idea that the report's SIDE_EFFECTS field does not list with a reason is a reject reason: unreported side effect. A listed side effect is not a reject by itself: weigh it like a cost against the gain. A bold idea may need side effects; a listed and justified one is allowed.
 
 For an optimize idea, also weigh:
 - the gain against its own base, compared with the run-to-run spread on both sides;

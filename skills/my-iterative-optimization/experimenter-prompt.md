@@ -114,6 +114,7 @@ BASE: {{BASE_SHA}}
 COMMIT: <sha, or none>
 CHANGE: <one sentence>
 FILES: <changed files>
+SIDE_EFFECTS: <each file, public interface, default, dependency or behavior the commit changes beyond what the idea names, with why; or none>
 CORRECTNESS: pass | fail (<detail>) | not run
 BASE_RUNS: <optimize: values, unit; say "given" if you did not measure them>
 CANDIDATE_RUNS: <optimize: values, unit>
