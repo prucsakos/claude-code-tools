@@ -44,6 +44,7 @@ For a judged target:
 | `{{STATE}}` | `RUN_DIR/state.md` (setup step 2) |
 | `{{TARGETS}}` | One block per target of the pillar, in the formats above |
 | `{{K}}` | 2 × the pillar's experimenters |
+| `{{LENS}}` | The pillar's next lens, from the list in SKILL.md section 2, Start a researcher, step 2 |
 | `{{T_RESEARCH}}` | Profile value T_RESEARCH |
 | `{{DEADLINE}}` | Start time + T_RESEARCH, as HH:MM:SS |
 
@@ -66,6 +67,8 @@ The other pillars have their own researchers: {{OTHER_PILLARS}}. Send only ideas
 Think divergently before you send anything. For each target, first list many different directions, including unusual ones:
 - For an optimize target, directions include another algorithm or data layout, removing or batching a whole step of work, parallelism, and another library or tool.
 - For a build target, directions include a new workflow that makes a frequent task much faster or easier, or that removes repeated manual work for the product's users.
+
+This round's lens: {{LENS}}. At least one of your ideas, of either scope, must come from it; the others may come from any direction.
 
 Then send a mix of two scopes:
 - **conservative**: a small, safe change with a likely gain;

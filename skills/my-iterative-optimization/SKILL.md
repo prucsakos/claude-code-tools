@@ -153,7 +153,12 @@ React to events. Update STATE after each one, then print the report (section 4).
 
 A pillar whose targets all come from the user's list has no researcher.
 1. `git -C RUN_DIR/wt/researcher-<pillar> checkout --detach MAIN`. If MAIN has moved since this worktree's last round, run SETUP_CMD in it.
-2. Spawn the agent with `researcher-prompt.md`: its pillar, the other pillars that have a researcher, one TARGETS block per target of its pillar, and K = 2 × the pillar's experimenters. Give it a deadline of T_RESEARCH.
+2. Spawn the agent with `researcher-prompt.md`: its pillar, the other pillars that have a researcher, one TARGETS block per target of its pillar, K = 2 × the pillar's experimenters, and LENS. Give it a deadline of T_RESEARCH. Fill LENS with the pillar's next lens from this list, one per round of the pillar, and record the lens in STATE with the pillar's research status. After the last lens, start again from the first. The lenses fit code, text and research alike:
+   1. Remove a whole step instead of making it faster
+   2. Invert an assumption the current design makes
+   3. Borrow a technique from another field or tool
+   4. Change who or what does the work: the user, a tool, an agent, or build time
+   5. Make the smallest change to the most-used path: the code, workflow or section used most
 3. Start its timer for T_RESEARCH.
 
 **Economy:**
