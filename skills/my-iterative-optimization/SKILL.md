@@ -169,7 +169,7 @@ A pillar whose targets all come from the user's list has no researcher.
 
 ## 3. Decisions
 
-**Accept or reject: your call.** A result that fails CORRECT_CMD is always rejected. For every idea, check the scope: `git -C REPO diff <base>..opt/<id>` must not weaken a check, by the rules in experimenter-prompt.md, section "Rules for every change". Those rules allow build, tool and dependency configuration changes that still run the same work; most DX, Performance and Dependency health ideas work that way. A change that drops or narrows a check is gaming. Then compare `git -C REPO diff --stat <base>..opt/<id>` with the files the idea's TECHNIQUE names, and read the diff for changes outside the idea. A changed file or behavior outside the idea that the report's SIDE_EFFECTS field does not list with a reason is a reject reason: unreported side effect. A listed side effect is not a reject by itself: weigh it like a cost against the gain. A bold idea may need side effects; a listed and justified one is allowed.
+**Accept or reject: your call.** A result that fails CORRECT_CMD is always rejected. For every idea, check the scope: `git -C REPO diff <base>..opt/<id>` must not weaken a check, by the rules in experimenter-prompt.md, section "Rules for every change". Those rules allow build, tool and dependency configuration changes that still run the same work; most DX, Performance and Dependency health ideas work that way. A change that drops or narrows a check is gaming. Then compare `git -C REPO diff --stat <base>..opt/<id>` with the files the idea's TECHNIQUE names, and read the diff for changes outside the idea. Decide each change outside the idea by Side effects and direction, below.
 
 For an optimize idea, also weigh:
 - the gain against its own base, compared with the run-to-run spread on both sides;
@@ -189,7 +189,10 @@ For a judged idea, also weigh:
 - gaming: the GAMING list of the idea's target, and evidence that does not match the diff;
 - the other targets, as for an optimize idea.
 
-**Side effects and direction.** Before you accept any result, check its diff against the run's Goal and the constraints recorded in STATE, such as the idea's scope and the orchestration hierarchy. A result that meets its gain or its criteria is not accepted as is when it also (a) changes behavior or files that the Goal does not ask for, or (b) moves against a recorded constraint. If the in-scope part can stand alone, mark the idea `rejected: side effect <one line>` and queue a `narrowed` retest with the same score: the same idea, limited to its in-scope part, with one added acceptance criterion `does not <the side effect>`. If the in-scope part cannot be separated from the side effect, reject the idea.
+**Side effects and direction.** Before you accept any result, check its diff against the run's Goal and the constraints recorded in STATE, such as the idea's scope and the orchestration hierarchy. Decide each changed file or behavior outside the idea in this order, even when the result meets its gain or its criteria:
+1. The report's SIDE_EFFECTS field does not list it with a reason: reject the idea, reason `unreported side effect`.
+2. It is listed, the Goal covers it, and it keeps every recorded constraint, for example a needed change to a neighbor file: it is not a reject by itself. Weigh it like a cost against the gain. A bold idea may need such a side effect.
+3. It is listed, but (a) the Goal does not ask for it, or (b) it moves against a recorded constraint: do not accept the result as is. If the in-scope part can stand alone, mark the idea `rejected: side effect <one line>` and queue a `narrowed` retest with the same score: the same idea, limited to its in-scope part, with one added acceptance criterion `does not <the side effect>`. If the in-scope part cannot be separated from the side effect, reject the idea.
 
 Record the reason in one line. Remove worktrees with `git -C REPO worktree remove --force <dir>`, because measurement output leaves untracked files. Accepted: remove the worktree and keep the branch. Rejected or failed: remove the worktree and delete the branch.
 
