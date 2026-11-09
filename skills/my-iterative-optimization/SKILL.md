@@ -20,13 +20,14 @@ Files in this skill's directory: `pillars.md` (the pillars and their targets), `
 
 ## Pillars and targets
 
-A pillar is an area of the project to work on. There are four groups: Product (Performance, UX, UI, Features), Reach (Accessibility, SEO, i18n), Engineering (Quality, DX, OX = operator experience, Security) and Code health (Code hygiene, Dependency health, Documentation). A target is one concrete goal inside a pillar, such as Speed or Memory for Performance. `pillars.md` lists the targets of each pillar, with example metrics and the gaming to reject. The user can also name a pillar or a target of their own.
+A pillar is an area of the project to work on. There are four groups: Product (Performance, UX, UI, Features), Reach (Accessibility, SEO, i18n), Engineering (Quality, DX, OX = operator experience, Security) and Code health (Code hygiene, Dependency health, Documentation). A target is one concrete goal inside a pillar, such as Speed or Memory for Performance. `pillars.md` lists the targets of each pillar, with example metrics and the gaming to reject. These are examples, not a closed list: the user may define pillars and targets freely, of any of the three kinds below.
 
-Every target has one of two kinds:
+Every target has one of three kinds:
 - **optimize**: improve a measurable metric. An idea is accepted on its measured gain.
 - **build**: add something new, such as a feature or a screen. An idea is accepted when it meets acceptance criteria that were fixed before it was dispatched, shown with evidence (new tests, screenshots). CORRECT_CMD guards the existing behavior.
+- **judged**: improve work that has no command metric and no tests, such as the wording of a thesis, research, or web fact-finding. An idea is accepted on a rubric that was fixed before it was dispatched. The experimenter supplies before/after evidence for each rubric criterion, such as quotes of the old and new text or the sources found. You judge the idea from that evidence; the experimenter never judges its own work. CORRECT_CMD guards the existing behavior.
 
-Each selected target is a **track**. An optimize track has its own metric, MEASURE_CMD, mode, lock setting, R and baseline values. Wherever this skill says "the metric", MEASURE_CMD, mode, lock or R, it means the values of the optimize target in question. A build track has its items, their acceptance criteria, and a cap. CORRECT_CMD, T_TEST;T_ITER, the run mode and the profile values (N, T_RESEARCH) are shared by all targets. N is divided evenly over the pillars: each pillar gets its own share of the experimenters and its own researcher. Baselines stay numbered per state of MAIN: B0 and every Bk hold one value per optimize target. A run with one target works like a single-metric run.
+Each selected target is a **track**. An optimize track has its own metric, MEASURE_CMD, mode, lock setting, R and baseline values. Wherever this skill says "the metric", MEASURE_CMD, mode, lock or R, it means the values of the optimize target in question. A build track has its items, their acceptance criteria, and a cap. A judged track has its rubric. CORRECT_CMD, T_TEST;T_ITER, the run mode and the profile values (N, T_RESEARCH) are shared by all targets. N is divided evenly over the pillars: each pillar gets its own share of the experimenters and its own researcher. Baselines stay numbered per state of MAIN: B0 and every Bk hold one value per optimize target. A run with one target works like a single-metric run.
 
 ## Platform rules (Claude Code)
 
@@ -170,6 +171,12 @@ For a build idea, also weigh:
 - every acceptance criterion: its evidence must show that it is met (new tests that exercise it; for a UI item, look at the before and after screenshots). In auto mode, accept only when every criterion has evidence;
 - the diff does what the idea says and no more, fits the existing architecture and design system, and leaves the existing behavior unchanged;
 - gaming: the build gaming list in `pillars.md`;
+- the other targets, as for an optimize idea.
+
+For a judged idea, also weigh:
+- every rubric criterion: its before/after evidence must show that it is met. Judge the evidence yourself; do not take the experimenter's verdict. In auto mode, accept only when every rubric criterion has evidence;
+- the diff does what the idea says and no more, and leaves the existing behavior unchanged;
+- gaming: the GAMING list of the idea's target, and evidence that does not match the diff;
 - the other targets, as for an optimize idea.
 
 Record the reason in one line. Remove worktrees with `git -C REPO worktree remove --force <dir>`, because measurement output leaves untracked files. Accepted: remove the worktree and keep the branch. Rejected or failed: remove the worktree and delete the branch.
