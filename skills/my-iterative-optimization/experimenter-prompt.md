@@ -104,7 +104,7 @@ Commit exactly one commit. First check `git -C {{WT}} diff --stat`: if it shows 
 
 ## Report
 
-End with exactly this block and nothing after it. Leave out the fields of the other kind.
+End with exactly this block and nothing after it. Leave out the fields of the other kinds.
 
 ```
 ITEM: {{ID}}

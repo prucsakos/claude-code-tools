@@ -97,7 +97,7 @@ Budget: {{T_RESEARCH}}. Deadline: **{{DEADLINE}}** (check it with `date +%H:%M:%
 IDEA: <short title>
 TARGET: <one of the targets above, as Pillar: Target>
 TECHNIQUE: <what to change or build, and where: files and functions>
-EXPECTED: <optimize: gain on the metric, e.g. "3–5× less wall time", "−40 % cost" or "42 → 20 lint errors". Build: who gains what, and how much, e.g. "monthly report: 1 click instead of 6 manual steps">
+EXPECTED: <optimize: gain on the metric, e.g. "3–5× less wall time", "−40 % cost" or "42 → 20 lint errors". Build: who gains what, and how much, e.g. "monthly report: 1 click instead of 6 manual steps". Judged: what gets better on the rubric, and how much, e.g. "abstract: 3 unsupported claims → 0">
 SCOPE: conservative | bold
 VALUE: <build and judged only: high | medium | low, for the users of the product>
 ACCEPTANCE: <build only: the checks that show it works, one per line: what a new test asserts, what a screenshot must show>
