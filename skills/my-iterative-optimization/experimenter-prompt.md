@@ -6,7 +6,7 @@
 | `{{TARGET}}` | The idea's target, as `<Pillar>: <Target>` |
 | `{{KIND}}` | The target's kind: `optimize`, `build` or `judged` |
 | `{{OTHER_TARGETS}}` | The other selected targets, or `none` |
-| `{{IDEA}}` | The idea's technique and expected change, from STATE |
+| `{{IDEA}}` | The idea's technique, expected change and prediction, from STATE |
 | `{{WT}}` | `RUN_DIR/wt/<id>` (section 2, Dispatch an experimenter) |
 | `{{BRANCH}}` | `opt/<id>` |
 | `{{BASE_SHA}}` | The base SHA recorded in STATE at dispatch |
@@ -113,6 +113,7 @@ BRANCH: {{BRANCH}}
 BASE: {{BASE_SHA}}
 COMMIT: <sha, or none>
 CHANGE: <one sentence>
+PREDICTION: held | failed | not checked — <what you saw>
 FILES: <changed files>
 SIDE_EFFECTS: <each file, public interface, default, dependency or behavior the commit changes beyond what the idea names, with why; or none>
 CORRECTNESS: pass | fail (<detail>) | not run

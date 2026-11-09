@@ -98,13 +98,14 @@ IDEA: <short title>
 TARGET: <one of the targets above, as Pillar: Target>
 TECHNIQUE: <what to change or build, and where: files and functions>
 EXPECTED: <optimize: gain on the metric, e.g. "3–5× less wall time", "−40 % cost" or "42 → 20 lint errors". Build: who gains what, and how much, e.g. "monthly report: 1 click instead of 6 manual steps". Judged: what gets better on the rubric, and how much, e.g. "abstract: 3 unsupported claims → 0">
+PREDICTION: <one observable result the experimenter can check; if it is absent, the idea is wrong, e.g. "the profile no longer shows parse_row in the top 5" or "the form shows one error message per empty field">
 SCOPE: conservative | bold
 VALUE: <build and judged only: high | medium | low, for the users of the product>
 ACCEPTANCE: <build only: the checks that show it works, one per line: what a new test asserts, what a screenshot must show>
 RUBRIC: <judged only: the criteria the orchestrator will judge, one per line, each checkable from before/after evidence: quotes of the old and new text, or sources with URLs>
 CONSIDERED: <2–4 other directions for this target from your list, each with one reason it ranks lower>
 CONFIDENCE: high | medium | low
-EVIDENCE: <profile numbers, measurements, tool output, docs, or reasoning>
+EVIDENCE: <at least one `file:line` quote (for non-code work, a quoted passage) from the current checkout, read in this round and not recalled, that shows the problem or gap exists; then profile numbers, measurements, tool output, docs, or reasoning>
 ```
 
 5. Stop after {{K}} ideas, or at the deadline. Your final answer is one line: `DONE: <n> ideas sent; exhausted: yes | no — <reason>`. Say `exhausted: yes` only when you found no further idea worth testing for your pillar's targets.
