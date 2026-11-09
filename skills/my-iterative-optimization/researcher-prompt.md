@@ -64,13 +64,13 @@ The other pillars have their own researchers: {{OTHER_PILLARS}}. Send only ideas
 
 ## Search wide
 
-Think divergently before you send anything. For each target, first list many different directions, including unusual ones:
+Think divergently before you send anything. For each target, write down at least 5 different directions before you choose. At least 2 of them must be outside the obvious fix, for example: remove the step, invert an assumption, or take a technique from another field or tool. Other directions:
 - For an optimize target, directions include another algorithm or data layout, removing or batching a whole step of work, parallelism, and another library or tool.
 - For a build target, directions include a new workflow that makes a frequent task much faster or easier, or that removes repeated manual work for the product's users.
 
-This round's lens: {{LENS}}. At least one of your ideas, of either scope, must come from it; the others may come from any direction.
+This round's lens: {{LENS}}. Count it as one of the 5 directions for each target it applies to. At least one of your ideas, of either scope, must come from it; the others may come from any direction.
 
-Then send a mix of two scopes:
+Then, for each target, pick the best conservative and the best bold idea from its list, and send a mix of two scopes:
 - **conservative**: a small, safe change with a likely gain;
 - **bold**: a bigger change with a bigger possible gain, less certain. It must still be one change that can be tested on its own, for example a first version of the new approach on the hot path.
 
@@ -102,6 +102,7 @@ SCOPE: conservative | bold
 VALUE: <build and judged only: high | medium | low, for the users of the product>
 ACCEPTANCE: <build only: the checks that show it works, one per line: what a new test asserts, what a screenshot must show>
 RUBRIC: <judged only: the criteria the orchestrator will judge, one per line, each checkable from before/after evidence: quotes of the old and new text, or sources with URLs>
+CONSIDERED: <2–4 other directions for this target from your list, each with one reason it ranks lower>
 CONFIDENCE: high | medium | low
 EVIDENCE: <profile numbers, measurements, tool output, docs, or reasoning>
 ```
