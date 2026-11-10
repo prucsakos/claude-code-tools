@@ -149,7 +149,7 @@ Then use it inside Claude Code:
 /my-iterative-optimization "Fact-check the claims in facts.md on the web"   # judged, or optimize on verified-claim count
 ```
 
-To end a run, say `stop` (stops the running agents at once) or `finish` (no new work; the running experimenters and the integrator finish, their accepted ideas go into one last batch, then the run stops).
+To end a run, say `stop` (stops the running agents at once) or `finish` (no new work; the running experimenters and the integrator finish, their accepted ideas go into one last batch, then the run stops). Mid-run, `status` prints the full report and the time left of each running agent, and `set <value> <new>` changes T_ITER, T_RESEARCH, a target's cap or a pillar's experimenters from the next dispatch on (`set cap Features 3`).
 
 After editing the skill, run `bash skills/my-iterative-optimization/check.sh`: it checks the SKILL.md frontmatter, that each prompt template's placeholder table lists exactly the placeholders its prompt uses, and that every `section N` reference has a `## N.` heading in SKILL.md, then prints `OK` or one `FAIL` line per defect.
 
