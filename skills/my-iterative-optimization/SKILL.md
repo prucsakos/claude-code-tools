@@ -72,7 +72,7 @@ A profile sets only these values. Spawn every agent with `model: opus`. The comm
 
 | Run mode | Who decides what reaches MAIN |
 |---|---|
-| auto (default) | You. Once the user has confirmed the setup table, you never wait for the user. You accept or reject, batch, migrate and revert on your own, and report after each event. You shut the run down when nothing is left to do. |
+| auto (default) | You. Once the user has confirmed the setup table, you never wait for the user. You accept or reject, batch, migrate and revert on your own, and print one event line after each event (section 4). You shut the run down when nothing is left to do. |
 | review | The user approves each batch before the integrator starts (section 3, Review gate). Everything else works as in auto, except that an idle run waits for the user. |
 
 **Plan.** Then propose **all other inputs in one message**, the plan: every input in the table below with its proposed or default value, once, in the layout of the Confirmation paragraph. There is no separate form before it, so the default path is two rounds: the pillar question, then the plan. With the pillars answered by the arguments or the last run, the plan is the only round. The table below is your checklist of what to propose. Rows marked *per pillar*, *per optimize target*, *per build target* or *per judged target* appear once for each. Rows marked *profile* are not values of their own: show their values next to the profile, and the user changes one by naming it. Rows marked *advanced* are rarely changed: the target table shows the experimenters and the lock; show the others together on one line at the end of the plan, each with its value, and the user changes one by naming it. A per-target advanced value names its target: the lock goes in that target's row of the target table, and the cap goes on the advanced line as `cap 5 (all)` when every build or judged target has the same value and otherwise per target (`cap: Features 5 · Docs 3`). Example: `Advanced (change one by naming it): REPO/MAIN <repo>/<branch> · baseline: measured · T_TEST;T_ITER 5m;10m · cap 5 (all) · SETUP_CMD none`. Show an advanced value with the shared values, as a line of its own, when its proposed value differs from its default or needs the user's decision, such as a SETUP_CMD you propose, more pillars than N, or a split that a split build item or a dropped target changes. Values the arguments or the conversation already give are filled in. Do not ask follow-up questions; if the user's reply leaves an input open, keep its shown value.
@@ -120,7 +120,7 @@ After the user confirms:
 
 ## 2. Event loop
 
-React to events. Update STATE after each one, then print the report (section 4).
+React to events. Update STATE after each one, then print one event line (section 4). Print the full report (section 4) only after a batch reaches MAIN or is reverted, when the user asks for status, and at stop.
 
 | Event | Action |
 |---|---|
@@ -222,6 +222,21 @@ Record the reason in one line. Remove worktrees with `git -C REPO worktree remov
 
 Write the report in the conversation's language, both in STATE and in chat. Every number names the baseline it compares to.
 
+**Event line.** After each event, print one line instead of the full report: `<hh:mm> #<id> <Target> <event>: <result vs its base>`. A batch line names the batch and its items instead of an id and a target; a line for an event without an idea, such as a researcher that finishes, names the agent and its pillar.
+
+```
+08:41 #12 Lint queued: score 0.6
+08:57 #4 Speed accepted: B1 24.0 → 9.1 s, 2.6×
+08:58 #8 Proposed accepted: acceptance 3 of 3
+09:02 #6 Speed rejected: within noise, B1 24.0 → 23.6 s
+09:04 #5 Lint timeout: no report within T_ITER
+09:05 batch 2 in MAIN: #4 #7 #8
+09:12 researcher Code hygiene finished: 3 ideas sent
+09:40 batch 3 reverted: #10, Lint worse vs B2
+```
+
+**Full report.** Print the block below at the end of setup (step 5), after a batch reaches MAIN or is reverted, when the user asks for status, and at stop.
+
 ```
 Main: B0 → B2  ·  2 batches · 6 accepted · 3 rejected · 10 testing · researchers: 2 of 3 running
   Performance: Speed  wall time    120.4 s → 9.1 s  (13.2× vs B0)  · 4 experimenters
@@ -276,7 +291,7 @@ On stop: TaskStop every running agent and timer. In auto mode, if accepted ideas
 | Reusing an experimenter for the next idea | Spawn a fresh experimenter on a fresh worktree from the current MAIN. |
 | Keeping a timed-out experimenter alive "because it is close" | The budgets are strict: warning, grace period, then TaskStop. |
 | Letting the researcher drop or split ideas by its own time estimate | Agents overestimate how long a task takes. The researcher sizes ideas by scope; you split an idea only after it times out. |
-| Asking the user something mid-run in auto mode | Auto never waits for the user: decide, report, and go on. |
+| Asking the user something mid-run in auto mode | Auto never waits for the user: decide, print the event line, and go on. |
 | Asking for batch approval with AskUserQuestion | It blocks the event loop. Post the proposal as a message, end the turn, and keep handling events. |
 | Queuing an idea that another pillar's researcher already sent | Drop ideas that repeat a queued one: Performance and DX can both find the same build-config change. |
 | Accepting a creative result with a side effect because the gain is large | Queue a narrowed retest of its in-scope part (section 3, Side effects and direction). Never migrate the side effect. |
