@@ -135,6 +135,8 @@ rm -rf ~/.claude/skills/my-iterative-optimization
 cp -R skills/my-iterative-optimization ~/.claude/skills/
 ```
 
+To learn whether Claude Code will load the repo's current text or a stale install (after editing the skill or after a merge), run `bash skills/my-iterative-optimization/install-check.sh`: it compares the two copies file by file, ignoring line endings, and prints `installed copy matches (<n> files)`, one `FAIL` line per differing, missing or extra file, or `not installed at <path>`; it changes nothing.
+
 Then use it inside Claude Code:
 
 ```
