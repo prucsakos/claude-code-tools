@@ -71,11 +71,11 @@ bash {{MEASURE_SH}} <dir> {{R}} {{T_TEST_SECONDS}} {{MODE}} {{LOCK}} '{{MEASURE_
 
 It prints one value per run, or `TIMEOUT` / `FAIL <code>`. With a lock, it first waits until no other measurement runs.
 
-1. **Base:** given base values: `{{BASE_VALUES}}`. If they are given (not `none`), use them and do not measure the base. Otherwise measure `{{WT}}` before you change anything.
+1. **Base:** given base values: `{{BASE_VALUES}}`. If they are given (not `none`), use them and do not measure the base. Otherwise measure `{{WT}}` before you change anything. If MEASURE_CMD prints per-size values and BASE_VALUES lacks them, save one run's output: `bash {{MEASURE_SH}} {{WT}} 1 {{T_TEST_SECONDS}} time {{LOCK}} '{ <MEASURE_CMD>; } > <file outside {{WT}}>'`.
 2. **Implement** the idea with the smallest change that does it. No special-casing of the measured input.
 3. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise skip the remaining steps and report `STATUS: failed` with `CORRECTNESS: fail (<detail>)`. Then the output check: `{{OUTPUT_CHECK}}`. If it is not `none`, after the commit (step 4) run its command on your commit and on the base, each into its own new folder outside `{{WT}}`. Run it with `bash {{MEASURE_SH}} {{WT}} 1 {{T_TEST_SECONDS}} time {{LOCK}} '<command> <folder>'`. For the base run, first `git -C {{WT}} checkout --detach {{BASE_SHA}}`, and afterwards `git -C {{WT}} checkout {{BRANCH}}`. Compare the two folders by its rule and report the result as `OUTPUT_DIFF`.
 4. **Commit** (see Commit).
-5. **Candidate:** measure `{{WT}}` again with the same command.
+5. **Candidate:** measure `{{WT}}` again with the same command. Save its per-size values as in step 1.
 
 ## Kind: build
 
@@ -124,7 +124,7 @@ FILES: <changed files>
 SIDE_EFFECTS: <each file, public interface, default, dependency or behavior the commit changes beyond what the idea names, with why; or none>
 CORRECTNESS: pass | fail (<detail>) | not run
 BASE_RUNS: <optimize: values, unit; say "given" if you did not measure them>
-CANDIDATE_RUNS: <optimize: values, unit>
+CANDIDATE_RUNS: <optimize: values, unit; then the per-size values, base → candidate, if MEASURE_CMD prints them>
 RATIO: <optimize: improvement factor; >1 means better: base/candidate when lower is better, candidate/base when higher is better; if a lower-is-better candidate is 0, write "n/a (<base> → 0)">
 OUTPUT_DIFF: same | within tolerance <value> | differs <first difference> | none — optimize: the output check result, `none` when the target has none
 ACCEPTANCE: <build: one line per criterion: the criterion, then its evidence: test name and output line, screenshot path, or file:line quote; no verdict>
@@ -135,7 +135,7 @@ RUBRIC_EVIDENCE: <judged: one line per criterion: the criterion, then before →
 SOURCES: <judged: URL and quoted passage of each source you used, or none>
 NOT_CHECKED: <claims in CHANGE or ACCEPTANCE you did not verify, cases you did not run, or none>
 VERIFY: <one command or file:line a reviewer can check on the PR>
-RISK: <what could go wrong after merge, or none>
+RISK: <what could go wrong after merge, including a per-size value that got worse, or none>
 BEHAVIOR: <what a user of the changed product sees or must do differently after merge (command, flag, default, output format, file path), or none>
 NOTES: <risks, side effects, what you could not finish>
 ```
