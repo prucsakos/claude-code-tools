@@ -155,6 +155,8 @@ After editing the skill, run `bash skills/my-iterative-optimization/check.sh`: i
 
 After a change to `measure.sh`, run `bash skills/my-iterative-optimization/measure-check.sh`; it prints `OK`, or one `FAIL` line per broken case.
 
+Each experimenter commit carries the trailers `Optimize-Run: <YYYYMMDD-HHMM>` (the run's start time) and `Target: <Pillar>: <Target>`, so `git log --grep 'Optimize-Run: <stamp>'` lists one run's commits and `git log --grep 'Target: <Pillar>: <Target>'` one target's.
+
 ### `teaching-video` (Claude Code)
 
 Claude Code skill: turns a topic or study material (notes, a chapter, a paper, code) into a short MP4 that teaches it. Claude plans the lesson (hook, intuition, mechanism, worked example, pitfall, recap, check question), writes the narration and a storyboard, and builds one animated HTML scene per step. `make_video.py` narrates each beat with text-to-speech, seeks the scenes frame by frame in headless Chromium so the picture follows the narration, and encodes video, voice and captions with ffmpeg. Narration backends: `edge` (online Microsoft neural voices, including Hungarian; the narration text goes to Microsoft), `sapi` (Windows voices, offline) and `none` (captions only). The video is in English unless you name another language. Mode `storyboard` stops after the storyboard.
