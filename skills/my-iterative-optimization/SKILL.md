@@ -228,7 +228,7 @@ Record the reason in one line. Remove worktrees with `git -C REPO worktree remov
 
 ## 4. Report
 
-Write the report in the conversation's language, both in STATE and in chat. Every number names the baseline it compares to.
+Write the report in the conversation's language, both in STATE and in chat. STATE keeps every idea row; the chat ideas table folds the finished rows into one count line (see the bullets below). Every number names the baseline it compares to.
 
 **Event line.** After each event, print one line instead of the full report: `<hh:mm> #<id> <Target> <event>: <result vs its base>`. A batch line names the batch and its items instead of an id and a target; a line for an event without an idea, such as a researcher that finishes, names the agent and its pillar.
 
@@ -267,6 +267,7 @@ Main: B0 → B2  ·  2 batches · 6 accepted · 3 rejected · 10 testing · rese
 - Est. vs B0 = (its base's gain vs B0 on the item's target) × the item's ratio. It is an estimate until the item is in MAIN; after that, the baseline table holds the measured value. Build and judged items show `—`.
 - When a lower-is-better value reaches 0, the ratio is undefined: show the absolute change (42 → 0) instead.
 - Statuses: queued → testing → accepted / rejected (reason) / timeout → migrating → in MAIN (Bk) / skipped (reason) / superseded by #id / retest / narrowed.
+- In chat, the ideas table of a full report shows only the rows whose status is queued, testing, accepted, migrating, retest or narrowed, plus the rows whose status changed since the previous full report in chat. It ends with one line for the other rows: `+ <n> earlier ideas: <a> in MAIN · <r> rejected · <t> timeout · <s> skipped · <u> superseded (full table in STATE)`, where n = a + r + t + s + u. STATE keeps every row.
 - For each optimize target with the lock off, add one line: its absolute values were measured under parallel load, and its ratios are the more reliable figure.
 - In review mode, a batch that waits for the user shows on the Main line as `batch <k>: awaiting approval`.
 
