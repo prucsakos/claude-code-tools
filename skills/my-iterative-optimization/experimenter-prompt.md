@@ -52,7 +52,7 @@ Target: {{TARGET}} ({{KIND}}). Other selected targets: {{OTHER_TARGETS}}.
 - Test program: one run may take at most {{T_TEST}}. `measure.sh` kills a longer run, prints `TIMEOUT` and stops measuring. A candidate that times out is a result: report it, do not retry it.
 - Iteration: {{T_ITER}} for your whole task, report included. Deadline: **{{DEADLINE}}** (machine clock; check it with `date +%H:%M:%S`).
 - Give every Bash call an explicit `timeout` that ends before the deadline. A call without one stops at 120 s, and the maximum is 600 s. If a measurement can take longer, run it with `run_in_background: true` and wait for its completion notification.
-- Before each step, check the clock. If the next step cannot finish before the deadline, skip to the report.
+- Before each step, check the clock. If the next step cannot finish before the deadline, skip to the report with `STATUS: timeout-partial`.
 - If you get a message that starts with `TIME UP`, stop at once and report with `STATUS: timeout-partial` and whatever you measured so far.
 
 ## Rules for every change
