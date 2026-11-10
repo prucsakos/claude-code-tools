@@ -171,7 +171,7 @@ Then use it inside Claude Code:
 
 ```
 /my-iterative-optimization "Make scripts/build_report.py faster without changing its output"
-/my-iterative-optimization "Improve this project"   # offers the pillars as a multiple choice, then proposes targets
+/my-iterative-optimization "Improve this project"   # proposes pillars and targets in one plan
 /my-iterative-optimization "Improve DX and Quality"
 /my-iterative-optimization high auto "Make the build faster"   # profile and mode are not proposed in the plan
 /my-iterative-optimization low review "Improve Code hygiene"

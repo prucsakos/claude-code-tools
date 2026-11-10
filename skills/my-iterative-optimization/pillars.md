@@ -1,6 +1,6 @@
 # Pillars and targets
 
-The "Improves" text is the option description in the pillar question, and "Group" is the question the pillar appears in. Each target's bold name is the name the plan's target table uses, and the text after it says what the target covers. The rows are examples, not a closed list: the user may define their own pillars and targets, of any of the three kinds below.
+The "Improves" text says what a pillar covers, and "Group" sets the order of the pillars. Each target's bold name is the name the plan's target table uses, and the text after it says what the target covers. The rows are examples, not a closed list: the user may define their own pillars and targets, of any of the three kinds below.
 
 Every target has a kind. An **optimize** target (the default) improves a metric, so it needs a proxy that a command can measure; a tool the repo lacks can run from a harness under `RUN_DIR/harness/`. A **build** target, marked *(build)*, adds something new and is accepted on acceptance criteria with evidence: new tests, and screenshots for UI. A **judged** target has no command metric and no tests, such as the wording of a thesis or web fact-finding; it is accepted on a rubric fixed before dispatch, and the orchestrator judges it from before/after evidence. If an optimize target has no measurable proxy, or a build target cannot show its evidence, drop it and give the reason in the plan.
 
