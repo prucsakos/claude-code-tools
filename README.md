@@ -149,6 +149,8 @@ Then use it inside Claude Code:
 /my-iterative-optimization "Fact-check the claims in facts.md on the web"   # judged, or optimize on verified-claim count
 ```
 
+To end a run, say `stop` (stops the running agents at once) or `finish` (no new work; the running experimenters and the integrator finish, their accepted ideas go into one last batch, then the run stops).
+
 ### `teaching-video` (Claude Code)
 
 Claude Code skill: turns a topic or study material (notes, a chapter, a paper, code) into a short MP4 that teaches it. Claude plans the lesson (hook, intuition, mechanism, worked example, pitfall, recap, check question), writes the narration and a storyboard, and builds one animated HTML scene per step. `make_video.py` narrates each beat with text-to-speech, seeks the scenes frame by frame in headless Chromium so the picture follows the narration, and encodes video, voice and captions with ffmpeg. Narration backends: `edge` (online Microsoft neural voices, including Hungarian; the narration text goes to Microsoft), `sapi` (Windows voices, offline) and `none` (captions only). The video is in English unless you name another language. Mode `storyboard` stops after the storyboard.
