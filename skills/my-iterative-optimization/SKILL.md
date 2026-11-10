@@ -271,6 +271,14 @@ Main: B0 → B2  ·  2 batches · 6 accepted · 3 rejected · 10 testing · rese
 - For each optimize target with the lock off, add one line: its absolute values were measured under parallel load, and its ratios are the more reliable figure.
 - In review mode, a batch that waits for the user shows on the Main line as `batch <k>: awaiting approval`.
 
+**Catch-up line.** When a user message arrives and at least one event line was printed since the previous user message, start the reply with this one line:
+
+```
+Since <hh:mm>: Main B<i> → B<k> · <a> accepted · <r> rejected · <t> timeout · <n> in MAIN · <target>: <old> → <new>
+```
+
+`<hh:mm>` is the previous user message's time, and every count covers only the events since then. Add one `<target>` part per optimize target whose value changed; show build and judged targets as `<x> of <cap>`. Then answer the message or command as usual. No line when nothing changed, that is, when no event line was printed since the previous user message. STATE config keeps the time of the last user message: update it on every user message, after the line is built, also when no line is printed.
+
 ## 5. State, compaction and stop
 
 STATE holds the config (start time, profile, run mode, every target's values, and with Pull request on REMOTE, BASE, the run branch and the PR URL) and the baselines table. It holds every idea with its target, scope, status, agentId, timer ID, base SHA and branch. For each idea it also holds, in one detail block, the TECHNIQUE, EXPECTED, PREDICTION and EVIDENCE as the researcher sent them, and the ACCEPTANCE criteria of a build idea or the rubric of a judged idea verbatim: experimenters and your accept decisions read them from STATE. It also holds each build target's items with the increments still to come and its cap, each judged target's rubric and cap, and the increments still to come of each split idea. It holds the confirmed and the current experimenter split, and each pillar's research status. It is the source of truth. After a context summary, or whenever you are unsure, re-read STATE before you act.
