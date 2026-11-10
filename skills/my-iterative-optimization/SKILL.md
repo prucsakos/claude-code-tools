@@ -262,7 +262,7 @@ Write the report in the conversation's language, both in STATE and in chat. STAT
 **Full report.** Print the block below at the end of setup (step 5), after a batch reaches MAIN or is reverted, when the user asks for status, and at stop.
 
 ```
-Main: B0 → B2  ·  2 batches · 6 accepted · 3 rejected · 10 testing · researchers: 2 of 3 running
+Main: B0 → B2  ·  2 batches · 6 accepted · 3 rejected · 10 testing · researchers: 2 of 3 running · next result ~09:52 · End 18:00
   Performance: Speed  wall time    120.4 s → 9.1 s  (13.2× vs B0)  · 4 experimenters
   Code hygiene: Lint  lint errors  42 → 7           (6.0× vs B0)   · 3 experimenters
   Features: Proposed  1 of 5 in MAIN                               · 3 experimenters
@@ -279,7 +279,7 @@ Main: B0 → B2  ·  2 batches · 6 accepted · 3 rejected · 10 testing · rese
 | 8 | Features: Proposed | CSV export of reports | 1 click instead of 6 manual steps | acceptance 3 of 3, 2 tests added | — | in MAIN (B2) |
 ```
 
-- Print one Main line per target, with its pillar's current experimenters (and the confirmed share, when a rebalance changed it), and one baseline-table column per optimize target. A build target's Main line counts its items in MAIN against its cap or its list. A judged target's Main line counts its items in MAIN against its cap.
+- The first line ends with ` · next result ~<hh:mm>`: the earliest deadline among running experimenters, each one's dispatch time in STATE + the budget it was dispatched with. Omit it when no experimenter runs. Add ` · End <hh:mm>` only when End is set. Then print one Main line per target, with its pillar's current experimenters (and the confirmed share, when a rebalance changed it), and one baseline-table column per optimize target. A build target's Main line counts its items in MAIN against its cap or its list. A judged target's Main line counts its items in MAIN against its cap.
 - Est. vs B0 = (its base's gain vs B0 on the item's target) × the item's ratio. It is an estimate until the item is in MAIN; after that, the baseline table holds the measured value. Build and judged items show `—`.
 - When a lower-is-better value reaches 0, the ratio is undefined: show the absolute change (42 → 0) instead.
 - Statuses: queued → testing → accepted / rejected (reason) / timeout → migrating → in MAIN (Bk) / skipped (reason) / superseded by #id / retest / narrowed.
