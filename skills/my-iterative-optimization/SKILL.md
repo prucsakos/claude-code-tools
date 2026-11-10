@@ -277,6 +277,26 @@ STATE holds the config (start time, profile, run mode, every target's values, an
 
 On stop: TaskStop every running agent and timer. In auto mode, if accepted ideas still wait for migration, run them as one last batch first, unless the stop message says not to. Wait for that batch's integrator report and the re-measure of MAIN. Remove all worktrees and run `git -C REPO worktree prune`. If a worktree folder cannot be removed (on Windows a process may hold it), note it with the reason and go on; do not retry in a loop. Keep the branches of accepted, unmigrated ideas; delete the other `opt/*` branches. With Pull request on, keep the run branch: it is the head of the PR. With it on, also push MAIN once more and update the PR body with the final patch note (section 3). If either fails, name the error in the final report. Name the PR URL in the final report. End the final report with a "Left on disk" block, built from `git -C REPO branch --list 'opt/*'`, the run branch (with Pull request on), `git -C REPO worktree list` and the folders you noted. Each line names one item and its cleanup command. Per kept branch: its idea id, why it is kept (accepted and unmigrated, or PR head) and `git -C REPO branch -D <branch>`; for the run branch, after the PR is merged, `git -C REPO switch BASE && git -C REPO branch -D <branch>`. Per folder not removed: its path, the reason and `rm -rf <dir> && git -C REPO worktree prune`. Last, RUN_DIR: its path, what it holds (STATE, archived STATEs, harness, ref, shots), that the next run reuses it, and `rm -rf <RUN_DIR>`, which also drops that record. The block deletes nothing. Print the final report. In review mode, if accepted ideas still wait for migration, offer one last batch.
 
+**Final report.** Build it from STATE after the last re-measure. Print the block below first, then the full report (section 4), and last the "Left on disk" block.
+
+```
+Run 08:30–12:10 (3h40m) · 4 batches · 9 in MAIN · 14 rejected · 2 timeout
+  Performance: Speed       B0 → B4: 120.4 → 9.1 s, 13.2× vs B0 · research exhausted
+  Code hygiene: Lint       B0 → B4: 42 → 7, 6.0× vs B0 · stopped
+  Features: Proposed       5 of 5 in MAIN · done
+  Features: Your features  3 of 5 in MAIN · stopped
+Left: #21 #24 accepted, not migrated · 6 queued · Your features: CSV import part 2, filters
+Errors: none
+PR: https://github.com/<owner>/<repo>/pull/<n>
+Next run: proposes again Your features: CSV import part 2, filters
+```
+
+- Line 1: the start time from STATE, the time of stop and the duration, the number of batches, and the counts of ideas in MAIN, rejected and `timeout`, by their status in STATE at stop (a `retest` counts as queued).
+- One line per target. An optimize target shows B0 → Bk with both values and its ratio vs B0. A build or judged target shows its items in MAIN against its cap or list. Each line ends with its end state, the first that applies: `done` (as in section 2, Integrator finishes); `research exhausted`, when its pillar's research is exhausted and none of its ideas is queued or accepted; else `stopped`.
+- `Left:` the ids of the accepted, unmigrated ideas (their branches are under "Left on disk"; do not repeat them), the number of queued ideas, retests included, and per build target or split idea its increments still to come. Write `Left: none` when nothing is left.
+- With Pull request on: `Errors:` the failed push or PR update from On stop, with its error, or `none`; `PR:` the URL.
+- `Next run:` the user's build items not in MAIN, with their increments still to come, which a next run in REPO proposes again (Last run, section 1); `config and targets only` when there are none.
+
 ## Common mistakes
 
 | Mistake | Fix |
