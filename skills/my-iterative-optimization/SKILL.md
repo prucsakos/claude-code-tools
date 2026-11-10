@@ -272,26 +272,8 @@ On stop: TaskStop every running agent and timer. In auto mode, if accepted ideas
 
 | Mistake | Fix |
 |---|---|
-| Asking setup questions over several turns | Use at most two rounds. Ask the pillar question only when the arguments name no pillar and no metric, and no last run answers it. Do not ask a target question, and do not send a form before the confirmation table: propose the targets and every other input in one plan, in the confirmation layout. Show the whole plan again after each change. |
-| Changing anything on disk before the user confirmed | No RUN_DIR, worktree or measurement until the plan gets `ok`. |
-| Comparing ideas of different targets by their raw gains | Seconds and lint errors do not compare. When a free slot serves another pillar, choose by score (relative gain or value, × confidence). |
-| Lending experimenters to a pillar with a locked or UI build target | Its share sets R and the lock budget. Lend only to the other pillars. |
-| Adding experimenters beyond N | Divide N over the pillars. Never raise it on your own. |
-| Testing only safe, small ideas | Researchers send both conservative and bold ideas, and the dispatch order in section 2 keeps a bold one testing whenever the pillar has one queued and its targets are served. |
 | Accepting a gain that came from a weaker check | Weakened lint, type-check or audit rules, ignore lists, suppression comments, lowered thresholds and removed tests are gaming: reject. Build config changes that keep the same work are fine. |
-| Letting an experimenter set its own acceptance criteria | Fix them before dispatch, from the researcher or the user's list. The experimenter reports against them. |
-| A CORRECT_CMD that freezes what a build target changes | Follow the CORRECT_CMD row in section 1. |
-| Measuring only the item's own target after a batch | Measure every optimize target into Bk. A regression on any of them starts the revert path. |
-| Waiting in a sleep loop for agents | End the turn; notifications wake you. |
-| An experimenter's base comes from somewhere else | Lock on: the Bk runs you give it, measured under the same lock. Lock off: its own base runs in its own worktree, with the same command. |
 | Timing measurements without the lock | Parallel load hides real gains: in testing, a change that saves about 0.4 s per run measured as within noise next to other agents. Keep the lock on in `time` mode. |
-| Reporting a ratio without its baseline | Name the baseline (B0, Bk) next to every number. |
-| Two agents writing to MAIN | Only the integrator fast-forwards MAIN. |
 | Writing to BASE with Pull request on | MAIN is the run branch. The run never checks out, commits to or pushes BASE. |
-| Reusing an experimenter for the next idea | Spawn a fresh experimenter on a fresh worktree from the current MAIN. |
-| Keeping a timed-out experimenter alive "because it is close" | The budgets are strict: warning, grace period, then TaskStop. |
 | Letting the researcher drop or split ideas by its own time estimate | Agents overestimate how long a task takes. The researcher sizes ideas by scope; you split an idea only after it times out. |
-| Asking the user something mid-run in auto mode | Auto never waits for the user: decide, print the event line, and go on. |
-| Asking for batch approval with AskUserQuestion | It blocks the event loop. Post the proposal as a message, end the turn, and keep handling events. |
 | Queuing an idea that another pillar's researcher already sent | Drop ideas that repeat a queued one: Performance and DX can both find the same build-config change. |
-| Accepting a creative result with a side effect because the gain is large | Queue a narrowed retest of its in-scope part (section 3, Side effects and direction). Never migrate the side effect. |
