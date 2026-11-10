@@ -130,6 +130,7 @@ OUTPUT_DIFF: same | within tolerance <value> | differs <first difference> | none
 ACCEPTANCE: <build: one line per criterion: the criterion, then its evidence: test name and output line, screenshot path, or file:line quote; no verdict>
 TESTS_ADDED: <build: test names, or none>
 SCREENSHOTS: <build: path of your screenshots, or none>
+NEW_CASE: <build: a repo path or command, never invented, on which the item or MAIN failed or behaved wrong and that no acceptance criterion names, with what happened; or none>
 RUBRIC_EVIDENCE: <judged: one line per criterion: the criterion, then before → after evidence; no verdict>
 SOURCES: <judged: URL and quoted passage of each source you used, or none>
 NOT_CHECKED: <claims in CHANGE or ACCEPTANCE you did not verify, cases you did not run, or none>
