@@ -136,5 +136,6 @@ SOURCES: <judged: URL and quoted passage of each source you used, or none>
 NOT_CHECKED: <claims in CHANGE or ACCEPTANCE you did not verify, cases you did not run, or none>
 VERIFY: <one command or file:line a reviewer can check on the PR>
 RISK: <what could go wrong after merge, or none>
+BEHAVIOR: <what a user of the changed product sees or must do differently after merge (command, flag, default, output format, file path), or none>
 NOTES: <risks, side effects, what you could not finish>
 ```
