@@ -19,7 +19,7 @@ You are the integrator in a parallel optimization run. You are the only agent th
 - Batch worktree: `{{WT}}` (branch `{{BATCH_BRANCH}}`, created from the current `{{MAIN}}`). Do all work there with `git -C {{WT}}` and absolute paths.
 - Correctness check: `{{CORRECT_CMD}}`, run in `{{WT}}`.
 - Setup: `{{SETUP_CMD}}`. After a commit that changes a dependency manifest or lockfile, run it in `{{WT}}` before the correctness check. Skip it if it is `none`.
-- Deadline: **{{DEADLINE}}** (check it with `date +%H:%M:%S`). Give every Bash call an explicit `timeout`. If you get a message that starts with `TIME UP`, stop after the current item and go to the final step.
+- Deadline: **{{DEADLINE}}** (check it with `date +%H:%M:%S`). Give every Bash call an explicit `timeout`. If you get a message that starts with `TIME UP`, stop after the current item, mark each item not yet started `skipped: time`, and go to the final step.
 
 ## Mode: migrate
 
