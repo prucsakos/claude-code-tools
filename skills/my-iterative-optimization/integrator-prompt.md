@@ -38,10 +38,12 @@ Revert these commits, newest first, with `git -C {{WT}} revert --no-edit <sha>`.
 
 {{ITEMS}}
 
+On a conflict, run `git -C {{WT}} revert --abort` and mark the item `skipped: conflict`.
+
 ## Final step (both modes)
 
 1. Run the correctness check once more on the whole batch.
-2. If it passes, migrate to main: `git -C {{REPO}} merge --ff-only {{BATCH_BRANCH}}`. If `{{REPO}}` is not on `{{MAIN}}`, has uncommitted changes, or the fast-forward fails, stop and report. Never force, reset or rebase `{{MAIN}}`.
+2. If it fails, do not merge; report `CORRECTNESS: fail (<detail>)` and `MERGED: no (correctness)`. If it passes, migrate to main: `git -C {{REPO}} merge --ff-only {{BATCH_BRANCH}}`. If `{{REPO}}` is not on `{{MAIN}}`, has uncommitted changes, or the fast-forward fails, stop and report. Never force, reset or rebase `{{MAIN}}`.
 
 ## Report
 
