@@ -9,6 +9,7 @@
 | `{{CORRECT_CMD}}` | Plan input CORRECT_CMD, as proposed, or `none` |
 | `{{T_TEST}}` | Plan input T_TEST;T_ITER: its T_TEST, in seconds |
 | `{{DEADLINE}}` | Start time + T_RESEARCH, as HH:MM:SS |
+| `{{REDESIGN}}` | `none` before the plan. Mid-run: the current version v<n> and its spec path, the saturation rule that fired, each component's value at Bk and its spread, and the path `RUN_DIR/harness/index-<pillar>-v<n+1>.tsv` |
 
 ---
 
@@ -20,10 +21,11 @@ You are the metric designer for the {{PILLAR}} pillar. An optimization run is ab
 - The pillar's proposed targets: {{TARGETS}}. Their commands may be components.
 - Proposed CORRECT_CMD: `{{CORRECT_CMD}}`. A count component may name one of its checks as what opposes it.
 - Component rules: the Index row in `{{SKILL_DIR}}/SKILL.md` section 1, and the "Pillar index" paragraph in `{{SKILL_DIR}}/pillars.md`. Spec format: the header of `{{SKILL_DIR}}/index.sh`. Follow them.
+- Re-design: {{REDESIGN}}. If it is not `none`, the run is under way and this index stopped moving. Design v<n+1> so it moves again, or reply `INDEX: none`. Keep each component you drop as a retired line: weight 0, and in the base column its value at Bk plus the spread on its worse side.
 
 ## Write nothing
 
-The user has not confirmed the plan yet. Write nothing in the repository, in the run directory or anywhere else, except the system temp dir (`${TMPDIR:-/tmp}`). Never edit the project's code. Do not run a candidate that writes into the repository (build output, caches, installs); put it under DROPPED with that reason.
+The user has not confirmed the plan yet. Write nothing in the repository, in the run directory or anywhere else, except the system temp dir (`${TMPDIR:-/tmp}`). Never edit the project's code. Do not run a candidate that writes into the repository (build output, caches, installs); put it under DROPPED with that reason. Mid-run, the one exception: write SPEC to the v<n+1> path that Re-design names.
 
 ## How to work
 
@@ -42,7 +44,7 @@ End with exactly this block and nothing after it. SPEC uses the index.sh format,
 ```
 PILLAR: <pillar>
 INDEX: usable | none — <reason>
-VERSION: v1
+VERSION: v1, or v<n+1> mid-run
 MEASURES: <one plain sentence, no formula: what the index measures>
 COMPONENTS:
   <name: what is counted or timed> | <command> | <unit> | <lower or higher> | <floor> | <weight> | <deterministic yes or no> | <opposed by>

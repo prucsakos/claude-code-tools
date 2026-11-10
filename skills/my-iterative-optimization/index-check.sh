@@ -61,6 +61,14 @@ spec failing.tsv 'a|lower|1|0.5|10|exit 1' 'b|lower|1|0.5|10|echo 10'
 code=$?
 check failing-command "exit 1, FAIL a" "exit $code, $(tr -d '\r' <"$scratch/err" | grep -o '^FAIL a')"
 
+# A retired component (weight 0) leaves the index alone within its limit, and exits 3 beyond it.
+spec retired-within.tsv 'a|lower|1|0.5|10|echo 10' 'b|lower|1|0.5|10|echo 10' 'old|lower|1|0|12|echo 12'
+spec retired-beyond.tsv 'a|lower|1|0.5|10|echo 10' 'b|lower|1|0.5|10|echo 10' 'old|lower|1|0|12|echo 15'
+within=$(last_line retired-within.tsv)
+(cd "$scratch" && bash "$index" retired-beyond.tsv) >/dev/null 2>"$scratch/err"
+code=$?
+check retired-limit "index=100.0, exit 3, FAIL old" "$within, exit $code, $(tr -d '\r' <"$scratch/err" | grep -o '^FAIL old')"
+
 # Through measure.sh, the measured value is the index, not a component value.
 out=$(bash "$here/measure.sh" "$scratch" 1 30 stdout none "bash $(printf %q "$index") halved.tsv" | tr -d '\r')
 check measure "141.4" "$out"

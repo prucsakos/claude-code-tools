@@ -8,7 +8,9 @@
 #   name  direction  floor  weight  base  command
 #   direction  lower or higher: which way is better
 #   floor      > 0; a value below the floor counts as the floor, so a 0 never divides
-#   weight     at most 0.5, so no single component is the whole index; weights sum to 1
+#   weight     at most 0.5, so no single component is the whole index; weights sum to 1;
+#              0 marks a retired component: its base column is then its limit, and a value
+#              worse than the limit (above it for lower, below it for higher) exits 3
 #   base       the component's value on the base commit
 #   command    the rest of the line; run with bash -c from the current directory; its value
 #              is the last number it prints on stdout, as in measure.sh
@@ -21,7 +23,8 @@
 # Prints "name=<value>" per component, then "index=<n>" (one decimal) as the last line,
 # so the last number on stdout, which measure.sh takes, is the index.
 # Exit codes: 0 ok; 1 a command exits non-zero or prints no number ("FAIL <name>: <reason>"
-# on stderr); 2 usage error or invalid spec (one message line on stderr, no command run).
+# on stderr); 2 usage error or invalid spec (one message line on stderr, no command run);
+# 3 a retired component is beyond its limit ("FAIL <name>: <value> beyond limit <limit>").
 set -u
 
 number='[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?'
@@ -55,7 +58,9 @@ while IFS= read -r line || [ -n "$line" ]; do
   weights+=("$weight") bases+=("$base") commands+=("$command")
 done <"$1"
 
-[ "${#names[@]}" -ge 2 ] || invalid "the spec has ${#names[@]} component(s), needs at least 2"
+weighted=$(printf '%s
+' "${weights[@]}" | awk '$1 > 0 { n++ } END { print n + 0 }')
+[ "$weighted" -ge 2 ] || invalid "the spec has $weighted weighted component(s), needs at least 2"
 weight_sum=$(printf '%s\n' "${weights[@]}" | awk '{ s += $1 } END { print s }')
 awk_true 'x >= 0.999 && x <= 1.001' "$weight_sum" || invalid "weights sum to $weight_sum, not 1"
 
@@ -73,6 +78,13 @@ for i in "${!names[@]}"; do
     exit 1
   fi
   echo "${names[i]}=$value"
+  if awk_true 'x == 0' "${weights[i]}"; then
+    if [ "${directions[i]}" = lower ]; then beyond="x > ${bases[i]}"; else beyond="x < ${bases[i]}"; fi
+    if awk_true "$beyond" "$value"; then
+      echo "FAIL ${names[i]}: $value beyond limit ${bases[i]}" >&2
+      exit 3
+    fi
+  fi
   rows+="${directions[i]} ${floors[i]} ${weights[i]} ${bases[i]} $value"$'\n'
 done
 
