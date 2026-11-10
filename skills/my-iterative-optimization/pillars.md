@@ -31,6 +31,11 @@ A pillar or target the user names under "Other" (for example Cost, Reliability, 
 
 Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: the MEASURE_CMD row in SKILL.md section 1 says how to count them.
 
+**Pillar index.** A pillar index (the Index row in SKILL.md section 1) combines 2–4 component commands into one number. Each count names what opposes it, so cutting content cannot raise the index. Examples:
+- UI pillar: words and interactive elements on key screens from a scripted page snapshot, fewer is better, and load time. The CORRECT_CMD check that each screen keeps its required content opposes the counts.
+- Backend pillar: p95 latency, peak memory and threads. Latency opposes the other two: a cache or a larger pool lowers latency and raises memory or threads.
+- Agent pillar: bytes of instructions loaded per task and steps of a scripted dry run, fewer is better, opposed by passes on a small fixed task set.
+
 ## Examples of user-defined pillars
 
 These are examples of use cases, not built-in presets. The user names such a pillar under "Other", and it follows the rules above. The orchestration hierarchy is the same: researchers find weak passages or open questions, each experimenter rewrites one passage or chases one question in its own worktree, the orchestrator judges each idea from its evidence against the rubric, and the integrator migrates the accepted changes to MAIN. The project must still be a git repository, for example the thesis sources or the research notes in git.
