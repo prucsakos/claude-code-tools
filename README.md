@@ -132,17 +132,17 @@ flowchart TD
     U["User"]
     O["Orchestrator (main agent): writes only RUN_DIR (STATE, harnesses, reference outputs), measures MAIN in wt/measure, accepts or rejects each idea"]
     subgraph S["Subagents, spawned and directed by the orchestrator"]
-        D["Metric designer, one per pillar, before the plan: reads the repo, writes nothing"]
+        D["Metric designer, one per pillar, after the plan and when an index saturates: reads the repo, writes nothing but a mid-run index spec"]
         R["Researcher, one per pillar: own checkout of MAIN, writes nothing"]
         E["Experimenters, N divided over the pillars: one fresh agent per idea, own worktree and branch opt/ID"]
         I["Integrator, 0–1 at a time: batch worktree, cherry-picks the accepted items"]
     end
     M["MAIN: the run branch optimize/STAMP"]
     P["Pull request (with Pull request on)"]
-    U -->|"plan confirmation, ok, mid-run commands"| O
-    O -->|"event lines and reports"| U
-    O -->|"before the plan: pillar, proposed targets"| D
-    D -->|"index spec for the plan"| O
+    U -->|"plan ok, index review: ok or changes, mid-run commands"| O
+    O -->|"event lines, reports, indexes to review"| U
+    O -->|"pillar, targets, the user's index changes"| D
+    D -->|"index spec for the user's review"| O
     O -->|"start a round: targets, lens"| R
     R -->|"ideas"| O
     O -->|"dispatch: one idea"| E

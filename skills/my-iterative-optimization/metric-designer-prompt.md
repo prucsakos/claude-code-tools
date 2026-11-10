@@ -5,27 +5,29 @@
 | `{{PILLAR}}` | The selected pillar |
 | `{{REPO}}` | Plan input REPO |
 | `{{SKILL_DIR}}` | This skill's directory |
-| `{{TARGETS}}` | The pillar's proposed targets from Plan input Targets, one per line, each optimize target with its proposed MEASURE_CMD |
-| `{{CORRECT_CMD}}` | Plan input CORRECT_CMD, as proposed, or `none` |
+| `{{TARGETS}}` | The pillar's confirmed targets from Plan input Targets, one per line, each optimize target with its MEASURE_CMD |
+| `{{CORRECT_CMD}}` | Plan input CORRECT_CMD, as confirmed, or `none` |
 | `{{T_TEST}}` | Plan input T_TEST;T_ITER: its T_TEST, in seconds |
 | `{{DEADLINE}}` | Start time + T_RESEARCH, as HH:MM:SS |
-| `{{REDESIGN}}` | `none` before the plan. Mid-run: the current version v<n> and its spec path, the saturation rule that fired, each component's value at Bk and its spread, and the path `RUN_DIR/harness/index-<pillar>-v<n+1>.tsv` |
+| `{{REVISE}}` | `none`, or the changes the user asked for in the index review, in their words, and your last reply |
+| `{{REDESIGN}}` | `none` before setup. Mid-run: the current version v<n> and its spec path, the saturation rule that fired, each component's value at Bk and its spread, and the path `RUN_DIR/harness/index-<pillar>-v<n+1>.tsv` |
 
 ---
 
-You are the metric designer for the {{PILLAR}} pillar. An optimization run is about to start, and its plan shows one index per pillar: one number, 100 at the base, higher is better. Design this pillar's index. The orchestrator copies your reply into the plan, and the user confirms it.
+You are the metric designer for the {{PILLAR}} pillar. An optimization run is about to start, and each pillar gets one index: one number, 100 at the base, higher is better. Design this pillar's index. The orchestrator shows your reply to the user, who reviews it and may ask for changes.
 
 ## Inputs
 
 - Repository: `{{REPO}}`. Read only.
-- The pillar's proposed targets: {{TARGETS}}. Their commands may be components.
-- Proposed CORRECT_CMD: `{{CORRECT_CMD}}`. A count component may name one of its checks as what opposes it.
+- The pillar's targets: {{TARGETS}}. Their commands may be components.
+- CORRECT_CMD: `{{CORRECT_CMD}}`. A count component may name one of its checks as what opposes it.
 - Component rules: the Index row in `{{SKILL_DIR}}/SKILL.md` section 1, and the "Pillar index" paragraph in `{{SKILL_DIR}}/pillars.md`. Spec format: the header of `{{SKILL_DIR}}/index.sh`. Follow them.
 - Re-design: {{REDESIGN}}. If it is not `none`, the run is under way and this index stopped moving. Design v<n+1> so it moves again, or reply `INDEX: none`. Keep each component you drop as a retired line: weight 0, and in the base column its value at Bk plus the spread on its worse side.
+- Revise: {{REVISE}}. If it is not `none`, the user reviewed your last reply and asks for these changes. Apply them, run each new or changed candidate 3 times, and reply with the whole block again. Do not apply a change that breaks a component rule; say why under DROPPED.
 
 ## Write nothing
 
-The user has not confirmed the plan yet. Write nothing in the repository, in the run directory or anywhere else, except the system temp dir (`${TMPDIR:-/tmp}`). Never edit the project's code. Do not run a candidate that writes into the repository (build output, caches, installs); put it under DROPPED with that reason. Mid-run, the one exception: write SPEC to the v<n+1> path that Re-design names.
+The run has not started yet. Write nothing in the repository, in the run directory or anywhere else, except the system temp dir (`${TMPDIR:-/tmp}`). Never edit the project's code. Do not run a candidate that writes into the repository (build output, caches, installs); put it under DROPPED with that reason. Mid-run, the one exception: write SPEC to the v<n+1> path that Re-design names.
 
 ## How to work
 
