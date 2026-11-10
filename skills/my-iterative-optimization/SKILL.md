@@ -230,14 +230,14 @@ Record the reason in one line. Remove worktrees with `git -C REPO worktree remov
 
 Write the report in the conversation's language, both in STATE and in chat. STATE keeps every idea row; the chat ideas table folds the finished rows into one count line (see the bullets below). Every number names the baseline it compares to.
 
-**Event line.** After each event, print one line instead of the full report: `<hh:mm> #<id> <Target> <event>: <result vs its base>`. A batch line names the batch and its items instead of an id and a target; a line for an event without an idea, such as a researcher that finishes, names the agent and its pillar.
+**Event line.** After each event, print one line instead of the full report: `<hh:mm> #<id> <Target> <event> (<title>): <result vs its base>`, where `<title>` is the idea's IDEA title from STATE (its Technique in the ideas table), cut to about 6 words. A batch line names the batch and its items instead of an id and a target; a line for an event without an idea, such as a researcher that finishes, names the agent and its pillar.
 
 ```
-08:41 #12 Lint queued: score 0.6
-08:57 #4 Speed accepted: B1 24.0 → 9.1 s, 2.6×
-08:58 #8 Proposed accepted: acceptance 3 of 3
-09:02 #6 Speed rejected: within noise, B1 24.0 → 23.6 s
-09:04 #5 Lint timeout: no report within T_ITER
+08:41 #12 Lint queued (Fix import order in tests): score 0.6
+08:57 #4 Speed accepted (Vectorize the inner loop): B1 24.0 → 9.1 s, 2.6×
+08:58 #8 Proposed accepted (CSV export of reports): acceptance 3 of 3
+09:02 #6 Speed rejected (Cache the parsed config): within noise, B1 24.0 → 23.6 s
+09:04 #5 Lint timeout (Split the long modules): no report within T_ITER
 09:05 batch 2 in MAIN: #4 #7 #8
 09:12 researcher Code hygiene finished: 3 ideas sent
 09:40 batch 3 reverted: #10, Lint worse vs B2
