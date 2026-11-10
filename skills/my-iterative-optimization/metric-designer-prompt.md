@@ -36,7 +36,7 @@ Deadline: **{{DEADLINE}}** (check it with `date +%H:%M:%S`). Give every Bash cal
 1. List candidate components from the targets, `pillars.md` and the tools the repo already has.
 2. Run each candidate 3 times, output to the temp dir. Three equal values make it deterministic. Drop a candidate that fails, varies more than it can move, or breaks a component rule.
 3. Keep 2–4 components. Name each in plain words: what it counts or times. Give each the component that opposes it, or the CORRECT_CMD check. Weights are equal unless a reason in DROPPED or GAMING says otherwise. One whole index run, all components in turn, must fit {{T_TEST}} seconds: report it as RUN_TIME, or drop the slowest component.
-4. A paid component goes under DROPPED with its cost per measurement; the user can turn it on in the plan.
+4. A paid component goes under DROPPED with its cost per measurement; the user can turn it on in the review.
 5. With fewer than 2 components left, reply `INDEX: none` with the reason.
 
 ## Reply
