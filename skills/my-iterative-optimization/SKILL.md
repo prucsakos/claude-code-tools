@@ -120,7 +120,7 @@ After the user confirms:
    - If a target's 3 B0 runs give the same value (typical for counts such as lint errors), its metric is deterministic: R = 1, and its spread is 0.
    - If even R = 1 does not fit for some target, lower the experimenters of those pillars until it fits, at least 1 each. It does not fit when 2 × S × L × run > T_ITER, with `run` as in the second term. Give the freed experimenters to the other pillars. N drops only when there is no other pillar. Say so in the setup summary, with the reason.
    - With EVIDENCE_CMD, at most floor(T_ITER / (2 × ev)) experimenters work on UI build items at the same time. This way their captures fit in half of T_ITER even without a locked optimize target. If the UI pillar has nothing else for its other experimenters, give them to the other pillars.
-5. Queue the user's build items as ideas, with value high and confidence high; of a split item, queue only its first increment. Write STATE and show the user the setup summary and the empty report.
+5. Queue the user's build items as ideas, with value high and confidence high; of a split item, queue only its first increment. Write STATE and show the user the setup summary and the empty report. End the setup output with the `Commands:` line of section 2, so the user learns the mid-run commands at the start.
 
 ## 2. Event loop
 
