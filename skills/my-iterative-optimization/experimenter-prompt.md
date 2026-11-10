@@ -71,7 +71,7 @@ It prints one value per run, or `TIMEOUT` / `FAIL <code>`. With a lock, it first
 
 1. **Base:** given base values: `{{BASE_VALUES}}`. If they are given (not `none`), use them and do not measure the base. Otherwise measure `{{WT}}` before you change anything.
 2. **Implement** the idea with the smallest change that does it. No special-casing of the measured input.
-3. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise report `CORRECTNESS: fail`.
+3. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise skip the remaining steps and report `STATUS: failed` with `CORRECTNESS: fail (<detail>)`.
 4. **Commit** (see Commit).
 5. **Candidate:** measure `{{WT}}` again with the same command.
 
@@ -86,7 +86,7 @@ Evidence form: {{EVIDENCE_FORM}}.
 Screenshots: `{{SHOTS}}`. If it is not `none`, the screenshots of your base are in `{{BEFORE}}`, and you capture yours once, only with `bash {{MEASURE_SH}} {{WT}} 1 {{T_TEST_SECONDS}} stdout {{LOCK}} '{{EVIDENCE_CMD}} {{SHOTS}}'`. It prints the number of screenshots, or `TIMEOUT` / `FAIL <code>`.
 
 1. **Build** the smallest complete version of the idea that meets every criterion. Follow the existing architecture and design system. When the evidence form includes tests, add tests that exercise the new behavior; otherwise add no test files and produce the evidence the form names. Make the feature reachable by its users (route, command or menu entry). Keep the existing behavior unchanged.
-2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`, then your new tests, if you added any. If they fail and the fix is quick, fix it; otherwise report the failure.
+2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`, then your new tests, if you added any. If they fail and the fix is quick, fix it; otherwise skip the remaining steps and report `STATUS: failed` with `CORRECTNESS: fail (<detail>)`.
 3. **Commit** (see Commit). Your new tests, if any, go into the commit.
 4. **Check:** if there are screenshots, capture them and compare them with `{{BEFORE}}`. Then re-read each criterion and check it against the committed diff (`git -C {{WT}} show HEAD`), the test output and the screenshots, not against your memory of the edit. For each criterion, name evidence the orchestrator can re-check: a test name with its output line, a screenshot path, or a `file:line` quote from the commit. Report the evidence only; do not state whether a criterion is met.
 
@@ -97,7 +97,7 @@ Rubric criteria, fixed before you started. The orchestrator judges your change a
 {{RUBRIC}}
 
 1. **Change** the work with the smallest complete version of the idea. Follow the existing structure and style. Keep the existing behavior unchanged.
-2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise report the failure.
+2. **Correctness:** run `{{CORRECT_CMD}}` in `{{WT}}`. If it fails and the fix is quick, fix it; otherwise skip the remaining steps and report `STATUS: failed` with `CORRECTNESS: fail (<detail>)`.
 3. **Commit** (see Commit).
 4. **Evidence:** for each rubric criterion, collect before/after evidence from the committed diff (`git -C {{WT}} show HEAD`): quotes of the old and new text with `file:line`, and for each source you used, its URL and the passage you quote from it. Report the evidence only. Never state whether a criterion is met: the orchestrator judges that, not you.
 
