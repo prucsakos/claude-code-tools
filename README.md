@@ -127,6 +127,36 @@ Then invoke it as `$explain` (or `$explain-simple`) in Codex.
 
 Claude Code skill that orchestrates parallel work on a project: one orchestrator directs researchers, experimenters and an integrator, with fixed roles and time budgets, to improve the targets you pick. Optimizing a metric and building features are cases of it. Pick targets inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria; judged targets (e.g. the wording of a thesis, research or web fact-finding) have no metric and no tests, so each idea is accepted on a rubric fixed before dispatch, and the orchestrator judges it from before/after evidence. You may also define your own pillars and targets, of any of the three kinds. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch.
 
+```mermaid
+flowchart TD
+    U["User"]
+    O["Orchestrator (main agent): writes only RUN_DIR (STATE, harnesses, reference outputs), measures MAIN in wt/measure, accepts or rejects each idea"]
+    subgraph S["Subagents, spawned and directed by the orchestrator"]
+        D["Metric designer, one per pillar, after the plan and when an index saturates: reads the repo, writes nothing but a mid-run index spec"]
+        R["Researcher, one per pillar: own checkout of MAIN, writes nothing"]
+        E["Experimenters, N divided over the pillars: one fresh agent per idea, own worktree and branch opt/ID"]
+        I["Integrator, 0–1 at a time: batch worktree, cherry-picks the accepted items"]
+    end
+    M["MAIN: the run branch optimize/STAMP"]
+    P["Pull request (with Pull request on)"]
+    U -->|"plan ok, index review: ok or changes, mid-run commands"| O
+    O -->|"event lines, reports, indexes to review"| U
+    O -->|"pillar, targets, the user's index changes"| D
+    D -->|"index spec for the user's review"| O
+    O -->|"start a round: targets, lens"| R
+    R -->|"ideas"| O
+    O -->|"dispatch: one idea"| E
+    E -->|"report"| O
+    O -->|"batch of accepted items"| I
+    I -->|"report: MERGED yes or no"| O
+    I -->|"fast-forward"| M
+    O -->|"push MAIN, create or update the PR"| P
+```
+
+- Only the integrator writes MAIN: it fast-forwards MAIN to its batch branch. The orchestrator writes only RUN_DIR and never edits the project's code.
+- Researchers and experimenters are per pillar: one researcher per selected pillar, and the N experimenters are divided evenly over the pillars.
+- No arrow joins two subagents, or a subagent and the user: the orchestrator spawns each subagent, and each one reaches it with SendMessage `to: "main"`.
+
 It is a Claude Code skill, so copy it into your Claude Code skills directory. These commands replace an earlier install of this skill only and leave your other skills alone:
 
 ```bash
@@ -135,11 +165,13 @@ rm -rf ~/.claude/skills/my-iterative-optimization
 cp -R skills/my-iterative-optimization ~/.claude/skills/
 ```
 
+To learn whether Claude Code will load the repo's current text or a stale install (after editing the skill or after a merge), run `bash skills/my-iterative-optimization/install-check.sh`: it compares the two copies file by file, ignoring line endings, and prints `installed copy matches (<n> files)`, one `FAIL` line per differing, missing or extra file, or `not installed at <path>`; it changes nothing.
+
 Then use it inside Claude Code:
 
 ```
 /my-iterative-optimization "Make scripts/build_report.py faster without changing its output"
-/my-iterative-optimization "Improve this project"   # offers the pillars as a multiple choice, then proposes targets
+/my-iterative-optimization "Improve this project"   # proposes pillars and targets in one plan
 /my-iterative-optimization "Improve DX and Quality"
 /my-iterative-optimization high auto "Make the build faster"   # profile and mode are not proposed in the plan
 /my-iterative-optimization low review "Improve Code hygiene"
@@ -148,6 +180,23 @@ Then use it inside Claude Code:
 /my-iterative-optimization "Find more sources for the open questions in research/notes.md"   # judged: research discovery
 /my-iterative-optimization "Fact-check the claims in facts.md on the web"   # judged, or optimize on verified-claim count
 ```
+
+To end a run, say `stop` (no new work; the running experimenters and the integrator finish, their accepted ideas go into one last batch, then the run stops) or `stop now` (stops the running agents at once); plain words work too. Mid-run, `status` prints the full report and the time left of each running agent, and `set <value> <new>` changes T_ITER, T_RESEARCH, a target's cap or a pillar's experimenters from the next dispatch on (`set cap Features 3`). `idea <Target>: <text>` queues your own idea, with acceptance criteria the run writes, ahead of the researchers' ideas for that target's pillar. `pause` starts no new work while running agents finish, and keeps the queue and worktrees; `resume` fills the free slots again. Set `End` in the plan (`18:00` or `3h`) or mid-run (`set End 19:30`), and the run starts `stop` on its own one T_ITER before that time.
+
+To list what runs left in a repo, at any time, run `bash skills/my-iterative-optimization/footprint.sh <REPO>`: it prints each leftover with its delete command and deletes nothing.
+
+After you edit the skill, change a check script or change the skill's layout, run `bash skills/my-iterative-optimization/checks.sh`: it runs `check.sh` and every `*-check.sh` in the skill's directory (found by name, so a new check runs without an edit to `checks.sh`), prints each script's name followed by its output, and ends with `OK (<n> checks)`, or `FAIL: <names>` and exit 1. Each check also runs on its own (`bash skills/my-iterative-optimization/<script>`):
+
+- `check.sh`: the SKILL.md frontmatter, that each prompt template's placeholder table lists exactly the placeholders its prompt uses, that every `section N` reference has a `## N.` heading in SKILL.md, and that every reply literal SKILL.md acts on (such as `MERGED: yes` or `timeout-partial`) is defined in a role prompt's reply format; prints `OK` or one `FAIL` line per defect.
+- `source-check.sh`: that every plan input, setup step and section paragraph that a prompt's placeholder table names still exists in `SKILL.md`; prints each row that points at a missing one.
+- `format-check.sh`: that every table row in the skill's `.md` files and in this section has as many cells as its header row, and that every `.sh` file has LF line endings and passes `bash -n`; prints `OK` or one `FAIL <file>:<line>` line per defect.
+- `measure-check.sh`: the behavior of `measure.sh` (run it after a change to `measure.sh`); prints `OK`, or one `FAIL` line per broken case.
+- `index-check.sh`: the behavior of `index.sh`; prints `OK`, or one `FAIL` line per broken case.
+- `footprint-check.sh`: the behavior of `footprint.sh` on a temp repo with seeded leftovers; prints `OK (<n> assertions)`, or one `FAIL` line per broken assertion.
+- `seed-check.sh`: that each check still catches its defect class (run it after you change a check script or the skill's layout). It seeds known defects (an unlisted placeholder, a `section 99` reference, a removed reply field, a renumbered setup step, a changed frontmatter name) into a temp copy of the skill and prints `OK (<n> seeds caught)`, or one `MISSED <seed>` line per defect its check let through. To cover a new defect class, add one row to its seed table.
+- `install-check.sh`: whether the installed copy matches the repo (see above). Its result depends on the machine, not on the repo, so `checks.sh` reports `not installed` as skipped and a differing installed copy as `differs` in its summary, and neither fails the run.
+
+Each experimenter commit carries the trailers `Optimize-Run: <YYYYMMDD-HHMM>` (the run's start time) and `Target: <Pillar>: <Target>`, so `git log --grep 'Optimize-Run: <stamp>'` lists one run's commits and `git log --grep 'Target: <Pillar>: <Target>'` one target's.
 
 ### `teaching-video` (Claude Code)
 

@@ -1,12 +1,12 @@
 # Pillars and targets
 
-The "Improves" text is the option description in the pillar question, and "Group" is the question the pillar appears in. Each target's bold name is the name the plan's target table uses, and the text after it says what the target covers. The rows are examples, not a closed list: the user may define their own pillars and targets, of any of the three kinds below.
+The "Improves" text says what a pillar covers, and "Group" sets the order of the pillars. Each target's bold name is the name the plan's target table uses, and the text after it says what the target covers. The rows are examples, not a closed list: the user may define their own pillars and targets, of any of the three kinds below.
 
 Every target has a kind. An **optimize** target (the default) improves a metric, so it needs a proxy that a command can measure; a tool the repo lacks can run from a harness under `RUN_DIR/harness/`. A **build** target, marked *(build)*, adds something new and is accepted on acceptance criteria with evidence: new tests, and screenshots for UI. A **judged** target has no command metric and no tests, such as the wording of a thesis or web fact-finding; it is accepted on a rubric fixed before dispatch, and the orchestrator judges it from before/after evidence. If an optimize target has no measurable proxy, or a build target cannot show its evidence, drop it and give the reason in the plan.
 
 | Group | Pillar | Improves | Targets | Gaming to reject |
 |---|---|---|---|---|
-| Product | Performance | Speed, memory, size and cost of running the code | **Speed**: wall time of a benchmark, latency, requests per second · **Memory**: peak memory · **Size**: bundle or binary size · **Cost**: API or compute cost per run | caching results across runs, skipping required work |
+| Product | Performance | Speed, memory, size and cost of running the code | **Speed**: wall time of a benchmark over two or more input sizes, p95 latency (not the mean), requests per second · **Memory**: peak memory · **Size**: bundle or binary size · **Cost**: API or compute cost per run | caching results across runs, skipping required work |
 | Product | UX | How fast and easily a user completes a task | **Page load**: Lighthouse performance score or LCP of key pages · **Task flow**: time or steps of a scripted user flow (e.g. Playwright) · **CLI response**: time to first output | removing steps or features the flow needs, hiding errors instead of fixing them |
 | Product | UI | Look, consistency and correctness of the interface | **Consistency**: hard-coded colors, font sizes and spacings outside the design tokens (stylelint count) · **Stability**: layout shift (CLS), visual-regression diff count · **Redesign** *(build)*: a better look and layout for existing screens · **New screens** *(build)*: new screens or components | deleting styles or elements, excluding files from the lint; designs outside the design system (tokens, components), screens that work at only one width or in only one theme |
 | Product | Features | New capabilities for the users of the product | **Your features** *(build)*: the features you list in the plan · **Proposed features** *(build)*: features the researcher proposes from the code, docs and open TODOs that make users' work much faster or easier | features that do not fit the product's purpose |
@@ -30,6 +30,11 @@ Outdated-package counts and external link checks read the network, so a new rele
 A pillar or target the user names under "Other" (for example Cost, Reliability, or "CSV export of reports") follows the same rules. Write its one-line definition, its kind, a measurable proxy (optimize) or acceptance criteria (build), and its gaming list yourself.
 
 Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: the MEASURE_CMD row in SKILL.md section 1 says how to count them.
+
+**Pillar index.** A pillar index (the Index row in SKILL.md section 1) combines 2–4 component commands into one number. Each count names what opposes it, so cutting content cannot raise the index. Examples:
+- UI pillar: words and interactive elements on key screens from a scripted page snapshot, fewer is better, and load time. The CORRECT_CMD check that each screen keeps its required content opposes the counts.
+- Backend pillar: p95 latency, peak memory and threads. Latency opposes the other two: a cache or a larger pool lowers latency and raises memory or threads.
+- Agent pillar: bytes of instructions loaded per task and steps of a scripted dry run, fewer is better, opposed by passes on a small fixed task set.
 
 ## Examples of user-defined pillars
 
