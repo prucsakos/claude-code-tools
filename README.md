@@ -192,6 +192,8 @@ After you edit the skill, run `bash skills/my-iterative-optimization/source-chec
 
 After you change a check script or the skill's layout, run `bash skills/my-iterative-optimization/seed-check.sh`: it seeds known defects (an unlisted placeholder, a `section 99` reference, a removed reply field, a renumbered setup step, a changed frontmatter name) into a temp copy of the skill and prints `OK (<n> seeds caught)`, or one `MISSED <seed>` line per defect its check let through. To cover a new defect class, add one row to its seed table.
 
+After you edit the skill, run `bash skills/my-iterative-optimization/format-check.sh`: it checks that every table row in the skill's `.md` files and in this section has as many cells as its header row, and that every `.sh` file has LF line endings and passes `bash -n`, then prints `OK` or one `FAIL <file>:<line>` line per defect.
+
 ### `teaching-video` (Claude Code)
 
 Claude Code skill: turns a topic or study material (notes, a chapter, a paper, code) into a short MP4 that teaches it. Claude plans the lesson (hook, intuition, mechanism, worked example, pitfall, recap, check question), writes the narration and a storyboard, and builds one animated HTML scene per step. `make_video.py` narrates each beat with text-to-speech, seeks the scenes frame by frame in headless Chromium so the picture follows the narration, and encodes video, voice and captions with ffmpeg. Narration backends: `edge` (online Microsoft neural voices, including Hungarian; the narration text goes to Microsoft), `sapi` (Windows voices, offline) and `none` (captions only). The video is in English unless you name another language. Mode `storyboard` stops after the storyboard.
