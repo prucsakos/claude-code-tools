@@ -116,6 +116,7 @@ STATUS: done | failed | timeout-partial
 BRANCH: {{BRANCH}}
 BASE: {{BASE_SHA}}
 COMMIT: <sha, or none>
+PROBLEM: <one sentence: what was wrong or missing before, for a reviewer who never saw the run>
 CHANGE: <one sentence>
 PREDICTION: held | failed | not checked — <what you saw>
 FILES: <changed files>
@@ -130,5 +131,7 @@ SCREENSHOTS: <build: path of your screenshots, or none>
 RUBRIC_EVIDENCE: <judged: one line per criterion: the criterion, then before → after evidence; no verdict>
 SOURCES: <judged: URL and quoted passage of each source you used, or none>
 NOT_CHECKED: <claims in CHANGE or ACCEPTANCE you did not verify, cases you did not run, or none>
+VERIFY: <one command or file:line a reviewer can check on the PR>
+RISK: <what could go wrong after merge, or none>
 NOTES: <risks, side effects, what you could not finish>
 ```
