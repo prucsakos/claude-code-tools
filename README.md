@@ -192,6 +192,7 @@ After you edit the skill, change a check script or change the skill's layout, ru
 - `format-check.sh`: that every table row in the skill's `.md` files and in this section has as many cells as its header row, and that every `.sh` file has LF line endings and passes `bash -n`; prints `OK` or one `FAIL <file>:<line>` line per defect.
 - `measure-check.sh`: the behavior of `measure.sh` (run it after a change to `measure.sh`); prints `OK`, or one `FAIL` line per broken case.
 - `index-check.sh`: the behavior of `index.sh`; prints `OK`, or one `FAIL` line per broken case.
+- `footprint-check.sh`: the behavior of `footprint.sh` on a temp repo with seeded leftovers; prints `OK (<n> assertions)`, or one `FAIL` line per broken assertion.
 - `seed-check.sh`: that each check still catches its defect class (run it after you change a check script or the skill's layout). It seeds known defects (an unlisted placeholder, a `section 99` reference, a removed reply field, a renumbered setup step, a changed frontmatter name) into a temp copy of the skill and prints `OK (<n> seeds caught)`, or one `MISSED <seed>` line per defect its check let through. To cover a new defect class, add one row to its seed table.
 - `install-check.sh`: whether the installed copy matches the repo (see above). Its result depends on the machine, not on the repo, so `checks.sh` reports `not installed` as skipped and a differing installed copy as `differs` in its summary, and neither fails the run.
 
