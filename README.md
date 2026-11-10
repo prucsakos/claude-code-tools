@@ -127,6 +127,33 @@ Then invoke it as `$explain` (or `$explain-simple`) in Codex.
 
 Claude Code skill that orchestrates parallel work on a project: one orchestrator directs researchers, experimenters and an integrator, with fixed roles and time budgets, to improve the targets you pick. Optimizing a metric and building features are cases of it. Pick targets inside pillars from four groups (Product: Performance, UX, UI, Features · Reach: Accessibility, SEO, i18n · Engineering: Quality, DX, OX, Security · Code health: Code hygiene, Dependency health, Documentation). Optimize targets (e.g. Performance: Speed or Memory) improve a measurable metric; build targets (UI: Redesign, New screens · Features) add new features or designs against fixed acceptance criteria; judged targets (e.g. the wording of a thesis, research or web fact-finding) have no metric and no tests, so each idea is accepted on a rubric fixed before dispatch, and the orchestrator judges it from before/after evidence. You may also define your own pillars and targets, of any of the three kinds. Uses one researcher per pillar that searches widely and sends both conservative and bold ideas, N parallel experimenters divided evenly over the pillars, and one integrator that migrates accepted changes to main in batches. Profiles `low`, `medium` and `high` set the spend; mode `auto` decides on its own, `review` asks you to approve each batch.
 
+```mermaid
+flowchart TD
+    U["User"]
+    O["Orchestrator (main agent): writes only RUN_DIR (STATE, harnesses, reference outputs), measures MAIN in wt/measure, accepts or rejects each idea"]
+    subgraph S["Subagents, spawned and directed by the orchestrator"]
+        R["Researcher, one per pillar: own checkout of MAIN, writes nothing"]
+        E["Experimenters, N divided over the pillars: one fresh agent per idea, own worktree and branch opt/ID"]
+        I["Integrator, 0–1 at a time: batch worktree, cherry-picks the accepted items"]
+    end
+    M["MAIN: the run branch optimize/STAMP"]
+    P["Pull request (with Pull request on)"]
+    U -->|"plan confirmation, ok, mid-run commands"| O
+    O -->|"event lines and reports"| U
+    O -->|"start a round: targets, lens"| R
+    R -->|"ideas"| O
+    O -->|"dispatch: one idea"| E
+    E -->|"report"| O
+    O -->|"batch of accepted items"| I
+    I -->|"report: MERGED yes or no"| O
+    I -->|"fast-forward"| M
+    O -->|"push MAIN, create or update the PR"| P
+```
+
+- Only the integrator writes MAIN: it fast-forwards MAIN to its batch branch. The orchestrator writes only RUN_DIR and never edits the project's code.
+- Researchers and experimenters are per pillar: one researcher per selected pillar, and the N experimenters are divided evenly over the pillars.
+- No arrow joins two subagents, or a subagent and the user: the orchestrator spawns each subagent, and each one reaches it with SendMessage `to: "main"`.
+
 It is a Claude Code skill, so copy it into your Claude Code skills directory. These commands replace an earlier install of this skill only and leave your other skills alone:
 
 ```bash
