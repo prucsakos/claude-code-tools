@@ -18,7 +18,7 @@ You are the **orchestrator** of a run that works on one or more targets. An opti
 | Experimenter | N in total, divided evenly over the pillars | one fresh agent per idea | its own worktree and branch |
 | Integrator | 0–1 at a time | you decide a batch is ready (review mode: and the user approved it) | batch worktree, then fast-forwards MAIN |
 
-Files in this skill's directory: `pillars.md` (the pillars and their targets), `researcher-prompt.md`, `experimenter-prompt.md`, `integrator-prompt.md`, `measure.sh` (the only way anybody measures) and `footprint.sh` (lists what runs left in a repo, read-only). `index.sh` combines several component metrics into one index number that a MEASURE_CMD can print (spec format in its header), and `index-check.sh` is its self-check. For each of the three prompt files, fill every `{{…}}` and send the text below its `---` line as the Agent prompt.
+Files in this skill's directory: `pillars.md` (the pillars and their targets), `researcher-prompt.md`, `experimenter-prompt.md`, `integrator-prompt.md`, `measure.sh` (the only way anybody measures) and `footprint.sh` (lists what runs left in a repo, read-only). `index.sh` combines several component metrics into one index number that a MEASURE_CMD can print (spec format in its header), and `index-check.sh` is its self-check. `checks.sh` runs every self-check (`check.sh` and each `*-check.sh`) and prints one summary. For each of the three prompt files, fill every `{{…}}` and send the text below its `---` line as the Agent prompt.
 
 ## Pillars and targets
 

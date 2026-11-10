@@ -182,17 +182,17 @@ To end a run, say `stop` (no new work; the running experimenters and the integra
 
 To list what runs left in a repo, at any time, run `bash skills/my-iterative-optimization/footprint.sh <REPO>`: it prints each leftover with its delete command and deletes nothing.
 
-After editing the skill, run `bash skills/my-iterative-optimization/check.sh`: it checks the SKILL.md frontmatter, that each prompt template's placeholder table lists exactly the placeholders its prompt uses, that every `section N` reference has a `## N.` heading in SKILL.md, and that every reply literal SKILL.md acts on (such as `MERGED: yes` or `timeout-partial`) is defined in a role prompt's reply format, then prints `OK` or one `FAIL` line per defect.
+After you edit the skill, change a check script or change the skill's layout, run `bash skills/my-iterative-optimization/checks.sh`: it runs `check.sh` and every `*-check.sh` in the skill's directory (found by name, so a new check runs without an edit to `checks.sh`), prints each script's name followed by its output, and ends with `OK (<n> checks)`, or `FAIL: <names>` and exit 1. Each check also runs on its own (`bash skills/my-iterative-optimization/<script>`):
 
-After a change to `measure.sh`, run `bash skills/my-iterative-optimization/measure-check.sh`; it prints `OK`, or one `FAIL` line per broken case.
+- `check.sh`: the SKILL.md frontmatter, that each prompt template's placeholder table lists exactly the placeholders its prompt uses, that every `section N` reference has a `## N.` heading in SKILL.md, and that every reply literal SKILL.md acts on (such as `MERGED: yes` or `timeout-partial`) is defined in a role prompt's reply format; prints `OK` or one `FAIL` line per defect.
+- `source-check.sh`: that every plan input, setup step and section paragraph that a prompt's placeholder table names still exists in `SKILL.md`; prints each row that points at a missing one.
+- `format-check.sh`: that every table row in the skill's `.md` files and in this section has as many cells as its header row, and that every `.sh` file has LF line endings and passes `bash -n`; prints `OK` or one `FAIL <file>:<line>` line per defect.
+- `measure-check.sh`: the behavior of `measure.sh` (run it after a change to `measure.sh`); prints `OK`, or one `FAIL` line per broken case.
+- `index-check.sh`: the behavior of `index.sh`; prints `OK`, or one `FAIL` line per broken case.
+- `seed-check.sh`: that each check still catches its defect class (run it after you change a check script or the skill's layout). It seeds known defects (an unlisted placeholder, a `section 99` reference, a removed reply field, a renumbered setup step, a changed frontmatter name) into a temp copy of the skill and prints `OK (<n> seeds caught)`, or one `MISSED <seed>` line per defect its check let through. To cover a new defect class, add one row to its seed table.
+- `install-check.sh`: whether the installed copy matches the repo (see above). Its result depends on the machine, not on the repo, so `checks.sh` reports `not installed` as skipped and a differing installed copy as `differs` in its summary, and neither fails the run.
 
 Each experimenter commit carries the trailers `Optimize-Run: <YYYYMMDD-HHMM>` (the run's start time) and `Target: <Pillar>: <Target>`, so `git log --grep 'Optimize-Run: <stamp>'` lists one run's commits and `git log --grep 'Target: <Pillar>: <Target>'` one target's.
-
-After you edit the skill, run `bash skills/my-iterative-optimization/source-check.sh`: it checks that every plan input, setup step and section paragraph that a prompt's placeholder table names still exists in `SKILL.md`, and prints each row that points at a missing one.
-
-After you change a check script or the skill's layout, run `bash skills/my-iterative-optimization/seed-check.sh`: it seeds known defects (an unlisted placeholder, a `section 99` reference, a removed reply field, a renumbered setup step, a changed frontmatter name) into a temp copy of the skill and prints `OK (<n> seeds caught)`, or one `MISSED <seed>` line per defect its check let through. To cover a new defect class, add one row to its seed table.
-
-After you edit the skill, run `bash skills/my-iterative-optimization/format-check.sh`: it checks that every table row in the skill's `.md` files and in this section has as many cells as its header row, and that every `.sh` file has LF line endings and passes `bash -n`, then prints `OK` or one `FAIL <file>:<line>` line per defect.
 
 ### `teaching-video` (Claude Code)
 
