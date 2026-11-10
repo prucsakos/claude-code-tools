@@ -9,7 +9,7 @@
 | `{{OTHER_TARGETS}}` | The other selected targets, or `none` |
 | `{{IDEA}}` | The idea's technique, expected change and prediction, from STATE |
 | `{{WT}}` | `RUN_DIR/wt/<id>` (section 2, Dispatch an experimenter) |
-| `{{BRANCH}}` | `opt/<id>` |
+| `{{BRANCH}}` | `opt/<stamp>/<id>` |
 | `{{BASE_SHA}}` | The base SHA recorded in STATE at dispatch |
 | `{{REPO}}` | Plan input REPO |
 | `{{T_TEST}}`, `{{T_ITER}}` | Plan input T_TEST;T_ITER |

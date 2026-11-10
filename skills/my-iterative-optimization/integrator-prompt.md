@@ -3,12 +3,12 @@
 | Placeholder | Filled from |
 |---|---|
 | `{{WT}}` | `RUN_DIR/wt/batch-<k>` (section 3, Integrator batch) |
-| `{{BATCH_BRANCH}}` | `opt/batch-<k>` |
+| `{{BATCH_BRANCH}}` | `opt/<stamp>/batch-<k>` |
 | `{{REPO}}`, `{{MAIN}}` | Plan input REPO, MAIN |
 | `{{CORRECT_CMD}}` | Plan input CORRECT_CMD |
 | `{{SETUP_CMD}}` | Plan input SETUP_CMD, or `none` |
 | `{{DEADLINE}}` | Start time + T_ITER × number of items, as HH:MM:SS |
-| `{{ITEMS}}` | One line per item. Migrate: `<id> opt/<id> <sha>`, where `<sha>` is the item's commit on its branch, for the accepted items, ordered by measured gain (build items by score). Revert: `<id> <sha>`, where `<sha>` is the item's commit in MAIN, for the batch commits that made Bk worse (section 3, After a batch) |
+| `{{ITEMS}}` | One line per item. Migrate: `<id> opt/<stamp>/<id> <sha>`, where `<sha>` is the item's commit on its branch, for the accepted items, ordered by measured gain (build items by score). Revert: `<id> <sha>`, where `<sha>` is the item's commit in MAIN, for the batch commits that made Bk worse (section 3, After a batch) |
 
 Keep the section for the mode you need (migrate or revert).
 
@@ -23,7 +23,7 @@ You are the integrator in a parallel optimization run. You are the only agent th
 
 ## Mode: migrate
 
-Apply these items one at a time, in this order. Each line is one item, `<id> opt/<id> <sha>`: one commit on its own branch:
+Apply these items one at a time, in this order. Each line is one item, `<id> opt/<stamp>/<id> <sha>`: one commit on its own branch:
 
 {{ITEMS}}
 
