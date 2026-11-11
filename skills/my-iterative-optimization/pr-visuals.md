@@ -21,7 +21,8 @@ Under each chart, one line in words, with numbers from the baselines table: what
 - One chart per index version. Versions are never compared, so a re-designed index starts a new chart at 100 at its base Bk.
 - x-axis: the baselines in order, from the version's base (B0 for v1 and for a metric) to the latest Bk. With more than 20, keep the first, the latest and every second one between.
 - The title names the series, its unit and its direction: `Performance: Speed, wall time in s (lower is better)`.
-- Two or more lines: put the `%%{init…}%%` line of the Index chart first, and under the chart name each line by its color, in the order of the `line` rows. The five colors stay apart for color-blind readers on GitHub's light and dark backgrounds.
+- Every chart starts with the `%%{init…}%%` line of the templates below: without it, GitHub draws the first line in a pale color that is hard to see on its light background. The five colors stay apart for color-blind readers on GitHub's light and dark backgrounds, in this order.
+- Two or more lines: Mermaid draws no legend, so under the chart name each line by its color, in the order of the `line` rows.
 - A count or size chart starts its y-axis at 0, so a small change does not look large. A score chart leaves the range out, so the chart fits the data.
 - Values with at most 3 significant digits.
 
@@ -45,6 +46,7 @@ Colors: blue = index · orange = <component 1> · aqua = <component 2> · yellow
 ## Metric chart
 
 ```mermaid
+%%{init: {"themeVariables": {"xyChart": {"plotColorPalette": "#3987e5, #d95926, #199e70, #c98500, #d55181"}}}}%%
 xychart-beta
     title "<Pillar>: <Target>, <metric> in <unit> (<lower or higher> is better)"
     x-axis [B0, …, <Bk>]
