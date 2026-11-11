@@ -199,7 +199,7 @@ For an optimize idea, also weigh:
 - the size and risk of the diff against that gain;
 - gaming: special-casing the test input, and the GAMING list of the idea's target (for Performance: caching results across runs, skipping required work);
 - the other targets: a diff that you expect to make another selected target worse needs a gain that outweighs it;
-- the test budget of a Coverage target (`pillars.md`): reject the idea as `over test budget` when its candidate has more tests than its budget and more than its base had. A merge of existing tests that drops an assertion weakens a check: reject it.
+- the test budget of a Coverage target (`pillars.md`): reject the idea as `over test budget` when its candidate has more tests than its budget and more than its base had.
 
 For a build idea, also weigh:
 - every acceptance criterion: its evidence must show that it is met (the evidence the target's evidence form names: new tests that exercise it, or `file:line` quotes; for a UI item, look at the before and after screenshots); a criterion whose evidence cannot be re-checked (no test name, screenshot path or file:line) has no evidence. Re-read each quote on the idea's branch by its text (`git -C REPO grep -n -F '<a distinctive part of the quote>' opt/<stamp>/<id> -- <file>`), or the named test output or screenshot, and judge it yourself; a quote whose text is not in that file on the branch counts as no evidence, and a wrong line number alone does not. In auto mode, accept only when every criterion has evidence;
