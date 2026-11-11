@@ -59,7 +59,7 @@ Target: {{TARGET}} ({{KIND}}). Other selected targets: {{OTHER_TARGETS}}.
 
 ## Rules for every change
 
-Do not weaken a check: new tests are fine, but never edit or delete existing tests. Do not change the benchmark code the measurement runs, test inputs, reference outputs or check rules (lint and type-check rules, ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs. Do not game the result: {{GAMING}}. Do not knowingly worsen other selected targets. If the idea does not apply, report `STATUS: failed` with the reason; do not substitute another idea.
+Do not weaken a check: new tests are fine, but never edit or delete existing tests. One exception: for a Coverage target under a test budget, you may merge existing tests into fewer tests when every assertion stays in a kept test, and you add no test beyond the budget. Do not change the benchmark code the measurement runs, test inputs, reference outputs or check rules (lint and type-check rules, ignore lists, coverage thresholds, suppression comments). Build, tool and dependency configuration may change when the same work still runs. Do not game the result: {{GAMING}}. Do not knowingly worsen other selected targets. If the idea does not apply, report `STATUS: failed` with the reason; do not substitute another idea.
 
 ## Kind: optimize
 
