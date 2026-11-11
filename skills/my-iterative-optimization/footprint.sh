@@ -7,7 +7,9 @@
 #   branches, Optimize-Run trailer commits on those branches per run id, and RUN_DIR with its size.
 # Remote branches are read from the remote-tracking refs (as of the last fetch), not from the network.
 # A run branch optimize/<stamp> may be a PR head and holds the run's result, so its local delete
-# is commented out; every remote delete is commented out too. Prints "nothing left" when clean.
+# is commented out; every remote delete is commented out too. optimize/<stamp>-shots holds only
+# the screenshots a PR body shows: its local copy may go, its remote one serves the PR's images.
+# Prints "nothing left" when clean.
 set -u
 
 if [ $# -ne 1 ]; then
@@ -46,6 +48,9 @@ current=$(git -C "$repo" symbolic-ref --quiet --short HEAD || true)
 run_refs=()
 while IFS= read -r branch; do
   case "$branch" in
+    optimize/*-shots)
+      item "branch $branch (PR screenshots; the remote copy serves them)" "$git_cmd branch -D -- $(q "$branch")"
+      ;;
     optimize/*)
       run_refs+=("refs/heads/$branch")
       note="run branch, holds the result; PR head?"
@@ -64,6 +69,9 @@ while IFS= read -r ref; do
   remote=${remote_branch%%/*}
   branch=${remote_branch#*/}
   case "$branch" in
+    optimize/*-shots)
+      item "remote $remote/$branch (PR screenshots)" "# after the PR is merged or closed, which removes its screenshots: $git_cmd push --delete -- $(q "$remote") $(q "$branch")"
+      ;;
     opt/* | optimize/*)
       run_refs+=("$ref")
       item "remote $remote/$branch (PR head?)" "# after the PR is merged or closed: $git_cmd push --delete -- $(q "$remote") $(q "$branch")"

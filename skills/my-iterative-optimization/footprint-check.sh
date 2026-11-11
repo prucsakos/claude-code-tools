@@ -54,7 +54,8 @@ git -C "$repo" branch "optimize/$stamp" "$run_commit"
 git -C "$repo" branch opt/1 "$item_commit"
 git -C "$repo" branch 'opt/a;b' HEAD
 git -C "$repo" worktree add -q --detach "$repo.optimize/wt/x"
-git -C "$repo" push -q origin "optimize/$stamp"
+git -C "$repo" branch "optimize/$stamp-shots" HEAD
+git -C "$repo" push -q origin "optimize/$stamp" "optimize/$stamp-shots"
 git -C "$repo" fetch -q origin
 
 before=$(refs_and_worktrees "$repo")
@@ -69,6 +70,7 @@ check "worktree listed" 1 "$(count_lines '^worktree .*\.optimize/wt/x ')"
 check "opt/1 listed" 1 "$(count_lines '^branch opt/1 ')"
 check "optimize/$stamp listed" 1 "$(count_lines "^branch optimize/$stamp ")"
 check "origin/optimize/$stamp listed" 1 "$(count_lines "^remote origin/optimize/$stamp ")"
+check "shots branch listed as screenshots" "1 1" "$(count_lines "^branch optimize/$stamp-shots (PR screenshots") $(count_lines "^remote origin/optimize/$stamp-shots (PR screenshots")"
 check "Optimize-Run count listed" 1 "$(count_lines "Optimize-Run: $stamp (2 ")"
 check "RUN_DIR listed" 1 "$(count_lines '^RUN_DIR .*\.optimize ')"
 
@@ -77,6 +79,7 @@ check "optimize/$stamp delete commented out" 1 "$(count_lines "^branch optimize/
 pushes=$(count_lines 'push --delete')
 check "every push --delete commented out" "$pushes" "$(count_lines ' #.*push --delete')"
 check "opt/1 delete not commented out" "1 0" "$(count_lines '^branch opt/1 .*branch -D') $(count_lines '^branch opt/1 .*#')"
+check "local shots delete not commented out" 0 "$(count_lines "^branch optimize/$stamp-shots .*#")"
 
 # (c) A branch name holding a shell metacharacter is quoted in its command.
 semicolon_line=$(printf '%s\n' "$out" | grep -F 'branch opt/a;b')

@@ -13,7 +13,7 @@ Every target has a kind. An **optimize** target (the default) improves a metric,
 | Reach | Accessibility | Use by people with disabilities and with assistive technology | **Violations**: axe or pa11y violation count on key pages; Lighthouse accessibility score | `aria-hidden` or removed elements to silence checks, empty alt text |
 | Reach | SEO | How easily search engines find, read and rank the site's pages | **On-page**: Lighthouse SEO score of key pages; pages without a title, meta description or canonical link · **Links**: broken internal links (linkinator, lychee) on a local preview | hidden keyword text, serving crawlers different content, meta text that does not match the page |
 | Reach | i18n | Readiness of the interface for translation and other locales | **Strings**: hard-coded user-facing strings (eslint-plugin-i18next or a similar lint); dates and numbers formatted without the locale · **Keys**: missing or unused translation keys (i18next-parser, i18n-unused) | marking strings as not translatable, per-line lint disables, keys with empty or copied translations |
-| Engineering | Quality | Correctness of the code | **Tests**: failing or flaky tests · **Types**: type-check error count · **Coverage**: coverage; mutation score | `ts-ignore` / `type: ignore` comments, deleted or assert-free tests, lowered thresholds |
+| Engineering | Quality | Correctness of the code | **Tests**: failing or flaky tests · **Types**: type-check error count · **Coverage**: line coverage under the test budget (Test budget, below); mutation score under the same budget | `ts-ignore` / `type: ignore` comments, deleted or assert-free tests, lowered thresholds, tests that run code without checking its result, files excluded from coverage, code moved into comments or prompt text, a new test that bundles unrelated cases only to fit the budget |
 | Engineering | DX | Developer experience: how fast and easily developers build, test and change the project | **Build time**: clean build time (MEASURE_CMD clears the build caches first) · **Test time**: test-suite time · **Install time**: install and first-run time from a fresh clone · **CI time**: CI pipeline time | skipped build or test steps, removed tests, caches kept between measured runs |
 | Engineering | OX | Operator experience: deploying, configuring, monitoring and debugging the project in production | **Start-up**: start-up time · **Image size**: container image size · **Log noise**: log lines or errors per smoke-test request · **Config checks**: config errors found at start-up instead of at run time | silenced logs, swallowed errors, removed checks |
 | Engineering | Security | Known weaknesses in the code and its dependencies | **Dependencies**: vulnerability count from `npm audit` / `pip-audit` / `cargo audit` · **Code**: Semgrep or CodeQL findings · **Secrets**: secret-scan findings | ignore lists, suppression comments, files excluded from the scan |
@@ -29,12 +29,21 @@ Outdated-package counts and external link checks read the network, so a new rele
 
 A pillar or target the user names under "Other" (for example Cost, Reliability, or "CSV export of reports") follows the same rules. Write its one-line definition, its kind, a measurable proxy (optimize) or acceptance criteria (build), and its gaming list yourself.
 
+**Test budget.** The number of tests is not a measure of quality: more tests do not make better code. So no metric or index value counts how many tests, test files or assertions exist, in either direction; failing or flaky tests are failures and may be counted. Test quality is Quality: Coverage, the highest coverage that a budget of 1 unit test per 100 code lines allows:
+- Code lines: the lines of the files the coverage tool measures, without blank lines, comments, test files and prompt text, from a counter such as cloc or tokei. Prompt text is prompt templates and prompt strings for an LLM; the plan names their paths or markers next to the target.
+- Tests: the unit tests as the test runner lists them; each parametrized case counts as one.
+- Budget = max(1, floor(code lines / 100)).
+- Value: the coverage alone, so a commit of another target that adds tests or removes code lines does not move it. MEASURE_CMD prints `code_lines=<n> budget=<n> tests=<n>` before the value, so the budget is visible on every measurement.
+- The budget limits the Coverage ideas: SKILL.md section 3 rejects one as over test budget when it adds tests beyond the budget.
+- A suite already above its budget at the repo look (300 tests on 2,600 code lines: budget 26) cannot raise its coverage within the budget, because existing tests stay as they are. The plan drops the Coverage target and gives its tests and budget as the reason.
+
 Count metrics (errors, violations, findings) usually give the same value on every run. The setup step detects this and measures them once per side. Count tools usually exit non-zero when they find something, which `measure.sh` reads as FAIL: the MEASURE_CMD row in SKILL.md section 1 says how to count them.
 
 **Pillar index.** A pillar index (the Index row in SKILL.md section 1) combines 2–4 component commands into one number. Each count names what opposes it, so cutting content cannot raise the index. Examples:
 - UI pillar: words and interactive elements on key screens from a scripted page snapshot, fewer is better, and load time. The CORRECT_CMD check that each screen keeps its required content opposes the counts.
 - Backend pillar: p95 latency, peak memory and threads. Latency opposes the other two: a cache or a larger pool lowers latency and raises memory or threads.
 - Agent pillar: bytes of instructions loaded per task and steps of a scripted dry run, fewer is better, opposed by passes on a small fixed task set.
+- Quality pillar: Coverage under the test budget, type-check errors and flaky tests. Never the number of tests (Test budget, above).
 
 ## Examples of user-defined pillars
 
