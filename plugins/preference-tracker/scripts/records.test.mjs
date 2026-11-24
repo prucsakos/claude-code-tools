@@ -89,3 +89,24 @@ test("toExistingNotes leaves out repeats, replaced notes and notes of other proj
     { id: "pref_dddddddddddd", next_time: existingNote.next_time, project: "demo-app" },
   ]);
 });
+
+test("records written before 0.5.0 are still read as notes", () => {
+  // The oldest shape in the database: no schema, no basis, no context.situation.
+  const oldNote = {
+    id: "pref_111111111111",
+    trigger: "correction",
+    note: "The user wants tests run.",
+    next_time: "Run the tests.",
+    category: "testing",
+    scope: "global",
+    context: { claude_action: "", user_quote: "run them" },
+    supersedes: null,
+    source: { project: "demo-app", session_id: "s-0", prompt_uuid: "p-0", timestamp: prompt.timestamp },
+  };
+  assert.deepEqual(toExistingNotes([oldNote], [null]), [{ id: oldNote.id, next_time: oldNote.next_time, project: null }]);
+  const input = { notes: [{ ...item, supersedes: oldNote.id }], repeats: [{ prompt_uuid: "p-1", note_id: oldNote.id }] };
+  const { records, problems } = toRecords(input, [prompt], [oldNote], "s-1");
+  assert.deepEqual(problems, []);
+  assert.equal(records[0].supersedes, oldNote.id);
+  assert.equal(records[1].repeats, oldNote.id);
+});
