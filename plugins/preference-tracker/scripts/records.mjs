@@ -115,8 +115,7 @@ export function toRecords({ notes, repeats }, prompts, existing, sessionId) {
       note: redact(item.note),
       next_time: redact(item.next_time),
       category: item.category,
-      // A note cannot be limited to a project when the conversation was not in one.
-      scope: prompt.project === null ? "global" : item.scope,
+      scope: item.scope,
       basis: item.basis,
       context: {
         situation: truncate(redact(item.situation), MAX_SITUATION_CHARS),

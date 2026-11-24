@@ -74,12 +74,6 @@ test("toRecords writes a repeat as a short record that points at the existing no
   assert.match(problems[0], /unknown note id pref_unknown/);
 });
 
-test("toRecords makes a note global when the prompt has no project", () => {
-  const input = { notes: [{ ...item, scope: "project" }], repeats: [] };
-  const { records } = toRecords(input, [{ ...prompt, project: null }], [], "s-1");
-  assert.equal(records[0].scope, "global");
-});
-
 test("toExistingNotes leaves out repeats, replaced notes and notes of other projects", () => {
   const existing = [
     existingNote,

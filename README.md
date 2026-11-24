@@ -255,7 +255,7 @@ A note is written when one of your messages shows one of these triggers:
 
 **What a note looks like**
 
-Each note is one line of JSON; it is shown formatted here. It records the trigger, the taste note (`note`), what Claude should do next time (`next_time`), a short summary of the situation, what Claude did and your words. `category` is one of `communication`, `code-style`, `architecture`, `testing`, `workflow`, `tooling`, `git`, `documentation` or `other`; `scope` is `global` or `project`; `basis` is `stated` when you said the preference in words, `inferred` when it was deduced from a question or reaction; `supersedes` is the `id` of an older note that this one replaces, or `null`. `source.project` is the name of the repository the conversation was in, or `null` outside a repository; a note without a project is always `global`. `schema` is `2` for records written since 0.5.0; older records have no `schema` field.
+Each note is one line of JSON; it is shown formatted here. It records the trigger, the taste note (`note`), what Claude should do next time (`next_time`), a short summary of the situation, what Claude did and your words. `category` is one of `communication`, `code-style`, `architecture`, `testing`, `workflow`, `tooling`, `git`, `documentation` or `other`; `scope` is `global` or `project`; `basis` is `stated` when you said the preference in words, `inferred` when it was deduced from a question or reaction; `supersedes` is the `id` of an older note that this one replaces, or `null`. `source.project` is the name of the repository the conversation was in, or `null` outside a repository. `schema` is `2` for records written since 0.5.0; older records have no `schema` field.
 
 ```json
 {

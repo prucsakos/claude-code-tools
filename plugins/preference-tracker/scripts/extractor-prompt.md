@@ -36,7 +36,7 @@ Write a new note with `supersedes` only when the message changes the rule or mak
 - `note`: the taste note. In one to three sentences, describe how the user likes things in this kind of situation: the format, depth, process, level of autonomy or style they want, and why, when the excerpt shows it. Name the situation, so the note is useful out of its original context. For `unclear_response` and `clarification_question`, also say what the user did not know or found unclear, for example "The user did not know what a git union merge is."
 - `next_time`: one imperative sentence that tells Claude what to do in that situation so the user does not need to step in. Example: "Run the test suite after a change without asking first."
 - `category`: the area of the preference, one of the values the output schema allows.
-- `scope`: `project` when the note applies only to that project, otherwise `global`. Always `global` when `project` is `null`.
+- `scope`: `project` when the note applies only to that project, otherwise `global`.
 - `basis`: `stated` when the user said the preference in words, for example "always run tests first"; `inferred` when you deduced it from a question or reaction, for example a follow-up question that implies they wanted more detail.
 - `situation`: two to four sentences that make the note understandable without the conversation: what the user was working on and why, what had happened just before, and what the message referred to.
 - `claude_action`: one sentence about what Claude did or said that led to the message. Use an empty string when nothing before the message is relevant.
