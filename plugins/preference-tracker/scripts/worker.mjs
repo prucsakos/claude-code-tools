@@ -16,7 +16,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { OUTPUT_SCHEMA, toRecords, truncate } from "./records.mjs";
+import { isNote, OUTPUT_SCHEMA, toExistingNotes, toRecords, truncate } from "./records.mjs";
 
 const DEFAULT_REPO_URL = "https://github.com/prucsakos/claude-preferences.git";
 const DEFAULT_MODEL = "sonnet";
@@ -84,16 +84,18 @@ function run() {
       .slice(Math.max(0, firstIndex - MAX_EARLIER_MESSAGES), firstIndex)
       .map((prompt) => truncate(prompt.userMessage, MAX_EARLIER_MESSAGE_CHARS)),
   };
-  const { notes: extracted, usage } = extractPreferences(prompts, conversationBefore, existing, config.model);
+  const { extracted, usage } = extractPreferences(prompts, conversationBefore, existing, config.model);
   const { records, problems } = toRecords(extracted, prompts, existing, sessionId);
   if (records.length > 0) {
     appendRecords(databaseFile, records);
     commitAndPush(repoDir, records);
   }
   writeLedger(ledgerFile, [...ledger, ...prompts.map((prompt) => prompt.uuid)]);
+  const noteCount = records.filter(isNote).length;
   appendFileSync(
     join(dataDir, "worker.log"),
-    `${new Date().toISOString()} session=${sessionId} prompts=${prompts.length} recorded=${records.length}` +
+    `${new Date().toISOString()} session=${sessionId} prompts=${prompts.length} recorded=${noteCount}` +
+      ` repeats=${records.length - noteCount}` +
       ` tokens_in=${usage.tokensIn} tokens_out=${usage.tokensOut} cost_usd=${usage.costUsd}\n`,
   );
   if (problems.length > 0) throw new Error(`Extractor output problems:\n${problems.join("\n")}`);
@@ -115,6 +117,7 @@ function acquireLock(lockFile) {
 // prompt, and the latest summary Claude Code wrote when it compacted the conversation before it.
 function readHumanPrompts(file) {
   const prompts = [];
+  const projectsByCwd = new Map();
   let claudeTexts = [];
   let toolCalls = [];
   let summary = null;
@@ -132,10 +135,11 @@ function readHumanPrompts(file) {
     } else if (isHumanPrompt(entry) || isHumanMidTurnMessage(entry)) {
       const userMessage = stripInjectedText(entry.type === "user" ? entry.message.content : entry.attachment.prompt);
       if (userMessage) {
+        if (!projectsByCwd.has(entry.cwd)) projectsByCwd.set(entry.cwd, projectName(entry.cwd));
         prompts.push({
           uuid: entry.uuid,
           timestamp: entry.timestamp,
-          project: basename(entry.cwd),
+          project: projectsByCwd.get(entry.cwd),
           userMessage: truncate(userMessage, MAX_USER_MESSAGE_CHARS),
           claudeBefore: {
             text: claudeTexts.join("\n\n").slice(-MAX_CLAUDE_TEXT_CHARS),
@@ -149,6 +153,17 @@ function readHumanPrompts(file) {
     }
   }
   return prompts;
+}
+
+// The name of the repository that contains `cwd`, or null outside a repository. The folder
+// name is not used: outside a repository it is a home or temp folder, and a second worktree
+// of one repository has a folder name of its own.
+function projectName(cwd) {
+  if (!existsSync(cwd)) return null;
+  const originUrl = gitOutputOrNull(cwd, ["remote", "get-url", "origin"]);
+  if (originUrl) return basename(originUrl.replace(/[\\/]+$/, "")).replace(/\.git$/, "");
+  const topLevel = gitOutputOrNull(cwd, ["rev-parse", "--show-toplevel"]);
+  return topLevel ? basename(topLevel) : null;
 }
 
 // turnOrigin "human" marks prompts that start a turn: typed, queued and desktop-app prompts.
@@ -185,12 +200,10 @@ function stripInjectedText(content) {
 
 function extractPreferences(prompts, conversationBefore, existing, model) {
   const input = {
-    existing_notes: existing.map((record) => ({
-      id: record.id,
-      note: record.note,
-      scope: record.scope,
-      project: record.source.project,
-    })),
+    existing_notes: toExistingNotes(
+      existing,
+      prompts.map((prompt) => prompt.project),
+    ),
     conversation_before: conversationBefore,
     excerpts: prompts.map((prompt) => ({
       prompt_uuid: prompt.uuid,
@@ -233,7 +246,7 @@ function extractPreferences(prompts, conversationBefore, existing, model) {
   }
   const { usage } = response;
   return {
-    notes: response.structured_output.notes,
+    extracted: response.structured_output,
     usage: {
       tokensIn: usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens,
       tokensOut: usage.output_tokens,
@@ -257,10 +270,17 @@ function syncRepo(repoDir, repoUrl) {
 }
 
 function commitAndPush(repoDir, records) {
-  const projects = [...new Set(records.map((record) => record.source.project))].join(", ");
-  const noun = records.length === 1 ? "taste note" : "taste notes";
+  const projects = [...new Set(records.map((record) => record.source.project ?? "no project"))].join(", ");
+  const noteCount = records.filter(isNote).length;
+  const counts = [
+    [noteCount, noteCount === 1 ? "taste note" : "taste notes"],
+    [records.length - noteCount, records.length - noteCount === 1 ? "repeat" : "repeats"],
+  ]
+    .filter(([count]) => count > 0)
+    .map(([count, noun]) => `${count} ${noun}`)
+    .join(" and ");
   git(repoDir, ["add", DATABASE_PATH]);
-  git(repoDir, ["commit", "-m", `Record ${records.length} ${noun} from ${projects}`]);
+  git(repoDir, ["commit", "-m", `Record ${counts} from ${projects}`]);
   try {
     git(repoDir, ["push"]);
   } catch {
@@ -292,6 +312,13 @@ function git(cwd, args) {
   });
   checkExit(result, `git ${args.join(" ")}`);
   return result.stdout.trim();
+}
+
+// For questions where a failing git command is an answer: `cwd` is not in a repository, or the repository has no origin.
+function gitOutputOrNull(cwd, args) {
+  const result = spawnSync("git", args, { cwd, encoding: "utf8", timeout: GIT_TIMEOUT_MS, windowsHide: true });
+  if (result.error) throw new Error(`git ${args.join(" ")}: ${result.error.message}`);
+  return result.status === 0 ? result.stdout.trim() : null;
 }
 
 function checkExit(result, label) {
