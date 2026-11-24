@@ -255,10 +255,11 @@ A note is written when one of your messages shows one of these triggers:
 
 **What a note looks like**
 
-Each note is one line of JSON; it is shown formatted here. It records the trigger, the taste note (`note`), what Claude should do next time (`next_time`), a short summary of the situation, what Claude did and your words. `category` is one of `communication`, `code-style`, `architecture`, `testing`, `workflow`, `tooling`, `git`, `documentation` or `other`; `scope` is `global` or `project`; `basis` is `stated` when you said the preference in words, `inferred` when it was deduced from a question or reaction; `supersedes` is the `id` of an older note that this one replaces, or `null`.
+Each note is one line of JSON; it is shown formatted here. It records the trigger, the taste note (`note`), what Claude should do next time (`next_time`), a short summary of the situation, what Claude did and your words. `category` is one of `communication`, `code-style`, `architecture`, `testing`, `workflow`, `tooling`, `git`, `documentation` or `other`; `scope` is `global` or `project`; `basis` is `stated` when you said the preference in words, `inferred` when it was deduced from a question or reaction; `supersedes` is the `id` of an older note that this one replaces, or `null`. `source.project` is the name of the repository the conversation was in, or `null` outside a repository; a note without a project is always `global`. `schema` is `2` for records written since 0.5.0; older records have no `schema` field.
 
 ```json
 {
+  "schema": 2,
   "id": "pref_3f9a1c2b7d4e",
   "trigger": "avoidable_request",
   "note": "After a bug fix, the user wants Claude to run the existing tests before it reports, not ask whether to run them.",
@@ -280,6 +281,20 @@ Each note is one line of JSON; it is shown formatted here. It records the trigge
   }
 }
 ```
+
+**Repeats**
+
+When a message shows a trigger that an existing note already covers, no second note is written. The worker appends a repeat record that points at the note:
+
+```json
+{"schema":2,"id":"rep_8c1e5a9d2f40","repeats":"pref_3f9a1c2b7d4e","source":{"project":"my-app","session_id":"…","prompt_uuid":"…","timestamp":"…"}}
+```
+
+The number of repeat records of a note is how often you had to step in again for the same reason.
+
+**Baking**
+
+A bake turns the recorded notes into a short set of rules for `CLAUDE.md`: group the notes that are not superseded by theme, rank the themes by notes plus repeats, and write one rule per theme that recurs across sessions. [`baked/CLAUDE.md`](baked/CLAUDE.md) is my bake of 2026-11-24. Its header names the last note it read, so the next bake starts after it.
 
 **Privacy:** before a note is written, a pattern check (`plugins/preference-tracker/scripts/redact.mjs`) removes tokens, keys, passwords, email addresses and URLs from its text.
 
@@ -333,6 +348,7 @@ Claude Code plugins enabled in my user settings (`name@marketplace`).
 commands/        # Slash commands (markdown files, one per command)
 mcps/            # MCP server configurations and docs
 plugins/         # Claude Code plugins (one folder per plugin)
+baked/           # CLAUDE.md rules baked from my preference-tracker notes
 skills/          # Reusable skills, Codex unless noted (one self-contained folder per skill)
 chatgpt/         # ChatGPT prompts and complete skill forks (see each tool's docs)
 ```
