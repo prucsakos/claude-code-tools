@@ -294,7 +294,7 @@ The number of repeat records of a note is how often you had to step in again for
 
 **Baking**
 
-A bake turns the recorded notes into a short set of rules for `CLAUDE.md`: group the notes that are not superseded by theme, rank the themes by notes plus repeats, and write one rule per theme that recurs across sessions. [`baked/CLAUDE.md`](baked/CLAUDE.md) is my bake of 2026-11-24. Its header names the last note it read, so the next bake starts after it.
+A bake turns the recorded notes into a short set of rules for `CLAUDE.md`: group the notes that are not superseded by theme, rank the themes by notes plus repeats, and write one rule per theme that recurs across sessions. [`baked/CLAUDE.md`](baked/CLAUDE.md) is my bake of 2026-11-24. After a bake, move the baked notes from `preferences/preferences.jsonl` to a file under `preferences/archive/` and keep the newer lines, so the next bake reads only what the rules did not prevent.
 
 **Privacy:** before a note is written, a pattern check (`plugins/preference-tracker/scripts/redact.mjs`) removes tokens, keys, passwords, email addresses and URLs from its text.
 

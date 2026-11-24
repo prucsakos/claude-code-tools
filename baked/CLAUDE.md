@@ -1,6 +1,7 @@
 <!--
 Baked 2026-11-24 from the preference-tracker database: 148 notes, 2026-11-03 to 2026-11-24, last id pref_4dcbfa61c808.
-The next bake reads only the records after that id and counts repeat records per note.
+Those 148 notes are archived in preferences/archive/2026-11-24-baked.jsonl and removed from the active file.
+The next bake reads the whole active file and counts repeat records per note.
 Support is given as (notes / sessions). Not baked: 33 project-scoped notes, 10 notes about optimization-run reports, 13 one-off task details.
 -->
 
